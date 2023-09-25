@@ -38,30 +38,74 @@
 # print(is_blocked(A, B, blocks))  # 返回值表示A和B之间是否被长方体阻挡
 
 
-class UAVMap:
-    def __init__(self, AllPaths):
-        self.AllPaths = AllPaths
+# class UAVMap:
+#     def __init__(self, AllPaths):
+#         self.AllPaths = AllPaths
     
-    def quantify_data_rate(self, r):
-        print(self.AllPaths.values())
-        # 1. 获取每个元素的最大DR
-        max_data_rates = [max(paths, key=lambda x: x['DR'])['DR'] if paths else 0 for paths in self.AllPaths.values()]
+#     def quantify_data_rate(self, r):
+#         print(self.AllPaths.values())
+#         # 1. 获取每个元素的最大DR
+#         max_data_rates = [max(paths, key=lambda x: x['DR'])['DR'] if paths else 0 for paths in self.AllPaths.values()]
         
-        print(max_data_rates)
+#         print(max_data_rates)
         
-        # 2. 计算所有元素的最小DR和平均DR
-        min_DR = min(max_data_rates)
-        avg_DR = sum(max_data_rates) / len(max_data_rates)
+#         # 2. 计算所有元素的最小DR和平均DR
+#         min_DR = min(max_data_rates)
+#         avg_DR = sum(max_data_rates) / len(max_data_rates)
         
-        # 3. 使用公式计算score
-        score = r * min_DR + (1 - r) * avg_DR
-        return score
+#         # 3. 使用公式计算score
+#         score = r * min_DR + (1 - r) * avg_DR
+#         return score
+
+# # 示例
+# uav_map = UAVMap(AllPaths={0: [{'path': [0, 2, 6], 'DR': 1394949843.0551932}, {'path': [0, 6], 'DR': 1902723297.561852}], 1: [{'path': [1, 0, 2, 6], 'DR': 312893737.12986887}, {'path': [1, 0, 6], 'DR': 312893737.12986887}], 2: [{'path': [2, 0, 6], 'DR': 1488013526.2304676}, {'path': [2, 6], 'DR': 1394949843.0551932}], 3: [{'path': [3, 5], 'DR': 2025826703.0208344}], 4: [{'path': [4, 6], 'DR': 2089479536.0437372}]
+#                         # 5: []
+#                         })
+
+# r = 0.5  # 可以根据需要改变
+# score = uav_map.quantify_data_rate(r)
+# print(score)
+
+
+def quantify_backup_path(AllPaths, hop_constraint, DR_constraint):
+    # 函数内部用于计算hop
+    def hop_count(path):
+        return len(path)
+
+    # 计算每个起点的最佳DR
+    best_DRs = {}
+    for start, paths in AllPaths.items():
+        filtered_paths = [p for p in paths if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint]
+        if filtered_paths:
+            best_DRs[start] = max(p['DR'] for p in filtered_paths)
+        else:
+            best_DRs[start] = None
+        # print(filtered_paths)
+        # print(best_DRs)
+
+    # 计算每条路径的得分
+    total_score = 0
+    max_path_count = max(len(paths) for paths in AllPaths.values())
+    for start, paths in AllPaths.items():
+        for p in paths:
+            if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint:
+                if p['DR'] == best_DRs[start]:  # 最佳路径得分为1
+                    total_score += 1
+                else:
+                    total_score += p['DR'] / best_DRs[start]
+
+    # 得分总和除以路径的最大值
+    result = total_score / max_path_count
+    return result
 
 # 示例
-uav_map = UAVMap(AllPaths={0: [{'path': [0, 2, 6], 'DR': 1331604646.8945067}, {'path': [0, 6], 'DR': 868893401.0471452}], 1: [{'path': [1, 0, 2, 6], 'DR': 312893737.12986887}, {'path': [1, 0, 6], 'DR': 312893737.12986887}], 2: [{'path': [2, 0, 6], 'DR': 868893401.0471452}, {'path': [2, 6], 'DR': 2008770280.465467}], 3: [{'path': [3, 5], 'DR': 1745297098.210253}], 4: [{'path': [4, 6], 'DR': 2273496381.465522}]
-                        # 5: []
-                        })
+AllPaths = {
+    0: [{'path': [0, 2, 6], 'DR': 1394949843.0551932}, {'path': [0, 6], 'DR': 1902723297.561852}],
+    1: [{'path': [1, 0, 2, 6], 'DR': 312893737.12986887}, {'path': [1, 0, 6], 'DR': 312893737.12986887}],
+    2: [{'path': [2, 0, 6], 'DR': 1488013526.2304676}, {'path': [2, 6], 'DR': 1394949843.0551932}],
+    3: [{'path': [3, 5], 'DR': 2025826703.0208344}],
+    4: [{'path': [4, 6], 'DR': 2089479536.0437372}]
+}
 
-r = 0.5  # 可以根据需要改变
-score = uav_map.quantify_data_rate(r)
-print(score)
+result = quantify_backup_path(AllPaths, 4, 1000000000)
+print(result)

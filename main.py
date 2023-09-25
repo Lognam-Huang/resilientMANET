@@ -9,6 +9,7 @@ from functions.data_unit_conversion import data_unit_conversion
 from classes.UAVMap import UAVMap
 from functions.path_is_blocked import path_is_blocked
 from functions.quantify_data_rate import quantify_data_rate
+from functions.quantify_backup_path import quantify_backup_path
 
 # read scenario data
 with open('scene_data.json', 'r') as f:
@@ -98,7 +99,8 @@ DRScore = quantify_data_rate(UAVMap, 0.5)
 print(DRScore)
 
 # quantify resilience score: backup path 
-
+BPScore = quantify_backup_path(UAVMap, 4, 1000000000)
+print(BPScore)
 
 # test
 # print(data['scenario']['xLength'])  # 500
