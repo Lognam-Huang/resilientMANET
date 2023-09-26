@@ -78,15 +78,13 @@ print(path_is_blocked(blocks, UAVNodes[0], UAVNodes[1]))
 
 # NOTICE THAT ALL NODES START WITH INDEX 0
 
-UAVNodes[0].set_connection([1,2,6])
+UAVNodes[0].set_connection([1,2,3])
 UAVNodes[1].set_connection([0])
 UAVNodes[2].set_connection([0])
+UAVNodes[3].set_connection([0])
 
 ABSNodes[0].set_connection([3])
 ABSNodes[1].set_connection([2,4])
-
-# for node in UAVNodes:
-#     print(node)
 
 UAVMap = UAVMap(UAVNodes, ABSNodes, blocks, UAVInfo)
 print(UAVMap)
@@ -98,9 +96,16 @@ print(UAVMap)
 DRScore = quantify_data_rate(UAVMap, 0.5)
 print(DRScore)
 
+# for node in UAVNodes:
+#     print(node)
+
 # quantify resilience score: backup path 
 BPScore = quantify_backup_path(UAVMap, 4, 1000000000)
 print(BPScore)
+
+# quantify resilience score: network partitioning
+# for node in UAVNodes:
+#     print(node)
 
 # test
 # print(data['scenario']['xLength'])  # 500
