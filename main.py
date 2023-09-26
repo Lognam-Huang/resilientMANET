@@ -10,6 +10,9 @@ from classes.UAVMap import UAVMap
 from functions.path_is_blocked import path_is_blocked
 from functions.quantify_data_rate import quantify_data_rate
 from functions.quantify_backup_path import quantify_backup_path
+from functions.quantify_network_partitioning import quantify_network_partitioning
+
+from functions.quantify_network_partitioning import remove_node, select_drop
 
 # read scenario data
 with open('scene_data.json', 'r') as f:
@@ -106,6 +109,12 @@ print(BPScore)
 # quantify resilience score: network partitioning
 # for node in UAVNodes:
 #     print(node)
+# newUAVMap = remove_node(UAVMap, 2)
+# print(newUAVMap)
+
+NPScore = quantify_network_partitioning(UAVMap, 0.4)
+print(NPScore)
+
 
 # test
 # print(data['scenario']['xLength'])  # 500
@@ -124,3 +133,9 @@ print(BPScore)
 # node.set_position([4, 5, 6])
 # node.set_connection([1, 2, 3])
 # print(node)
+
+# testDrop = select_drop(UAVMap, 0.4)
+# print(testDrop)
+
+# print(UAVMap)
+# print(newUAVMap)

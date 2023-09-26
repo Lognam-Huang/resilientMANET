@@ -67,45 +67,56 @@
 # print(score)
 
 
-def quantify_backup_path(AllPaths, hop_constraint, DR_constraint):
-    # 函数内部用于计算hop
-    def hop_count(path):
-        return len(path)
+# def quantify_backup_path(AllPaths, hop_constraint, DR_constraint):
+#     # 函数内部用于计算hop
+#     def hop_count(path):
+#         return len(path)
 
-    # 计算每个起点的最佳DR
-    best_DRs = {}
-    for start, paths in AllPaths.items():
-        filtered_paths = [p for p in paths if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint]
-        if filtered_paths:
-            best_DRs[start] = max(p['DR'] for p in filtered_paths)
-        else:
-            best_DRs[start] = None
-        # print(filtered_paths)
-        # print(best_DRs)
+#     # 计算每个起点的最佳DR
+#     best_DRs = {}
+#     for start, paths in AllPaths.items():
+#         filtered_paths = [p for p in paths if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint]
+#         if filtered_paths:
+#             best_DRs[start] = max(p['DR'] for p in filtered_paths)
+#         else:
+#             best_DRs[start] = None
+#         # print(filtered_paths)
+#         # print(best_DRs)
 
-    # 计算每条路径的得分
-    total_score = 0
-    max_path_count = max(len(paths) for paths in AllPaths.values())
-    for start, paths in AllPaths.items():
-        for p in paths:
-            if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint:
-                if p['DR'] == best_DRs[start]:  # 最佳路径得分为1
-                    total_score += 1
-                else:
-                    total_score += p['DR'] / best_DRs[start]
+#     # 计算每条路径的得分
+#     total_score = 0
+#     max_path_count = max(len(paths) for paths in AllPaths.values())
+#     for start, paths in AllPaths.items():
+#         for p in paths:
+#             if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint:
+#                 if p['DR'] == best_DRs[start]:  # 最佳路径得分为1
+#                     total_score += 1
+#                 else:
+#                     total_score += p['DR'] / best_DRs[start]
 
-    # 得分总和除以路径的最大值
-    result = total_score / max_path_count
-    return result
+#     # 得分总和除以路径的最大值
+#     result = total_score / max_path_count
+#     return result
 
-# 示例
-AllPaths = {
-    0: [{'path': [0, 2, 6], 'DR': 1394949843.0551932}, {'path': [0, 6], 'DR': 1902723297.561852}],
-    1: [{'path': [1, 0, 2, 6], 'DR': 312893737.12986887}, {'path': [1, 0, 6], 'DR': 312893737.12986887}],
-    2: [{'path': [2, 0, 6], 'DR': 1488013526.2304676}, {'path': [2, 6], 'DR': 1394949843.0551932}],
-    3: [{'path': [3, 5], 'DR': 2025826703.0208344}],
-    4: [{'path': [4, 6], 'DR': 2089479536.0437372}]
-}
+# # 示例
+# AllPaths = {
+#     0: [{'path': [0, 2, 6], 'DR': 1394949843.0551932}, {'path': [0, 6], 'DR': 1902723297.561852}],
+#     1: [{'path': [1, 0, 2, 6], 'DR': 312893737.12986887}, {'path': [1, 0, 6], 'DR': 312893737.12986887}],
+#     2: [{'path': [2, 0, 6], 'DR': 1488013526.2304676}, {'path': [2, 6], 'DR': 1394949843.0551932}],
+#     3: [{'path': [3, 5], 'DR': 2025826703.0208344}],
+#     4: [{'path': [4, 6], 'DR': 2089479536.0437372}]
+# }
 
-result = quantify_backup_path(AllPaths, 4, 1000000000)
-print(result)
+# result = quantify_backup_path(AllPaths, 4, 1000000000)
+# print(result)
+
+
+import random
+
+def select_ten_percent(N):
+    num_samples = int(N * 0.1)  # 计算10%的大小
+    return random.sample(range(N+1), num_samples)
+
+N = 9
+selected_numbers = select_ten_percent(N)
+print(selected_numbers)
