@@ -100,7 +100,7 @@ print(DRScore)
 #     print(node)
 
 # quantify resilience score: backup path 
-BPScore = quantify_backup_path(UAVMap, 4, 1000000000)
+BPScore = quantify_backup_path(UAVMap, 4, 400000000)
 print(BPScore)
 
 # quantify resilience score: network partitioning

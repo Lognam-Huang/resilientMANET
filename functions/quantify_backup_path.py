@@ -31,4 +31,6 @@ def quantify_backup_path(UAVMap, hop_constraint, DR_constraint):
 
     # sum of the scores divided by the maximum number of path
     result = total_score / max_path_count
+    
+    # result = total_score 
     return result
