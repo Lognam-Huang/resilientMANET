@@ -111,12 +111,83 @@
 # print(result)
 
 
-import random
+# import random
 
-def select_ten_percent(N):
-    num_samples = int(N * 0.1)  # 计算10%的大小
-    return random.sample(range(N+1), num_samples)
+# def select_ten_percent(N):
+#     num_samples = int(N * 0.1)  # 计算10%的大小
+#     return random.sample(range(N+1), num_samples)
 
-N = 9
-selected_numbers = select_ten_percent(N)
-print(selected_numbers)
+# N = 9
+# selected_numbers = select_ten_percent(N)
+# print(selected_numbers)
+
+# def test():
+#     print("L")
+    
+# def test1():
+#     print("M")
+
+# from itertools import combinations
+
+# def find_subsets(nums, ratio):
+#     n = len(nums)
+#     subsets = []
+    
+#     # calculate the range of the subset lengths based on the ratio
+#     min_len = int(n * ratio)
+#     max_len = int(n / ratio)
+    
+#     for r in range(min_len, max_len + 1):
+#         for subset in combinations(nums, r):
+#             subsets.append(list(subset))
+    
+#     return subsets
+
+# nums = [0,1,2,3,4]
+# ratio = 0.2
+# print(find_subsets(nums, ratio))  # Outputs: [[0], [1], [2], [3], [4]]
+
+# ratio = 0.4
+# print(find_subsets(nums, ratio))  # Outputs: ... [0, 1], [0, 2], [0, 3], ... , [3, 4]
+
+
+# from itertools import combinations
+
+# def generate_combinations(elements, ratio):
+#     n = len(elements)
+#     max_len = int((n+1) * ratio)
+    
+#     result = []
+#     for r in range(1, max_len + 1):
+#         result.extend(combinations(elements, r))
+    
+#     return [list(comb) for comb in result]
+
+# lst = [0, 1, 2, 3, 4]
+# ratio1 = 0.2
+# ratio2 = 0.4
+
+# print(generate_combinations(lst, ratio1))
+# print(generate_combinations(lst, ratio2))
+
+def integrate_quantification(value1, value2, value3, weight1, weight2, weight3):
+    # 首先确保权重的总和为1，以保证加权后的结果仍然在[0,1]范围内
+    total_weight = weight1 + weight2 + weight3
+    if total_weight != 1:
+        raise ValueError("The sum of weights must be 1.")
+    
+    # 计算加权总和
+    integrated_value = value1 * weight1 + value2 * weight2 + value3 * weight3
+    
+    return integrated_value
+
+# 示例
+v1 = 0.5
+v2 = 0.7
+v3 = 0.2
+w1 = 0.4
+w2 = 0.4
+w3 = 0.2
+
+print(integrate_quantification(v1, v2, v3, w1, w2, w3))  # 0.52
+

@@ -11,6 +11,7 @@ from functions.path_is_blocked import path_is_blocked
 from functions.quantify_data_rate import quantify_data_rate
 from functions.quantify_backup_path import quantify_backup_path
 from functions.quantify_network_partitioning import quantify_network_partitioning
+from functions.integrate_quantification import integrate_quantification
 
 from functions.quantify_network_partitioning import remove_node, select_drop
 
@@ -96,14 +97,19 @@ print(UAVMap)
 #     print(node)
 
 # quantify resilience score: data rate
-DRScore = quantify_data_rate(UAVMap, 0.5)
+DRPenalty = 0.5
+DRScore = quantify_data_rate(UAVMap, DRPenalty, UAVInfo)
+print("Data rate score of current topology:")
 print(DRScore)
 
 # for node in UAVNodes:
 #     print(node)
 
 # quantify resilience score: backup path 
-BPScore = quantify_backup_path(UAVMap, 4, 400000000)
+BPHopConstraint = 4
+BPDRConstraint = 100000000
+BPScore = quantify_backup_path(UAVMap, BPHopConstraint, BPDRConstraint)
+print("Backup path score of current topology:")
 print(BPScore)
 
 # quantify resilience score: network partitioning
@@ -112,8 +118,18 @@ print(BPScore)
 # newUAVMap = remove_node(UAVMap, 2)
 # print(newUAVMap)
 
-NPScore = quantify_network_partitioning(UAVMap, 0.4)
+droppedRatio = 0.2
+NPScore = quantify_network_partitioning(UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore)
+print("Network partitioning score of current topology:")
 print(NPScore)
+
+# integrate quantificaiton
+weightDR = 0.2
+weightBP = 0.5
+weightNP = 0.3
+ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, weightBP, weightNP)
+print("Resilience score is:")
+print(ResilienceScore) 
 
 
 # test
@@ -139,3 +155,5 @@ print(NPScore)
 
 # print(UAVMap)
 # print(newUAVMap)
+# from test import test, test1
+# test1()
