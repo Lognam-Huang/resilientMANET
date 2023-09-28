@@ -12,6 +12,7 @@ from functions.quantify_data_rate import quantify_data_rate
 from functions.quantify_backup_path import quantify_backup_path
 from functions.quantify_network_partitioning import quantify_network_partitioning
 from functions.integrate_quantification import integrate_quantification
+from functions.measure_overload import measure_overload
 
 from functions.quantify_network_partitioning import remove_node, select_drop
 
@@ -131,6 +132,10 @@ ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, 
 print("Resilience score is:")
 print(ResilienceScore) 
 
+# measure the overload of current MANET topology
+overloadConstraint = 10000
+OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint)
+print(OverloadScore)
 
 # test
 # print(data['scenario']['xLength'])  # 500

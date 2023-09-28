@@ -17,6 +17,8 @@ def quantify_backup_path(UAVMap, hop_constraint, DR_constraint):
             best_DRs[start] = None
         # print(filtered_paths)
         # print(best_DRs)
+    
+    # print(best_DRs)
 
     # calculate the score for each path
     total_score = 0
