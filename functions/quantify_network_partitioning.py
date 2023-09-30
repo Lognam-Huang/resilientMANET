@@ -5,8 +5,10 @@ from itertools import combinations
 from functions.quantify_data_rate import quantify_data_rate
 from functions.quantify_backup_path import quantify_backup_path
 
-def quantify_network_partitioning(UAVMap, ratio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore):
+def quantify_network_partitioning(UAVMap, ratio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP):
     score = 0
+    if ratioDR+ratioBP != 1:
+        raise ValueError("The sum of ratio must be 1.")
     
     # droppedNode = select_drop(UAVMap, ratio)
     # # print(droppedNode)
@@ -56,7 +58,7 @@ def quantify_network_partitioning(UAVMap, ratio, DRPenalty, BPHopConstraint, BPD
     # print("Average BP Score:")
     # print(avgBPScore)
     
-    score = 0.5*avgDRScore + 0.5*avgBPScore
+    score = ratioDR*(avgDRScore/DRScore) + ratioBP*(avgBPScore/BPScore)
     return score
 
 

@@ -120,7 +120,9 @@ print(BPScore)
 # print(newUAVMap)
 
 droppedRatio = 0.2
-NPScore = quantify_network_partitioning(UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore)
+ratioDR = 0.6
+ratioBP = 0.4
+NPScore = quantify_network_partitioning(UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP)
 print("Network partitioning score of current topology:")
 print(NPScore)
 
