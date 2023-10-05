@@ -13,6 +13,7 @@ from functions.quantify_backup_path import quantify_backup_path
 from functions.quantify_network_partitioning import quantify_network_partitioning
 from functions.integrate_quantification import integrate_quantification
 from functions.measure_overload import measure_overload
+from functions.print_nodes import print_nodes
 
 from functions.quantify_network_partitioning import remove_node, select_drop
 
@@ -59,21 +60,21 @@ testDataRateWithBlocks = calculate_data_rate(UAVInfo, fakeUAV, fakeGroundUser, T
 [convertedDataRateWithBlocks, convertedUnitWithBlocks] = data_unit_conversion(testDataRateWithBlocks, 'bps')
 # print(str(convertedDataRateWithBlocks)+" "+convertedUnitWithBlocks)
 
-print(UAVNodes[0].position)
+# print(UAVNodes[0].position)
 
-UAVNodes[0].set_position((340,490,50))
-UAVNodes[1].set_position((440,390,50))
-
-print(UAVNodes[0].position)
+# UAVNodes[0].set_position((340,490,50))
+# UAVNodes[1].set_position((440,390,50))
 
 # print(UAVNodes[0].position)
-print(path_is_blocked(blocks, UAVNodes[0], UAVNodes[1]))
 
-UAVNodes[0].set_position((0,0,0))
-UAVNodes[1].set_position((500,500,500))
+# # print(UAVNodes[0].position)
+# print(path_is_blocked(blocks, UAVNodes[0], UAVNodes[1]))
 
-# print(UAVNodes[0].position)
-print(path_is_blocked(blocks, UAVNodes[0], UAVNodes[1]))
+# UAVNodes[0].set_position((0,0,0))
+# UAVNodes[1].set_position((500,500,500))
+
+# # print(UAVNodes[0].position)
+# print(path_is_blocked(blocks, UAVNodes[0], UAVNodes[1]))
 
 # Find all available paths in MANET topology
 
@@ -138,6 +139,137 @@ print(ResilienceScore)
 overloadConstraint = 10000
 OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint)
 print(OverloadScore)
+
+# try to use RL to improve resilience score
+print_nodes(UAVNodes, position=True)
+
+
+import numpy as np
+import random
+from collections import deque
+# from keras.models import Sequential
+# from keras.layers import Dense
+# from keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+
+
+class DQNAgent:
+    def __init__(self, state_size, action_size):
+        self.state_size = state_size
+        self.action_size = action_size
+        self.memory = deque(maxlen=2000)
+        self.gamma = 0.95
+        self.epsilon = 1.0
+        self.epsilon_min = 0.01
+        self.epsilon_decay = 0.995
+        self.learning_rate = 0.001
+        self.model = self._build_model()
+
+    def _build_model(self):
+        model = Sequential()
+        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(24, activation='relu'))
+        model.add(Dense(self.action_size, activation='linear'))
+        model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+        return model
+
+    def remember(self, state, action, reward, next_state, done):
+        self.memory.append((state, action, reward, next_state, done))
+
+    def act(self, state):
+        if np.random.rand() <= self.epsilon:
+            return random.randrange(self.action_size)
+        act_values = self.model.predict(state)
+        return np.argmax(act_values[0])
+
+    def replay(self, batch_size):
+        minibatch = random.sample(self.memory, batch_size)
+        for state, action, reward, next_state, done in minibatch:
+            target = reward
+            if not done:
+                target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
+            target_f = self.model.predict(state)
+            target_f[0][action] = target
+            self.model.train_on_batch(state, target_f)
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
+
+    def load(self, name):
+        self.model.load_weights(name)
+
+    def save(self, name):
+        self.model.save_weights(name)
+
+class UAVEnvironment:
+    def __init__(self):
+        self.UAVNodes = [
+            (97.98413041207571, 663.8191957481255, 200),
+            (335.5433790862149, 84.90963373333902, 200),
+            (200.30808150599717, 565.5323906186599, 200),
+            (79.47903810469664, 332.2894488804361, 200),
+            (383.1300553845101, 141.8551700103783, 200)
+        ]
+
+    def set_position(self, node_index, position):
+        self.UAVNodes[node_index] = position
+
+    def get_RS(self):
+        # Dummy function, replace with actual RS computation
+        return np.random.rand()
+
+    def reset(self):
+        # Reset UAV positions to initial state
+        self.UAVNodes = [
+            (97.98413041207571, 663.8191957481255, 200),
+            (335.5433790862149, 84.90963373333902, 200),
+            (200.30808150599717, 565.5323906186599, 200),
+            (79.47903810469664, 332.2894488804361, 200),
+            (383.1300553845101, 141.8551700103783, 200)
+        ]
+        return np.array(self.UAVNodes).flatten()
+
+    def step(self, action):
+        # Dummy function, replace with actual logic to adjust UAV positions
+        # and compute the resulting RS
+        node_index = action // 3
+        move_direction = action % 3
+        if move_direction == 0:
+            self.set_position(node_index, (self.UAVNodes[node_index][0] + 1, self.UAVNodes[node_index][1], 200))
+        elif move_direction == 1:
+            self.set_position(node_index, (self.UAVNodes[node_index][0], self.UAVNodes[node_index][1] + 1, 200))
+        # else: no movement
+        next_state = np.array(self.UAVNodes).flatten()
+        reward = self.get_RS()
+        done = False  # You can define a termination condition if needed
+        return next_state, reward, done
+
+if __name__ == "__main__":
+    env = UAVEnvironment()
+    state_size = len(env.UAVNodes) * 3
+    action_size = len(env.UAVNodes) * 3  # For each UAV: move in x, move in y, or don't move
+    agent = DQNAgent(state_size, action_size)
+    episodes = 100
+
+    for e in range(episodes):
+        state = env.reset()
+        state = np.reshape(state, [1, state_size])
+        for time in range(500):
+            action = agent.act(state)
+            next_state, reward, done = env.step(action)
+            next_state = np.reshape(next_state, [1, state_size])
+            agent.remember(state, action, reward, next_state, done)
+            state = next_state
+            if done:
+                print(f"episode: {e}/{episodes}, score: {time}, e: {agent.epsilon:.2}")
+                break
+        if len(agent.memory) > 32:
+            agent.replay(32)
+
+
+
+
 
 # test
 # print(data['scenario']['xLength'])  # 500
