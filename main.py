@@ -145,9 +145,11 @@ OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overlo
 print(OverloadScore)
 
 # try to use RL to improve resilience score
-# print_nodes(UAVNodes, onlyPosition=True)
-# print_nodes(UAVNodes, onlyPosition=False)
 
+# first try: Deep Q-Learning
+# result is not satisfied
+# one possible explanation is  that: as a single-agent, this method is too inefficient (step()) 
+# meanwhile this method does not fit the scenario well
 print("Now pass to DQN")
 env = UAVEnvironment(UAVNodes, ABSNodes, blocks, UAVInfo)
 state_size = len(env.UAVNodes) * 3
