@@ -38,14 +38,16 @@ ground_users = generate_users(5, blocks, scene['xLength'], scene['yLength'])
 
 # Generate random UAVs
 defaultHeightUAV = 200
-UAVNodes = generate_UAVs(5, blocks, scene['xLength'], scene['yLength'], defaultHeightUAV, 10, 'basic UAV')
+# UAVNodes = generate_UAVs(5, blocks, scene['xLength'], scene['yLength'], defaultHeightUAV, 10, 'basic UAV')
+UAVNodes = generate_UAVs(3, blocks, scene['xLength'], scene['yLength'], defaultHeightUAV, 10, 'basic UAV')
 # for node in UAVNodes:
 #     print(node)
 
 
 # Generate air base station
 defaultHeightABS = 500
-ABSNodes = generate_UAVs(2, blocks, scene['xLength'], scene['yLength'], defaultHeightABS, 10, 'Air Base Station')
+# ABSNodes = generate_UAVs(2, blocks, scene['xLength'], scene['yLength'], defaultHeightABS, 10, 'Air Base Station')
+ABSNodes = generate_UAVs(1, blocks, scene['xLength'], scene['yLength'], defaultHeightABS, 10, 'Air Base Station')
 # for node in ABSNodes:
 #     print(node)
 
@@ -88,13 +90,19 @@ testDataRateWithBlocks = calculate_data_rate(UAVInfo, fakeUAV, fakeGroundUser, T
 
 # NOTICE THAT ALL NODES START WITH INDEX 0
 
-UAVNodes[0].set_connection([1,2,3])
+# UAVNodes[0].set_connection([1,2,3])
+# UAVNodes[1].set_connection([0])
+# UAVNodes[2].set_connection([0])
+# UAVNodes[3].set_connection([0])
+
+# ABSNodes[0].set_connection([3])
+# ABSNodes[1].set_connection([2,4])
+
+UAVNodes[0].set_connection([1,2])
 UAVNodes[1].set_connection([0])
 UAVNodes[2].set_connection([0])
-UAVNodes[3].set_connection([0])
 
-ABSNodes[0].set_connection([3])
-ABSNodes[1].set_connection([2,4])
+ABSNodes[0].set_connection([0,2])
 
 UAVMap = UAVMap(UAVNodes, ABSNodes, blocks, UAVInfo)
 print(UAVMap)

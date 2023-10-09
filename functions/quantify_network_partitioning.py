@@ -50,8 +50,12 @@ def quantify_network_partitioning(UAVMap, ratio, DRPenalty, BPHopConstraint, BPD
         avgDRScore += curDRScore
         avgBPScore += curBPScore
     
-    avgDRScore /= allDroppedSituation
-    avgBPScore /= allDroppedSituation
+    if allDroppedSituation == 0:
+        avgDRScore = 0
+        avgBPScore = 0
+    else:        
+        avgDRScore /= allDroppedSituation
+        avgBPScore /= allDroppedSituation
     
     # print("Average DR Score:")
     # print(avgDRScore)
