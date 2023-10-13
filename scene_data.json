@@ -1,7 +1,7 @@
 {
     "scenario": {
-        "xLength": 500,
-        "yLength": 700
+        "xLength": 800,
+        "yLength": 800
     },
     "baseStation": {
         "bottomCorner": [0, 0],
