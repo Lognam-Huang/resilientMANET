@@ -14,6 +14,7 @@ from functions.quantify_network_partitioning import quantify_network_partitionin
 from functions.integrate_quantification import integrate_quantification
 from functions.measure_overload import measure_overload
 from functions.print_nodes import print_nodes
+from functions.quantify_user_rate import quantify_user_rate
 
 from functions.scene_visualization import scene_visualization
 
@@ -103,12 +104,6 @@ testDataRateWithBlocks = calculate_data_rate(UAVInfo, fakeUAV, fakeGroundUser, T
 # ABSNodes[0].set_connection([3])
 # ABSNodes[1].set_connection([2,4])
 
-UAVNodes[0].set_connection([1,2])
-UAVNodes[1].set_connection([0])
-UAVNodes[2].set_connection([0])
-
-ABSNodes[0].set_connection([0,2])
-
 # set position for stable result
 ground_users[0].set_position((250,200,0))
 ground_users[1].set_position((250,400,0))
@@ -123,12 +118,33 @@ UAVNodes[2].set_position((600,350,200))
 
 ABSNodes[0].set_position((440,390,500))
 
+ground_users[0].set_connection([0])
+ground_users[1].set_connection([1])
+ground_users[2].set_connection([1])
+ground_users[3].set_connection([2])
+ground_users[4].set_connection([2])
+
+UAVNodes[0].set_connection([1,2])
+UAVNodes[1].set_connection([0])
+UAVNodes[2].set_connection([0])
+
+ABSNodes[0].set_connection([0,2])
+
+
 
 UAVMap = UAVMap(UAVNodes, ABSNodes, blocks, UAVInfo)
 print(UAVMap)
 
 # for node in UAVNodes:
 #     print(node)
+
+# quantify resilience score: user testDataRateNoBlocks
+URPenalty = 0.5
+URScore = quantify_user_rate(UAVMap, ground_users, blocks, UAVInfo, UAVNodes, URPenalty)
+print("User rate:")
+print(URScore)
+# for user in ground_users:
+#     print(user)
 
 # quantify resilience score: data rate
 DRPenalty = 0.5
@@ -160,10 +176,11 @@ print("Network partitioning score of current topology:")
 print(NPScore)
 
 # integrate quantificaiton
+weightUR = 0.3
 weightDR = 0.2
-weightBP = 0.5
-weightNP = 0.3
-ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, weightBP, weightNP)
+weightBP = 0.4
+weightNP = 0.1
+ResilienceScore = integrate_quantification(URScore, DRScore, BPScore, NPScore, weightUR, weightDR, weightBP, weightNP)
 print("Resilience score is:")
 print(ResilienceScore) 
 
@@ -216,27 +233,3 @@ scene_visualization(ground_users, UAVNodes, ABSNodes, blocks, scene)
 # plt.show()
 
 # test
-# print(data['scenario']['xLength'])  # 500
-# print(data['baseStation']['bottomCorner'])  # [0, 0]
-
-# print(groundBaseStation)
-# print(blocks)
-# print(UAVInfo)
-# print(UAVInfo['bandwidth'])
-# print(scene)
-
-# Usage example
-# node = Nodes([1, 2, 3], "basicUAV", 100)
-# print(node)
-
-# node.set_position([4, 5, 6])
-# node.set_connection([1, 2, 3])
-# print(node)
-
-# testDrop = select_drop(UAVMap, 0.4)
-# print(testDrop)
-
-# print(UAVMap)
-# print(newUAVMap)
-# from test import test, test1
-# test1()

@@ -23,7 +23,7 @@ def calculate_data_rate(UAVInfo, UAV_position, ground_user_position, block_or_no
     # Calculate the distance between the UAV and the ground user
     d = math.sqrt((UAV_position[0] - ground_user_position[0]) ** 2 +
                   (UAV_position[1] - ground_user_position[1]) ** 2 +
-                  (UAV_position[2] ** 2))
+                  (UAV_position[2] - ground_user_position[1]) ** 2)
 
     # Simplified path loss exponent, may need modification in the future
     n = 4 if block_or_not else 2
