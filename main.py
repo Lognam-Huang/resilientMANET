@@ -39,15 +39,15 @@ scene = ini['scenario']
 # Generate ground users
 ground_users = generate_users(5, blocks, scene['xLength'], scene['yLength'])
 
-# for user in ground_users:
-#     print(user)
+for user in ground_users:
+    print(user)
 
 # Generate random UAVs
 defaultHeightUAV = 200
 # UAVNodes = generate_UAVs(5, blocks, scene['xLength'], scene['yLength'], defaultHeightUAV, 10, 'basic UAV')
 UAVNodes = generate_UAVs(3, blocks, scene['xLength'], scene['yLength'], defaultHeightUAV, 10, 'basic UAV')
-# for node in UAVNodes:
-#     print(node)
+for node in UAVNodes:
+    print(node)
 
 
 # Generate air base station

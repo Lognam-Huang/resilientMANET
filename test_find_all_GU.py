@@ -86,3 +86,83 @@ ABSNodes[0].set_connection([0,2])
 
 # visualize scene
 scene_visualization(ground_users, UAVNodes, ABSNodes, blocks, scene)
+
+import numpy as np
+import random
+from collections import namedtuple
+
+
+# 环境类
+class Environment:
+    def __init__(self, scenario, blocks, z_range, GU, UAVs):
+        self.scenario = scenario
+        self.blocks = blocks
+        self.z_range = z_range
+        self.ground_users = GU  # 初始化GU列表
+        self.UAVs = UAVs  # 初始化UAV列表
+        
+        # reset
+        self.init_GU = copy.deepcopy(GU)
+        self.init_UAVs = copy.deepcopy(UAVs)
+        
+
+    def reset(self):
+        # 重置环境到初始状态
+        self.ground_users = copy.deepcopy(self.init_GU)  # 初始化GU列表
+        self.UAVs = copy.deepcopy(self.init_UAVs)  # 初始化UAV列表
+        pass
+
+    def step(self, actions):
+        # 执行动作，更新UAV的位置
+        # 返回新的状态，奖励和是否结束的标志
+        pass
+
+    def render(self):
+        # 可视化当前环境状态
+        pass
+
+# 智能体类
+class UAVAgent:
+    def __init__(self, learning_rate, action_space):
+        self.learning_rate = learning_rate
+        self.action_space = action_space
+
+    def select_action(self, state):
+        # 选择动作
+        pass
+
+    def learn(self, state, action, reward, next_state):
+        # 从经验中学习
+        pass
+
+# 主训练循环
+def train_marl(environment, agents, episodes):
+    for episode in range(episodes):
+        state = environment.reset()
+        done = False
+        while not done:
+            actions = [agent.select_action(state) for agent in agents]
+            next_state, rewards, done = environment.step(actions)
+            for i, agent in enumerate(agents):
+                agent.learn(state, actions[i], rewards[i], next_state)
+            state = next_state
+
+# 初始化环境和智能体
+scenario_data = {
+    "scenario": {"xLength": 800, "yLength": 800},
+    "blocks": [
+        {"bottomCorner": [350, 380], "size": [80, 80], "height": 100},
+        {"bottomCorner": [350, 10], "size": [60, 80], "height": 200},
+        {"bottomCorner": [20, 570], "size": [100, 80], "height": 400}
+    ]
+}
+
+z_range = (50, 200)  # 假设的UAV活动高度范围
+environment = Environment(scenario_data["scenario"], scenario_data["blocks"], z_range, ground_users, UAVNodes)
+
+# 假设有N个UAV
+N = 5
+agents = [UAVAgent(learning_rate=0.01, action_space=[...]) for _ in range(N)]
+
+# 训练MARL模型
+train_marl(environment, agents, episodes=1000)
