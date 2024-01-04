@@ -104,49 +104,7 @@ class UAVMap:
             visitedNodes[curNode] = False
         # return False
 
-    # Getter for name
-    @property
-    def name(self):
-        return self._name
-
-    # Setter for name
-    @name.setter
-    def name(self, value):
-        if not isinstance(value, str):
-            raise ValueError("Name must be a string")
-        self._name = value
-
-    # Getter for age
-    @property
-    def age(self):
-        return self._age
-
-    # Setter for age
-    @age.setter
-    def age(self, value):
-        if not isinstance(value, int):
-            raise ValueError("Age must be an integer")
-        if value < 0:
-            raise ValueError("Age must be non-negative")
-        self._age = value
-
     # String representation
     def __str__(self):
-        return f"UAVMap(AllPaths={self.allPaths})"
+        return f"UAVMap(allPaths={self.allPaths})"
 
-# # Example usage
-# if __name__ == "__main__":
-#     person = Person("Alice", 30)
-#     print(person)
-
-#     # Using the getters
-#     print(person.name)
-#     print(person.age)
-
-#     # Using the setters
-#     person.name = "Bob"
-#     person.age = 25
-#     print(person)
-
-#     # This will raise a ValueError because of the checks in the setter
-#     # person.age = -5

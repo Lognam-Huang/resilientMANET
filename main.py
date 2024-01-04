@@ -18,8 +18,8 @@ from functions.quantify_user_rate import quantify_user_rate
 
 from functions.scene_visualization import scene_visualization
 
-from DQN import *
-import matplotlib.pyplot as plt
+# from DQN import *
+# import matplotlib.pyplot as plt
 
 
 from functions.quantify_network_partitioning import remove_node, select_drop
@@ -112,7 +112,7 @@ ground_users[3].set_position((600,250,0))
 ground_users[4].set_position((600,450,0))
 
 
-UAVNodes[0].set_position((250,200,200))
+UAVNodes[0].set_position((250, 200, 200))
 UAVNodes[1].set_position((250,600,200))
 UAVNodes[2].set_position((600,350,200))
 

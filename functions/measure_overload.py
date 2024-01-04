@@ -20,6 +20,7 @@ def measure_overload(UAVMap, hop_constraint, DR_constraint, overload_constraint)
             for onPathNode in get_nodes_with_max_dr(filtered_paths):
                 # print(onPathNode)
                 
+                # we only need to consider the overload of UAV nodes, no ABS nodes should be counted in this part  
                 if onPathNode < numUAV:
                     UAV_overload[onPathNode] += curPathDR
         else:
@@ -28,10 +29,33 @@ def measure_overload(UAVMap, hop_constraint, DR_constraint, overload_constraint)
     # UAV_overload = {}
     # print(best_DRs)
     # print(UAV_overload)
+            
+    def gini_coefficient(uav_loads):
+        """
+        Calculate the Gini coefficient for UAV network loads.
+        
+        :param uav_loads: Dictionary of UAV node identifiers and their corresponding loads
+        :return: Gini coefficient as a float
+        """
+        # Convert loads to a list of values and sort them
+        loads = sorted(uav_loads.values())
+        n = len(loads)
+        cumulative_loads = sum(loads)
+        
+        # Calculate the Gini coefficient using the formula
+        sum_of_differences = sum(abs(x - y) for x in loads for y in loads)
+        gini = sum_of_differences / (2 * n**2 * cumulative_loads)
+        
+        return gini
     
-    return any(value > overload_constraint for value in UAV_overload.values())
+    overload_score = gini_coefficient(UAV_overload)
+    
+    # return any(value > overload_constraint for value in UAV_overload.values())
+    return overload_score
 
 def get_nodes_with_max_dr(data):
     # find path with max DR using lambda
     max_dr_path = max(data, key=lambda x: x['DR'])['path']
+
+    # print(max_dr_path)
     return max_dr_path
