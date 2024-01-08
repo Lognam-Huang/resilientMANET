@@ -68,11 +68,8 @@ def create_q_table(n):
     return table
 
 # Example usage:
-# graph_table = create_graph_table(3)
-# print(graph_table)
 
-# Q-learning 参数
-# hyperparameters
+# Q-learning hyperparameters
 epsilon = 0.1
 # randomness of choosing actions
 alpha = 0.5
@@ -105,15 +102,15 @@ def Reward(state):
     weightNP = 0.3
 
     ResilienceScore = get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP)
-    print("Resilience score is:")
-    print(ResilienceScore) 
+    # print("Resilience score is:")
+    # print(ResilienceScore) 
 
     # as for the reward function, we need also to consider the balance in the UAV network
     # here we use gini coefficient
     overloadConstraint = 10000
     OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint)
-    print("Overload score is:")
-    print(OverloadScore)
+    # print("Overload score is:")
+    # print(OverloadScore)
 
     # now we just return RS*overload
     return ResilienceScore*OverloadScore
@@ -137,7 +134,7 @@ def take_action(state, epsilon, q_table):
     
     # after choosing the action, generate the new state based on current state and action
     # update reward --> his is put in training process
-    print("Bye")
+    print("take_action is executed")
 
     initialize_state(state, q_table)
 
@@ -152,8 +149,6 @@ def take_action(state, epsilon, q_table):
             cur_action = None
             cur_value = None
     else:
-        # cur_action = q_table.loc[state].idxmax()
-        # cur_value = feasible_actions[cur_action]
         cur_action = q_table.loc[state].idxmax()
         cur_value = q_table.loc[state, cur_action]
         
@@ -166,17 +161,14 @@ def take_action(state, epsilon, q_table):
 
 
 def initialize_state(state, q_table):
-    print("hi")
+    print("initialize_state is executed")
     # for a new table, if a state does not contain any meaningful data, should create some records
 
     # Convert state to row index
     row_index = state
 
-    print(q_table)
-    # print(q_table.loc[row_index])
-    for value in q_table.loc[row_index]:
-        print(value)
-
+    print(state)
+    print(type(state))
     
     # Check if the state has already been initialized
     if not all(value in [0, -1] for value in q_table.loc[row_index]):
@@ -232,6 +224,14 @@ def get_new_state(state, action):
     # Convert the state list back to string and return
     return ''.join(state_list)
 
+
+def translate_state(input):
+    # this function is used to translate a string like:
+    # to
+    # which enables further operation on q table
+    # this function is used in initialize_state()
+    for char in input:
+        print(char, end=' ')
 # 存储每个episode的RS值
 rs_values = []
 
@@ -275,7 +275,11 @@ q_table = create_q_table(num_nodes)
 
 # Q-learning
 for episode in range(1000):
-    state = np.zeros(len(actions))  # 初始状态
+    # state = np.zeros(len(actions))  # 初始状态
+    # state = str(state)
+
+    # there are problems in creating state using np.zeros()
+    state = '0' * len(actions)
 
     while True:  # 定义一个终止条件
         # # 选择行动
@@ -303,6 +307,12 @@ for episode in range(1000):
         # 更新状态
         state = new_state
 
+        # terminate condition
+        # if the changes of q is too small, terminate the loop
+        if td_delta < max(td_target, reward)*0.01:
+            break
+
+        print("AA")
 
         if sum(state)>=len(node_coords)*(len(node_coords)-1)/2:
             break

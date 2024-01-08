@@ -259,30 +259,44 @@
 # get_connected_edges("111011", 3, 1)
 
 
-from itertools import combinations
+# from itertools import combinations
 
-def get_new_state(state, action):
-    # Convert the state from string to list for easy manipulation
-    state_list = list(state)
+# def get_new_state(state, action):
+#     # Convert the state from string to list for easy manipulation
+#     state_list = list(state)
     
-    # Parse the action to determine the type and edge
-    action_type, edge_info = action[0], action[1:]  # '+' or '-', and the edge tuple '(i,j)'
-    i, j = map(int, edge_info.strip('()').split(','))  # Extract edge indices from the action
+#     # Parse the action to determine the type and edge
+#     action_type, edge_info = action[0], action[1:]  # '+' or '-', and the edge tuple '(i,j)'
+#     i, j = map(int, edge_info.strip('()').split(','))  # Extract edge indices from the action
     
-    # Find the index of the edge in the state string
-    n = int((1 + (1 + 8 * len(state))**0.5) / 2)  # Calculate n from the length of state string
-    edges = list(combinations(range(n), 2))  # Generate the list of edges
-    edge_index = edges.index((i, j))  # Get the index of the edge in the list
+#     # Find the index of the edge in the state string
+#     n = int((1 + (1 + 8 * len(state))**0.5) / 2)  # Calculate n from the length of state string
+#     edges = list(combinations(range(n), 2))  # Generate the list of edges
+#     edge_index = edges.index((i, j))  # Get the index of the edge in the list
     
-    # Update the state based on the action type
-    if action_type == '+':  # Add edge
-        state_list[edge_index] = '1' if state_list[edge_index] == '0' else state_list[edge_index]
-    elif action_type == '-':  # Remove edge
-        state_list[edge_index] = '0' if state_list[edge_index] == '1' else state_list[edge_index]
+#     # Update the state based on the action type
+#     if action_type == '+':  # Add edge
+#         state_list[edge_index] = '1' if state_list[edge_index] == '0' else state_list[edge_index]
+#     elif action_type == '-':  # Remove edge
+#         state_list[edge_index] = '0' if state_list[edge_index] == '1' else state_list[edge_index]
     
-    # Convert the state list back to string and return
-    return ''.join(state_list)
+#     # Convert the state list back to string and return
+#     return ''.join(state_list)
 
-# Example usage
-print(get_new_state("000000", "+(1,2)"))  # Should set the edge (0,1) to '1' if it's '0'
-print(get_new_state("000001", "-(0,1)"))  # Should set the edge (0,1) to '0' if it's '1'
+# # Example usage
+# print(get_new_state("000000", "+(1,2)"))  # Should set the edge (0,1) to '1' if it's '0'
+# print(get_new_state("000001", "-(0,1)"))  # Should set the edge (0,1) to '0' if it's '1'
+
+# for i in range(5): 
+#   a = 5
+#   print(i)
+#   while True:
+#     a += 1
+#     if i == 2: 
+#       break
+#     if a == 7:
+#       break
+#     print("a="+str(a))
+
+zero_str = '0' * 6
+print(zero_str)

@@ -33,7 +33,7 @@ UAVInfo = ini['UAV']
 scene = ini['scenario']
     
 def get_UAVMap(state, UAV_position = 0, ABS_position = 0):
-    print(state)
+    # print(state)
     # print(UAV_position)
     # print(ABS_position)
 
@@ -73,7 +73,7 @@ def get_UAVMap(state, UAV_position = 0, ABS_position = 0):
     # print_nodes(ABSNodes, False)
 
     NodeMap = UAVMap(UAVNodes, ABSNodes, blocks, UAVInfo)
-    print(NodeMap)
+    # print(NodeMap)
 
     return NodeMap
 
@@ -342,24 +342,24 @@ def get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, rat
     # quantify resilience score: data rate
 
     DRScore = quantify_data_rate(UAVMap, DRPenalty, UAVInfo)
-    print("Data rate score of current topology:")
-    print(DRScore)
+    # print("Data rate score of current topology:")
+    # print(DRScore)
 
     # quantify resilience score: backup path 
     BPScore = quantify_backup_path(UAVMap, BPHopConstraint, BPDRConstraint)
-    print("Backup path score of current topology:")
-    print(BPScore)
+    # print("Backup path score of current topology:")
+    # print(BPScore)
 
     
     NPScore = quantify_network_partitioning(UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP)
-    print("Network partitioning score of current topology:")
-    print(NPScore)
+    # print("Network partitioning score of current topology:")
+    # print(NPScore)
 
     # integrate quantificaiton
     # weightUR = 0.3    
     ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, weightBP, weightNP)
-    print("Resilience score is:")
-    print(ResilienceScore) 
+    # print("Resilience score is:")
+    # print(ResilienceScore) 
 
     return ResilienceScore
 
