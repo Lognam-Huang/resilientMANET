@@ -9,7 +9,7 @@ from itertools import combinations
 # quantify RS and overload
 from quantify_topo import *
 
-# 节点坐标
+# node coordinations
 node_coords = np.array([
     (10, 10, 10),
     (20, 30, 10),
@@ -33,7 +33,6 @@ ABS_coords = np.array([
 num_nodes = len(ABS_coords) + len(UAV_coords)
 
 actions = [(i, j) for i in range(num_nodes) for j in range(i+1, num_nodes)]
-# Q = defaultdict(lambda: np.zeros(len(actions)))  # 初始化Q表
 
 # Q table initialization
 # for each row, it represents a state of connection, each elements represent an edge
@@ -67,7 +66,6 @@ def create_q_table(n):
 
     return table
 
-# Example usage:
 
 # Q-learning hyperparameters
 epsilon = 0.1
@@ -116,16 +114,6 @@ def Reward(state):
     return ResilienceScore*OverloadScore
 
 
-# def take_action(state, action, add=True):
-#     new_state = state.copy()
-#     if add:
-#         new_state[action] = 1  # 添加连接
-#     else:
-#         new_state[action] = 0  # 移除连接
-#     reward = Reward(new_state) - Reward(state)
-#     return new_state, reward
-
-
 def take_action(state, epsilon, q_table):
     # check if current state is initialized or not
     # randomly choose action:
@@ -134,7 +122,7 @@ def take_action(state, epsilon, q_table):
     
     # after choosing the action, generate the new state based on current state and action
     # update reward --> his is put in training process
-    print("take_action is executed")
+    # print("take_action is executed")
 
     initialize_state(state, q_table)
 
@@ -151,38 +139,33 @@ def take_action(state, epsilon, q_table):
     else:
         cur_action = q_table.loc[state].idxmax()
         cur_value = q_table.loc[state, cur_action]
-        
-        
-        
+                  
     new_state = get_new_state(state, cur_action)
     initialize_state(new_state, q_table)
     return new_state, cur_action, cur_value
 
-
-
 def initialize_state(state, q_table):
-    print("initialize_state is executed")
+    # print("initialize_state is executed")
     # for a new table, if a state does not contain any meaningful data, should create some records
 
     # Convert state to row index
     row_index = state
 
-    print(state)
-    print(type(state))
+    # print(state)
+    # print(type(state))
     
     # Check if the state has already been initialized
     if not all(value in [0, -1] for value in q_table.loc[row_index]):
         # State has been initialized
-
-        print("State has been initialized")
+        # print("State has been initialized")
         return
     
     # Initialize the state row
     for col in q_table.columns:
         if q_table.at[row_index, col] == 0:  # Check if the cell needs to be updated
 
-            print(state, col)
-            print("row_index= " +row_index)
+            # print(state, col)
+            # print("row_index= " +row_index)
 
             # Compute the new state by applying the action
             new_state = get_new_state(state, col)
@@ -194,13 +177,13 @@ def initialize_state(state, q_table):
             # instead of that, we also try to directly visit q_table, but it will not modify values---it will create new rows
             # so far, I notice that loc() seems to successfull modify values
 
-            print("Current reward = "+str(reward))
+            # print("Current reward = "+str(reward))
             # q_table.at[row_index, col] = reward
             # q_table[row_index, col] = reward
             q_table.loc[row_index, col] = reward
             
     
-    print(q_table)
+    # print(q_table)
 
 def get_new_state(state, action):
     # Convert the state from string to list for easy manipulation
@@ -224,71 +207,28 @@ def get_new_state(state, action):
     # Convert the state list back to string and return
     return ''.join(state_list)
 
+# store Reward for all episodes
+reward_values = []
 
-def translate_state(input):
-    # this function is used to translate a string like:
-    # to
-    # which enables further operation on q table
-    # this function is used in initialize_state()
-    for char in input:
-        print(char, end=' ')
-# 存储每个episode的RS值
-rs_values = []
-
-
-# print(num_nodes)
-# print(actions)
-# print(Q)
-# # print state
-# state = np.zeros(len(actions))
-# print(state)
-# print(sum(state))
 
 q_table = create_q_table(num_nodes)
 # print(q_table)
 
-# initialize_state("000000", q_table)
-# initialize_state("000000", q_table)
+# this is used to set terminated case for Q-learning
+# state_num: number of all available state
+state_num = len(node_coords)*(len(node_coords)-1)/2
 
-# print(q_table.loc["000000"].idxmax())
-# print(q_table.loc["000000"][q_table.loc["000000"] != -1])
-# print(random.choice(q_table.loc["000000"][q_table.loc["000000"] != -1]))
-
-
-
-
-
-# state[1] = 1
-# state[2] = 1
-
-# state[4] = 1
-# state[5] = 1
-
-# aa()
-
-
-# state[3] = 1
-# print(state)
-
-# print(np.random.choice(len(actions)))
-
+max_reward = 0
 
 # Q-learning
-for episode in range(1000):
-    # state = np.zeros(len(actions))  # 初始状态
-    # state = str(state)
-
+for episode in range(100):
     # there are problems in creating state using np.zeros()
     state = '0' * len(actions)
 
-    while True:  # 定义一个终止条件
-        # # 选择行动
-        # if np.random.rand() < epsilon:
-        #     action = np.random.choice(len(actions))
-        # else:
-        #     action = np.argmax(Q[str(state)])
 
-        # execute action
+
+    while True: 
+        # choose and execute an action
         new_state, action, reward = take_action(state, epsilon, q_table)
 
         # update q_table
@@ -297,31 +237,37 @@ for episode in range(1000):
         td_target = reward + gamma * next_best_value
         td_delta = td_target - reward
         q_table.loc[state, action] += alpha * td_delta
-        
-        # # 更新Q表
-        # best_next_action = np.argmax(Q[str(new_state)])
-        # td_target = reward + gamma * Q[str(new_state)][best_next_action]
-        # td_delta = td_target - Q[str(state)][action]
-        # Q[str(state)][action] += alpha * td_delta
 
-        # 更新状态
+        # update state
         state = new_state
+
+        max_reward = max(max_reward, reward)
 
         # terminate condition
         # if the changes of q is too small, terminate the loop
-        if td_delta < max(td_target, reward)*0.01:
+        if td_delta < max(td_target, reward)*0.0001:
+            print("this episode is terminated because the update is too small")
             break
 
-        print("AA")
+        # print("the update is suitable")
+        # print(state)
+        state_sum = sum(int(char) for char in state)
 
-        if sum(state)>=len(node_coords)*(len(node_coords)-1)/2:
+        if state_sum>=state_num:
+            print("this episode is terminated because current state is fully connected graph")
             break
 
     # 记录RS值
-    rs_values.append(Reward(state))
+    # rs_values.append(Reward(state))
+    print(max_reward)
+    reward_values.append(max_reward)
+
+print(max_reward)
+print(reward_values)
+print(q_table)
 
 # 可视化RS值
-plt.plot(rs_values)
+plt.plot(reward_values)
 plt.title('RS Value Over Episodes')
 plt.xlabel('Episode')
 plt.ylabel('RS Value')
