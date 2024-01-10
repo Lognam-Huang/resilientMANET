@@ -5,11 +5,6 @@ from functions.print_nodes import print_nodes
 from itertools import combinations
 
 from classes.UAVMap import UAVMap
-# from functions.quantify_data_rate import quantify_data_rate
-# from functions.quantify_backup_path import quantify_backup_path
-# from functions.quantify_network_partitioning import quantify_network_partitioning
-# from functions.integrate_quantification import integrate_quantification
-
 def aa():
     print("test")
 
@@ -122,18 +117,29 @@ def quantify_data_rate(UAVMap, r, UAVInfo):
     # 2. get the max and min data rate of all UAV node, based on highest DR of each node
     min_DR = min(max_data_rates)
     avg_DR = sum(max_data_rates) / len(max_data_rates)
+
+    # print(min_DR)
+    # print(avg_DR)
     
     # 3. calculate score based on equation
-    score = r * min_DR + (1 - r) * avg_DR
+    # score = r * min_DR + (1 - r) * avg_DR
+    # original method may exceed 1 since DR may be greater default UAV bandwidth
+    
 
     def norm(score, UAVInfo):
         # print(UAVInfo['bandwidth'])
-        normScore = score/UAVInfo['bandwidth']
+        normScore = min(score/UAVInfo['bandwidth'],1)
+
+        # print(score)
+        # print(normScore)
         return normScore
     
-    norScore = norm(score, UAVInfo)
-    
-    return norScore
+    score = r * norm(min_DR, UAVInfo) + (1 - r) * norm(avg_DR, UAVInfo)
+
+    # print("ee")    
+    # norScore = norm(score, UAVInfo)    
+    # return norScore
+    return score
 
 def quantify_backup_path(UAVMap, hop_constraint, DR_constraint):
     AllPaths = UAVMap.allPaths
@@ -174,12 +180,19 @@ def quantify_backup_path(UAVMap, hop_constraint, DR_constraint):
     min_score = float('inf')
     max_score = -float('inf')
     cur_node_score = 0
-    max_path_count = max(len(paths) for paths in AllPaths.values())
+
+    # max_path_count = max(len(paths) for paths in AllPaths.values())
+    # since there are always some paths that is filtered by DR or Hop
+    # the score will be too small if max_path_count all the paths
+    filtered_path_count = 0
+    total_path_count = sum(len(paths) for paths in AllPaths.values())
     
     for start, paths in AllPaths.items():
         for p in paths:
             if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint:
                 best_DR, best_hop = best_paths[start]
+
+                filtered_path_count += 1
                 
                 if p['DR'] == best_DR:  # best path scores 1 point
                     total_score += 1
@@ -213,48 +226,42 @@ def quantify_backup_path(UAVMap, hop_constraint, DR_constraint):
     # print(max_path_count)
     
     # sum of the scores divided by the maximum number of path
-    score = 0 if max_path_count == 0 else total_score / max_path_count
+    score = 0 if filtered_path_count == 0 else (total_score / filtered_path_count)*(filtered_path_count/total_path_count)
+
+    # print((total_score / max_path_count))
+    # print((max_path_count/total_path_count))
 
     def norm(score, min_score, max_score):
 
         if score == 0: return 0
 
         # making use of min-max normalization
-        normScore = (score-max_score)/(score-min_score)
+        # normScore = (score-max_score)/(score-min_score)
+        # former seems wrong
+
+        normScore = (score-min_score)/(max_score-min_score)
+
+        print(score)
+        print(min_score)
+        print(max_score)
+        print(normScore)
+
         return normScore
     
-    normScore = norm(score, min_score, max_score)
-    # result = total_score 
-    return normScore
+    # normScore = norm(score, min_score, max_score)
+    # since score is already in [0,1], we do not norm it (?)
+    # return normScore
+    return score
 
 
 import random
 import copy
 from itertools import combinations
 
-# from functions.quantify_data_rate import quantify_data_rate
-# from functions.quantify_backup_path import quantify_backup_path
-
 def quantify_network_partitioning(UAVMap, ratio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP):
     score = 0
     if ratioDR+ratioBP != 1:
         raise ValueError("The sum of ratio must be 1.")
-    
-    # droppedNode = select_drop(UAVMap, ratio)
-    # # print(droppedNode)
-    
-    # for curNode in droppedNode:
-    #     # print(curNode)
-    #     droppedUAVMap = remove_node(UAVMap, curNode)
-    #     # print(droppedUAVMap)
-        
-    #     curDRScore = quantify_data_rate(droppedUAVMap, DRPenalty, UAVInfo)
-    #     curBPScore = quantify_backup_path(droppedUAVMap, BPHopConstraint, BPDRConstraint)
-        
-        # print("Current DR score:")
-        # print(curDRScore)
-        # print("Current BP score:")
-        # print(curBPScore)
     
     # print(select_all_drops(UAVMap, ratio))
     allDroppedNodes = select_all_drops(UAVMap, ratio)
@@ -281,8 +288,10 @@ def quantify_network_partitioning(UAVMap, ratio, DRPenalty, BPHopConstraint, BPD
         avgBPScore += curBPScore
     
     if allDroppedSituation == 0:
-        avgDRScore = 0
-        avgBPScore = 0
+        # avgDRScore = 0
+        # avgBPScore = 0
+        avgDRScore = quantify_data_rate(UAVMap, DRPenalty, UAVInfo)
+        avgBPScore = quantify_backup_path(UAVMap, BPHopConstraint, BPDRConstraint)
     else:        
         avgDRScore /= allDroppedSituation
         avgBPScore /= allDroppedSituation
@@ -305,12 +314,6 @@ def remove_node(UAVMap, n):
         # filter out all the paths that do not include node n
         UAVMapCopy.allPaths[key] = [path_record for path_record in UAVMapCopy.allPaths[key] if n not in path_record['path'] and path_record['path'][0] != n]
     return UAVMapCopy
-
-# def select_drop(UAVMap, ratio):
-#     numUAV = len(UAVMap.allPaths)
-#     num_samples = int(numUAV * ratio)  
-#     return random.sample(range(numUAV), num_samples)
-    
 
 
 def select_all_drops(UAVMap, ratio):
@@ -387,7 +390,8 @@ def measure_overload(UAVMap, hop_constraint, DR_constraint, overload_constraint)
                 
                 # we only need to consider the overload of UAV nodes, no ABS nodes should be counted in this part  
                 if onPathNode < numUAV:
-                    UAV_overload[onPathNode] += curPathDR
+                    UAV_overload[onPathNode] += min(curPathDR, UAVInfo['bandwidth'])
+                    # print(UAVInfo['bandwidth'])
         else:
             best_DRs[start] = None
     
@@ -413,7 +417,7 @@ def measure_overload(UAVMap, hop_constraint, DR_constraint, overload_constraint)
         
         return gini
     
-    overload_score = gini_coefficient(UAV_overload)
+    overload_score = 1-gini_coefficient(UAV_overload)
     
     # return any(value > overload_constraint for value in UAV_overload.values())
     return overload_score

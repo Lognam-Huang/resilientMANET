@@ -70,9 +70,9 @@ def create_q_table(n):
 # Q-learning hyperparameters
 epsilon = 0.1
 # randomness of choosing actions
-alpha = 0.5
+alpha = 0.2
 # learning rate
-gamma = 0.9
+gamma = 0.7
 # discount rate
 
 # Get reward of a state, including resilience score and optimization score
@@ -111,7 +111,11 @@ def Reward(state):
     # print(OverloadScore)
 
     # now we just return RS*overload
-    return ResilienceScore*OverloadScore
+    rewardScore = ResilienceScore*OverloadScore
+
+    print("Reward score is:")
+    print(rewardScore)
+    return rewardScore
 
 
 def take_action(state, epsilon, q_table):
@@ -142,6 +146,9 @@ def take_action(state, epsilon, q_table):
                   
     new_state = get_new_state(state, cur_action)
     initialize_state(new_state, q_table)
+
+    print("cur state: "+state)
+    print("next state: "+new_state)
     return new_state, cur_action, cur_value
 
 def initialize_state(state, q_table):
@@ -209,6 +216,7 @@ def get_new_state(state, action):
 
 # store Reward for all episodes
 reward_values = []
+reward_track = []
 
 
 q_table = create_q_table(num_nodes)
@@ -220,54 +228,76 @@ state_num = len(node_coords)*(len(node_coords)-1)/2
 
 max_reward = 0
 
+# test_state = "001011"
+# test_state = "111111"
+# test_reward = Reward(test_state)
+
+# print(test_reward)
+
 # Q-learning
-for episode in range(100):
-    # there are problems in creating state using np.zeros()
-    state = '0' * len(actions)
+# for episode in range(1):
+# there are problems in creating state using np.zeros()
+state = '0' * len(actions)
 
 
 
-    while True: 
-        # choose and execute an action
-        new_state, action, reward = take_action(state, epsilon, q_table)
+# while True: 
+for episode in range(20):
+    # choose and execute an action
+    new_state, action, reward = take_action(state, epsilon, q_table)
 
-        # update q_table
-        next_best_action = q_table.loc[new_state].idxmax()
-        next_best_value = q_table.loc[new_state, next_best_action]
-        td_target = reward + gamma * next_best_value
-        td_delta = td_target - reward
-        q_table.loc[state, action] += alpha * td_delta
+    # print(new_state)
+    # print(action)
+    # print(reward)
 
-        # update state
-        state = new_state
+    # update q_table
+    next_best_action = q_table.loc[new_state].idxmax()
+    next_best_value = q_table.loc[new_state, next_best_action]
+    td_target = reward + gamma * next_best_value
 
-        max_reward = max(max_reward, reward)
+    # try to solve inf in q table
+    td_delta = td_target - reward
+    # td_delta = td_target - q_table.loc[state, action]
 
-        # terminate condition
-        # if the changes of q is too small, terminate the loop
-        if td_delta < max(td_target, reward)*0.0001:
-            print("this episode is terminated because the update is too small")
-            break
+    print(next_best_action)
+    print(next_best_value)
 
-        # print("the update is suitable")
-        # print(state)
-        state_sum = sum(int(char) for char in state)
 
-        if state_sum>=state_num:
-            print("this episode is terminated because current state is fully connected graph")
-            break
+    q_table.loc[state, action] += alpha * td_delta
 
-    # 记录RS值
-    # rs_values.append(Reward(state))
-    print(max_reward)
-    reward_values.append(max_reward)
+    # update state
+    state = new_state
+
+    max_reward = max(max_reward, reward)
+
+    reward_track.append(reward)
+
+    # terminate condition
+    # if the changes of q is too small, terminate the loop
+    if td_delta < max(td_target, reward)*0.0001:
+        print("this episode is terminated because the update is too small")
+        break
+
+    # print("the update is suitable")
+    # print(state)
+    state_sum = sum(int(char) for char in state)
+
+    if state_sum>=state_num:
+        print("this episode is terminated because current state is fully connected graph")
+        break
+
+# 记录RS值
+# rs_values.append(Reward(state))
+print(max_reward)
+reward_values.append(max_reward)
 
 print(max_reward)
 print(reward_values)
 print(q_table)
 
 # 可视化RS值
-plt.plot(reward_values)
+# plt.plot(reward_values)
+plt.plot(reward_track)
 plt.title('RS Value Over Episodes')
 plt.xlabel('Episode')
 plt.ylabel('RS Value')
