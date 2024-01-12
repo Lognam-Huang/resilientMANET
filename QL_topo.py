@@ -17,15 +17,41 @@ node_coords = np.array([
     (10, 90, 15)
 ])
 
+# simple demonstration
 UAV_coords = np.array([
-    (250,200,200),
-    (250,600,200),
-    (600,350,200),
+    # (250,200,200),
+    # (250,600,200),
+    # (600,350,200),
+
+    # (588, 127, 246),
+    # (665, 310, 180),
+    # (428, 777, 201),
+    # (513, 769, 193),
+    # (548, 317, 216),
+
+    # (783, 626, 235),
+    # (411, 254, 224),
+    (600, 725, 224),
+    (419, 38, 151),
+    (423, 215, 183),
+    (643, 641, 198),
+
+
 ])
 
 ABS_coords = np.array([
-    (440,390,500),
+    # (440,390,500),
+
+    # (294, 467, 500),
+    (445, 0, 500),
+
+    (511, 133, 500),
+    (244, 637, 500),
+
+
+
 ])
+
 
 
 
@@ -72,7 +98,7 @@ epsilon = 0.1
 # randomness of choosing actions
 alpha = 0.2
 # learning rate
-gamma = 0.7
+gamma = 0.3
 # discount rate
 
 # Get reward of a state, including resilience score and optimization score
@@ -113,8 +139,9 @@ def Reward(state):
     # now we just return RS*overload
     rewardScore = ResilienceScore*OverloadScore
 
-    print("Reward score is:")
-    print(rewardScore)
+    # print("Reward score is:")
+    # print(rewardScore)
+
     return rewardScore
 
 
@@ -147,8 +174,8 @@ def take_action(state, epsilon, q_table):
     new_state = get_new_state(state, cur_action)
     initialize_state(new_state, q_table)
 
-    print("cur state: "+state)
-    print("next state: "+new_state)
+    # print("cur state: "+state)
+    # print("next state: "+new_state)
     return new_state, cur_action, cur_value
 
 def initialize_state(state, q_table):
@@ -188,6 +215,9 @@ def initialize_state(state, q_table):
             # q_table.at[row_index, col] = reward
             # q_table[row_index, col] = reward
             q_table.loc[row_index, col] = reward
+
+            # print("Initilize reward as:")
+            # print(reward)
             
     
     # print(q_table)
@@ -239,61 +269,73 @@ max_reward = 0
 # there are problems in creating state using np.zeros()
 state = '0' * len(actions)
 
+best_state = ""
+
 
 
 # while True: 
-for episode in range(20):
-    # choose and execute an action
-    new_state, action, reward = take_action(state, epsilon, q_table)
+for episode in range(10):
+    while True:
+        # choose and execute an action
+        new_state, action, reward = take_action(state, epsilon, q_table)
 
-    # print(new_state)
-    # print(action)
-    # print(reward)
+        # print(new_state)
+        # print(action)
+        # print(reward)
 
-    # update q_table
-    next_best_action = q_table.loc[new_state].idxmax()
-    next_best_value = q_table.loc[new_state, next_best_action]
-    td_target = reward + gamma * next_best_value
+        # update q_table
+        next_best_action = q_table.loc[new_state].idxmax()
+        next_best_value = q_table.loc[new_state, next_best_action]
 
-    # try to solve inf in q table
-    td_delta = td_target - reward
-    # td_delta = td_target - q_table.loc[state, action]
+        # this is the problem
+        # td_target = reward + gamma * next_best_value
+        td_target = reward + gamma * next_best_value - q_table.loc[state, action]
 
-    print(next_best_action)
-    print(next_best_value)
+        # try to solve inf in q table
+        td_delta = td_target - reward
+        # td_delta = td_target - q_table.loc[state, action]
+
+        # print(next_best_action)
+        # print(next_best_value)
 
 
-    q_table.loc[state, action] += alpha * td_delta
+        q_table.loc[state, action] += alpha * td_delta
 
-    # update state
-    state = new_state
+        # update state
+        state = new_state
 
-    max_reward = max(max_reward, reward)
+        if reward >= max_reward:
+            max_reward = reward
+            best_state = new_state
 
-    reward_track.append(reward)
+        # max_reward = max(max_reward, reward)
 
-    # terminate condition
-    # if the changes of q is too small, terminate the loop
-    if td_delta < max(td_target, reward)*0.0001:
-        print("this episode is terminated because the update is too small")
-        break
+        reward_track.append(reward)
 
-    # print("the update is suitable")
-    # print(state)
-    state_sum = sum(int(char) for char in state)
+        # terminate condition
+        # if the changes of q is too small, terminate the loop
+        if td_delta < max(td_target, reward)*0.000001:
+            print("this episode is terminated because the update is too small")
+            break
 
-    if state_sum>=state_num:
-        print("this episode is terminated because current state is fully connected graph")
-        break
+        # print("the update is suitable")
+        # print(state)
+        state_sum = sum(int(char) for char in state)
+
+        if state_sum>=state_num:
+            print("this episode is terminated because current state is fully connected graph")
+            break
 
 # 记录RS值
 # rs_values.append(Reward(state))
-print(max_reward)
-reward_values.append(max_reward)
+# print(max_reward)
+# reward_values.append(max_reward)
 
-print(max_reward)
-print(reward_values)
-print(q_table)
+print("Best RS value: "+str(max_reward))
+print("Best topology: "+best_state)
+# print(reward_values)
+print(reward_track)
+# print(q_table)
 
 # 可视化RS值
 # plt.plot(reward_values)

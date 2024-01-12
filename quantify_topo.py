@@ -397,7 +397,7 @@ def measure_overload(UAVMap, hop_constraint, DR_constraint, overload_constraint)
     
     # UAV_overload = {}
     # print(best_DRs)
-    print(UAV_overload)
+    # print(UAV_overload)
             
     def gini_coefficient(uav_loads):
         """
