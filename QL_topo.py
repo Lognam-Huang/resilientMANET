@@ -33,8 +33,8 @@ UAV_coords = np.array([
     # (411, 254, 224),
     (600, 725, 224),
     (419, 38, 151),
-    (423, 215, 183),
-    (643, 641, 198),
+    # (423, 215, 183),
+    # (643, 641, 198),
 
 
 ])
@@ -45,8 +45,8 @@ ABS_coords = np.array([
     # (294, 467, 500),
     (445, 0, 500),
 
-    (511, 133, 500),
-    (244, 637, 500),
+    # (511, 133, 500),
+    # (244, 637, 500),
 
 
 
@@ -335,7 +335,7 @@ print("Best RS value: "+str(max_reward))
 print("Best topology: "+best_state)
 # print(reward_values)
 print(reward_track)
-# print(q_table)
+print(q_table)
 
 # 可视化RS值
 # plt.plot(reward_values)
