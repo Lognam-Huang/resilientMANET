@@ -33,7 +33,7 @@ UAV_coords = np.array([
     # (411, 254, 224),
     (600, 725, 224),
     (419, 38, 151),
-    # (423, 215, 183),
+    (423, 215, 183),
     # (643, 641, 198),
 
 
@@ -45,7 +45,7 @@ ABS_coords = np.array([
     # (294, 467, 500),
     (445, 0, 500),
 
-    # (511, 133, 500),
+    (511, 133, 500),
     # (244, 637, 500),
 
 
@@ -258,14 +258,7 @@ state_num = len(node_coords)*(len(node_coords)-1)/2
 
 max_reward = 0
 
-# test_state = "001011"
-# test_state = "111111"
-# test_reward = Reward(test_state)
-
-# print(test_reward)
-
 # Q-learning
-# for episode in range(1):
 # there are problems in creating state using np.zeros()
 state = '0' * len(actions)
 
