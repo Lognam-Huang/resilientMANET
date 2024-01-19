@@ -110,14 +110,12 @@ def get_connected_edges(edge_state, UAVNodes, ABSNodes):
 def quantify_data_rate(UAVMap, r, UAVInfo):
     # print(UAVMap)
     # 1. get the maximum data rate for each UAV node
-    max_data_rates = [max(paths, key=lambda x: x['DR'])['DR'] if paths else 0 for paths in UAVMap.allPaths.values()]
-    
+    max_data_rates = [max(paths, key=lambda x: x['DR'])['DR'] if paths else 0 for paths in UAVMap.allPaths.values()]    
     # print(max_data_rates)
     
     # 2. get the max and min data rate of all UAV node, based on highest DR of each node
     min_DR = min(max_data_rates)
     avg_DR = sum(max_data_rates) / len(max_data_rates)
-
     # print(min_DR)
     # print(avg_DR)
     
@@ -127,18 +125,14 @@ def quantify_data_rate(UAVMap, r, UAVInfo):
     
 
     def norm(score, UAVInfo):
-        # print(UAVInfo['bandwidth'])
         normScore = min(score/UAVInfo['bandwidth'],1)
 
+        # print(UAVInfo['bandwidth'])
         # print(score)
         # print(normScore)
         return normScore
     
     score = r * norm(min_DR, UAVInfo) + (1 - r) * norm(avg_DR, UAVInfo)
-
-    # print("ee")    
-    # norScore = norm(score, UAVInfo)    
-    # return norScore
     return score
 
 def quantify_backup_path(UAVMap, hop_constraint, DR_constraint):
@@ -157,6 +151,11 @@ def quantify_backup_path(UAVMap, hop_constraint, DR_constraint):
     best_paths = {}
     for start, paths in AllPaths.items():
         filtered_paths = [p for p in paths if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint]
+        
+        # print("start: "+str(start))
+        # print("paths: "+str(paths))
+        # print("filtered_paths: "+str(filtered_paths))
+
         if filtered_paths:
             # best_DRs[start] = max(p['DR'] for p in filtered_paths)
             best_path = max(filtered_paths, key=lambda p: p['DR'])

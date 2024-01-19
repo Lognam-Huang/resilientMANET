@@ -35,8 +35,6 @@ UAV_coords = np.array([
     (419, 38, 151),
     (423, 215, 183),
     # (643, 641, 198),
-
-
 ])
 
 ABS_coords = np.array([
@@ -47,9 +45,6 @@ ABS_coords = np.array([
 
     (511, 133, 500),
     # (244, 637, 500),
-
-
-
 ])
 
 
@@ -152,7 +147,7 @@ def take_action(state, epsilon, q_table):
     #     perform the action with the highest reward in the q_table
     
     # after choosing the action, generate the new state based on current state and action
-    # update reward --> his is put in training process
+    # update reward --> this is put in training process
     # print("take_action is executed")
 
     initialize_state(state, q_table)
@@ -181,25 +176,16 @@ def take_action(state, epsilon, q_table):
 def initialize_state(state, q_table):
     # print("initialize_state is executed")
     # for a new table, if a state does not contain any meaningful data, should create some records
-
-    # Convert state to row index
-    row_index = state
-
-    # print(state)
-    # print(type(state))
     
     # Check if the state has already been initialized
-    if not all(value in [0, -1] for value in q_table.loc[row_index]):
+    if not all(value in [0, -1] for value in q_table.loc[state]):
         # State has been initialized
         # print("State has been initialized")
         return
     
     # Initialize the state row
     for col in q_table.columns:
-        if q_table.at[row_index, col] == 0:  # Check if the cell needs to be updated
-
-            # print(state, col)
-            # print("row_index= " +row_index)
+        if q_table.at[state, col] == 0:  # Check if the cell needs to be updated
 
             # Compute the new state by applying the action
             new_state = get_new_state(state, col)
@@ -211,14 +197,9 @@ def initialize_state(state, q_table):
             # instead of that, we also try to directly visit q_table, but it will not modify values---it will create new rows
             # so far, I notice that loc() seems to successfull modify values
 
-            # print("Current reward = "+str(reward))
-            # q_table.at[row_index, col] = reward
-            # q_table[row_index, col] = reward
-            q_table.loc[row_index, col] = reward
-
             # print("Initilize reward as:")
             # print(reward)
-            
+            q_table.loc[state, col] = reward
     
     # print(q_table)
 
@@ -254,7 +235,7 @@ q_table = create_q_table(num_nodes)
 
 # this is used to set terminated case for Q-learning
 # state_num: number of all available state
-state_num = len(node_coords)*(len(node_coords)-1)/2
+state_num = num_nodes*(num_nodes-1)/2
 
 max_reward = 0
 
