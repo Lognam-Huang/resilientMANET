@@ -10,13 +10,6 @@ from itertools import combinations
 from quantify_topo import *
 
 # node coordinations
-node_coords = np.array([
-    (10, 10, 10),
-    (20, 30, 10),
-    (40, 100, 15),
-    (10, 90, 15)
-])
-
 # simple demonstration
 UAV_coords = np.array([
     # (250,200,200),
@@ -29,11 +22,11 @@ UAV_coords = np.array([
     # (513, 769, 193),
     # (548, 317, 216),
 
-    # (783, 626, 235),
-    # (411, 254, 224),
+    (783, 626, 235),
+    (411, 254, 224),
     (600, 725, 224),
-    (419, 38, 151),
-    (423, 215, 183),
+    # (419, 38, 151),
+    # (423, 215, 183),
     # (643, 641, 198),
 ])
 
@@ -41,10 +34,10 @@ ABS_coords = np.array([
     # (440,390,500),
 
     # (294, 467, 500),
-    (445, 0, 500),
+    # (445, 0, 500),
 
     (511, 133, 500),
-    # (244, 637, 500),
+    (244, 637, 500),
 ])
 
 
@@ -226,9 +219,7 @@ def get_new_state(state, action):
     return ''.join(state_list)
 
 # store Reward for all episodes
-reward_values = []
 reward_track = []
-
 
 q_table = create_q_table(num_nodes)
 # print(q_table)
@@ -236,83 +227,76 @@ q_table = create_q_table(num_nodes)
 # this is used to set terminated case for Q-learning
 # state_num: number of all available state
 state_num = num_nodes*(num_nodes-1)/2
-
 max_reward = 0
 
 # Q-learning
 # there are problems in creating state using np.zeros()
 state = '0' * len(actions)
-
 best_state = ""
 
 
-
 # while True: 
-for episode in range(10):
-    while True:
-        # choose and execute an action
-        new_state, action, reward = take_action(state, epsilon, q_table)
+# for episode in range(10):
+#     while True:
+#         # choose and execute an action
+#         new_state, action, reward = take_action(state, epsilon, q_table)
 
-        # print(new_state)
-        # print(action)
-        # print(reward)
+#         # print(new_state)
+#         # print(action)
+#         # print(reward)
 
-        # update q_table
-        next_best_action = q_table.loc[new_state].idxmax()
-        next_best_value = q_table.loc[new_state, next_best_action]
+#         # update q_table
+#         next_best_action = q_table.loc[new_state].idxmax()
+#         next_best_value = q_table.loc[new_state, next_best_action]
 
-        # this is the problem
-        # td_target = reward + gamma * next_best_value
-        td_target = reward + gamma * next_best_value - q_table.loc[state, action]
+#         # this is the problem
+#         # td_target = reward + gamma * next_best_value
+#         td_target = reward + gamma * next_best_value - q_table.loc[state, action]
 
-        # try to solve inf in q table
-        td_delta = td_target - reward
-        # td_delta = td_target - q_table.loc[state, action]
+#         # try to solve inf in q table
+#         td_delta = td_target - reward
+#         # td_delta = td_target - q_table.loc[state, action]
 
-        # print(next_best_action)
-        # print(next_best_value)
+#         # print(next_best_action)
+#         # print(next_best_value)
 
 
-        q_table.loc[state, action] += alpha * td_delta
+#         q_table.loc[state, action] += alpha * td_delta
 
-        # update state
-        state = new_state
+#         # update state
+#         state = new_state
 
-        if reward >= max_reward:
-            max_reward = reward
-            best_state = new_state
+#         if reward >= max_reward:
+#             max_reward = reward
+#             best_state = new_state
 
-        # max_reward = max(max_reward, reward)
+#         # max_reward = max(max_reward, reward)
 
-        reward_track.append(reward)
+#         reward_track.append(reward)
 
-        # terminate condition
-        # if the changes of q is too small, terminate the loop
-        if td_delta < max(td_target, reward)*0.000001:
-            print("this episode is terminated because the update is too small")
-            break
+#         # terminate condition
+#         # if the changes of q is too small, terminate the loop
+#         if td_delta < max(td_target, reward)*0.000001:
+#             print("this episode is terminated because the update is too small")
+#             break
 
-        # print("the update is suitable")
-        # print(state)
-        state_sum = sum(int(char) for char in state)
+#         # print("the update is suitable")
+#         # print(state)
+#         state_sum = sum(int(char) for char in state)
 
-        if state_sum>=state_num:
-            print("this episode is terminated because current state is fully connected graph")
-            break
+#         if state_sum>=state_num:
+#             print("this episode is terminated because current state is fully connected graph")
+#             break
 
 # 记录RS值
-# rs_values.append(Reward(state))
 # print(max_reward)
-# reward_values.append(max_reward)
 
 print("Best RS value: "+str(max_reward))
 print("Best topology: "+best_state)
-# print(reward_values)
 print(reward_track)
 print(q_table)
 
 # 可视化RS值
-# plt.plot(reward_values)
 plt.plot(reward_track)
 plt.title('RS Value Over Episodes')
 plt.xlabel('Episode')
