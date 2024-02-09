@@ -63,16 +63,33 @@
 # result = take_action(a, b)
 # print(result[0])
 
-import random
+# import random
 
-def generate_random_binary_string(input_string):
-    length = len(input_string)
-    random_string = ''.join(random.choice(['0', '1']) for _ in range(length))
-    return random_string
+# def generate_random_binary_string(input_string):
+#     length = len(input_string)
+#     random_string = ''.join(random.choice(['0', '1']) for _ in range(length))
+#     return random_string
 
-# 示例
-input_string = '0110101'
-output_string = generate_random_binary_string(input_string)
+# # 示例
+# input_string = '0110101'
+# output_string = generate_random_binary_string(input_string)
 
-print("Input String: ", input_string)
-print("Random Binary String: ", output_string)
+# print("Input String: ", input_string)
+# print("Random Binary String: ", output_string)
+
+# alist = {}
+# alist["11"] = 11,32,44
+# alist["12"] = 77,22,44
+# print(alist["11"][2])
+
+# print(alist.get)
+# # max_key = max(alist, key=alist.get)
+# max_key = max(alist, key=lambda k: alist[k][1])
+
+# print(max_key)
+
+def ss():
+    return 1, 3, 5
+
+s = ss()
+print(s)
