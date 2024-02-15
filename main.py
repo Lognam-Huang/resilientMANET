@@ -16,7 +16,9 @@ from functions.measure_overload import measure_overload
 from functions.print_nodes import print_nodes
 from functions.quantify_user_rate import quantify_user_rate
 
-from functions.scene_visualization import scene_visualization
+from functions.get_3D_heatmap import get_3D_heatmap
+
+from functions.scene_visualization import scene_visualization, visualize_2D_heatmap_per_layer
 
 # from DQN import *
 # import matplotlib.pyplot as plt
@@ -135,101 +137,68 @@ ABSNodes[0].set_connection([0,2])
 UAVMap = UAVMap(UAVNodes, ABSNodes, blocks, UAVInfo)
 print(UAVMap)
 
-# for node in UAVNodes:
-#     print(node)
+# # for node in UAVNodes:
+# #     print(node)
 
-# quantify resilience score: user testDataRateNoBlocks
-URPenalty = 0.5
-URScore = quantify_user_rate(UAVMap, ground_users, blocks, UAVInfo, UAVNodes, URPenalty)
-print("User rate:")
-print(URScore)
-# for user in ground_users:
-#     print(user)
+# # quantify resilience score: user testDataRateNoBlocks
+# URPenalty = 0.5
+# URScore = quantify_user_rate(UAVMap, ground_users, blocks, UAVInfo, UAVNodes, URPenalty)
+# print("User rate:")
+# print(URScore)
+# # for user in ground_users:
+# #     print(user)
 
-# quantify resilience score: data rate
-DRPenalty = 0.5
-DRScore = quantify_data_rate(UAVMap, DRPenalty, UAVInfo)
-print("Data rate score of current topology:")
-print(DRScore)
+# # quantify resilience score: data rate
+# DRPenalty = 0.5
+# DRScore = quantify_data_rate(UAVMap, DRPenalty, UAVInfo)
+# print("Data rate score of current topology:")
+# print(DRScore)
 
-# for node in UAVNodes:
-#     print(node)
+# # for node in UAVNodes:
+# #     print(node)
 
-# quantify resilience score: backup path 
-BPHopConstraint = 4
-BPDRConstraint = 100000000
-BPScore = quantify_backup_path(UAVMap, BPHopConstraint, BPDRConstraint)
-print("Backup path score of current topology:")
-print(BPScore)
+# # quantify resilience score: backup path 
+# BPHopConstraint = 4
+# BPDRConstraint = 100000000
+# BPScore = quantify_backup_path(UAVMap, BPHopConstraint, BPDRConstraint)
+# print("Backup path score of current topology:")
+# print(BPScore)
 
-# quantify resilience score: network partitioning
-# for node in UAVNodes:
-#     print(node)
-# newUAVMap = remove_node(UAVMap, 2)
-# print(newUAVMap)
+# # quantify resilience score: network partitioning
+# # for node in UAVNodes:
+# #     print(node)
+# # newUAVMap = remove_node(UAVMap, 2)
+# # print(newUAVMap)
 
-droppedRatio = 0.2
-ratioDR = 0.6
-ratioBP = 0.4
-NPScore = quantify_network_partitioning(UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP)
-print("Network partitioning score of current topology:")
-print(NPScore)
+# droppedRatio = 0.2
+# ratioDR = 0.6
+# ratioBP = 0.4
+# NPScore = quantify_network_partitioning(UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP)
+# print("Network partitioning score of current topology:")
+# print(NPScore)
 
-# integrate quantificaiton
-weightUR = 0.3
-weightDR = 0.2
-weightBP = 0.4
-weightNP = 0.1
-ResilienceScore = integrate_quantification(URScore, DRScore, BPScore, NPScore, weightUR, weightDR, weightBP, weightNP)
-print("Resilience score is:")
-print(ResilienceScore) 
+# # integrate quantificaiton
+# weightUR = 0.3
+# weightDR = 0.2
+# weightBP = 0.4
+# weightNP = 0.1
+# ResilienceScore = integrate_quantification(URScore, DRScore, BPScore, NPScore, weightUR, weightDR, weightBP, weightNP)
+# print("Resilience score is:")
+# print(ResilienceScore) 
 
-# measure the overload of current MANET topology
-overloadConstraint = 10000
-OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint)
-print(OverloadScore)
+# # measure the overload of current MANET topology
+# overloadConstraint = 10000
+# OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint)
+# print(OverloadScore)
 
 # visualize scene
-scene_visualization(ground_users, UAVNodes, ABSNodes, blocks, scene)
+# scene_visualization(ground_users, UAVNodes, ABSNodes, blocks, scene)
 
-# try to use RL to improve resilience score
+min_height = 195  # 最小高度
+max_height = 205  # 最大高度
 
-# first try: Deep Q-Learning
-# result is not satisfied
-# one possible explanation is  that: as a single-agent, this method is too inefficient (step()) 
-# meanwhile this method does not fit the scenario well
-# print("Now pass to DQN")
-# env = UAVEnvironment(UAVNodes, ABSNodes, blocks, UAVInfo)
-# state_size = len(env.UAVNodes) * 3
-# action_size = len(env.UAVNodes) * 5  # For each UAV: move in x, move in y, or don't move
-# agent = DQNAgent(state_size, action_size)
-# episodes = 100
+heatmap = get_3D_heatmap(ground_users, blocks, scene, min_height, max_height)
 
-# rs_values = []
+visualize_2D_heatmap_per_layer(heatmap=heatmap, min_height=min_height, max_height= max_height)
 
-# for e in range(episodes):
-#     state = env.reset()
-#     state = np.reshape(state, [1, state_size])
-#     for time in range(500):
-#         action = agent.act(state)
-#         next_state, reward, done = env.step(action)
-#         next_state = np.reshape(next_state, [1, state_size])
-#         agent.remember(state, action, reward, next_state, done)
-#         state = next_state
-        
-#         rs_current = env.get_RS()
-#         rs_values.append(rs_current)
-        
-#         if done:
-#             print(f"episode: {e}/{episodes}, score: {time}, e: {agent.epsilon:.2}")
-#             break
-#     if len(agent.memory) > 32:
-#         agent.replay(32)
-        
-# plt.plot(rs_values)
-# plt.xlabel('Episode')
-# plt.ylabel('RS Value')
-# plt.title('RS Value over Episodes')
-# plt.show()
-
-# test
+print("aa")

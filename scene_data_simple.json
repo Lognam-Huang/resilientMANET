@@ -1,0 +1,31 @@
+{
+    "scenario": {
+        "xLength": 25,
+        "yLength": 25
+    },
+    "baseStation": {
+        "bottomCorner": [0, 0],
+        "size": [5, 5],
+        "height": [10]
+    },
+    "blocks": [
+        {
+            "bottomCorner": [5, 5],
+            "size": [5, 5],
+            "height": 10
+        },
+
+        {
+            "bottomCorner": [20, 20],
+            "size": [3, 3],
+            "height": 15
+        }
+    ],
+    "UAV": {        
+        "bandwidth": 1000000000,
+        "Power": 10,
+        "TransmittingAntennaGain": 10,
+        "ReceievingAntennaGain": 10,
+        "CarrierFrequency": 28000000000        
+    }
+}
