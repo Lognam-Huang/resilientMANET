@@ -91,16 +91,15 @@
 def ss():
     return 1, 3, 5
 
-s = ss()
-print(s)
+# s = ss()
+# print(s)
 
 import json
-from functions.get_3D_heatmap import get_3D_heatmap
+from functions.get_3D_heatmap import *
 from functions.generate_users import generate_users
 from functions.print_nodes import print_nodes
 from functions.scene_visualization import *
 import numpy as np
-
 
 
 with open('scene_data_simple.json', 'r') as f:
@@ -111,28 +110,16 @@ blocks = ini['blocks']
 UAVInfo = ini['UAV']
 scene = ini['scenario']
 
-ground_users = generate_users(10, blocks, scene['xLength'], scene['yLength'])
-print_nodes(ground_users, True)
 
+max_UAV_positions = 3
+ground_users = generate_users(5, blocks, scene['xLength'], scene['yLength'])
+# print_nodes(ground_users, True)
 
-min_height = 10  # 最小高度
-max_height = 15  # 最大高度
+min_height = 10  
+max_height = 15  
 
-heatmap = get_3D_heatmap(ground_users, blocks, scene, min_height, max_height)
+UAV_positions = find_UAV_positions(ground_users, max_UAV_positions, blocks, scene, min_height, max_height)
+print("Founded UAV positions by averaging: ", UAV_positions)
 
-# visualize_2D_heatmap_per_layer(heatmap=heatmap, min_height=min_height, max_height= max_height)
-
-visualize_2D_heatmap_combined(heatmap=heatmap, min_height=min_height, max_height= max_height)
-# scene_visualization(ground_users=ground_users, blocks=blocks, scene_info=scene, heatmap=heatmap, min_height=min_height)
-
-# max_users = np.max(heatmap)  # 获取最大的ground_user数
-# print("number of users"+str(max_users))
-# for x in range(heatmap.shape[0]):
-#     for y in range(heatmap.shape[1]):
-#         for z in range(heatmap.shape[2]):
-#             value = heatmap[x, y, z]
-#             if value > 0:  # 如果该点的值大于0
-#                 # alpha = (value / max_users) * 0.7  # 根据ground_user的数量调整透明度
-#                 print(str([x,y,z]))
-
-# print(heatmap)
+# UAV_positions = find_UAV_positions_kmeans(ground_users, max_UAV_positions, blocks, scene, min_height, max_height)
+# print("Founded UAV positions by KMeans: ", UAV_positions)
