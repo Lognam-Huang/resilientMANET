@@ -4,67 +4,72 @@ import json
 from functions.path_is_blocked import path_is_blocked
 from functions.scene_visualization import *
 from classes.Nodes import Nodes
+from functions.print_nodes import *
 
 def get_3D_heatmap(ground_users, blocks, scene_info, min_height, max_height, considered_users_indices=None):
     x_length = scene_info['xLength']
     y_length = scene_info['yLength']
-    # 初始化一个三维数组来存储每个点的得分
+    # Initialize a three-dimensional array to store the score for each point
     heatmap = np.zeros((x_length, y_length, max_height - min_height + 1))
     
-    # 如果没有提供considered_users_indices，考虑所有用户
+    # If considered_users_indices is not provided, consider all users
     if considered_users_indices is None:
         considered_users_indices = range(len(ground_users))
     
-    # 遍历每个高度
+    # Iterate through each height
     for z in range(min_height, max_height + 1):
-        # 遍历每个x和y坐标
+        # Iterate through each x and y coordinate
         for x in range(x_length):
             for y in range(y_length):
-                # 只考虑指定的用户
+                # Only consider specified users
                 for index in considered_users_indices:
                     user = ground_users[index]
-                    # 检查从当前位置到ground_user的直视线是否被阻挡
+                    # Check if the line of sight from the current position to the ground user is blocked
                     curPos = Nodes([x,y,z])
                     if not path_is_blocked(blocks, curPos, user):
-                        # 如果未被阻挡，增加该点的得分
+                        # If not blocked, increase the score for that point
                         heatmap[x, y, z - min_height] += 1
     return heatmap
+
+
 def find_center_of_max_values(heatmap):
-    # 步骤1: 确定最大值
+    # Step 1: Determine the maximum value
     max_value = np.max(heatmap)
     
-    # 步骤2: 找到所有最大值的坐标
+    # Step 2: Find all coordinates of the maximum value
     max_positions = np.argwhere(heatmap == max_value)
     
-    # 步骤3: 计算这些坐标的中心
+    # Step 3: Calculate the center of these coordinates
     center_of_max_positions = np.mean(max_positions, axis=0)
     
-    # 步骤4: 找到最接近中心的坐标
-    # 计算每个最大值坐标与中心坐标的欧式距离
+    # Step 4: Find the coordinate closest to the center
+    # Calculate the Euclidean distance from each maximum value coordinate to the center coordinate
     distances = np.linalg.norm(max_positions - center_of_max_positions, axis=1)
-    # 找到最小距离的索引
+    # Find the index of the minimum distance
     closest_index = np.argmin(distances)
-    # 返回最接近中心的坐标
+    # Return the coordinate closest to the center
     closest_position = max_positions[closest_index]
     
     return tuple(closest_position)
 
+
 def update_considered_GU(ground_users, considered_GU, new_UAV_position, blocks):
-    # 新的UAV位置转换为Nodes对象，以便与path_is_blocked函数兼容
+    # Convert the new UAV position into a Nodes object to be compatible with the path_is_blocked function
     new_UAV_node = Nodes(new_UAV_position)
     
-    # 创建一个列表来存储仍需要考虑的用户索引
+    # Create a list to store the indices of users that still need to be considered
     updated_considered_GU = considered_GU.copy()
     
-    # 遍历considered_GU中的每个索引
+    # Iterate through each index in considered_GU
     for index in considered_GU:
         user = ground_users[index]
-        # 检查是否存在直视线连接
+        # Check for a line-of-sight connection
         if not path_is_blocked(blocks, new_UAV_node, user):
-            # 如果存在LOS连接，则从列表中移除该用户的索引
+            # If a LOS connection exists, remove the user's index from the list
             updated_considered_GU.remove(index)
     
     return updated_considered_GU
+
 
 def find_UAV_positions(ground_users, max_UAV_positions, blocks, scene, min_height, max_height):   
 
@@ -74,14 +79,14 @@ def find_UAV_positions(ground_users, max_UAV_positions, blocks, scene, min_heigh
     UAV_positions = []  
     
     for i in range(max_UAV_positions):
-        print(i)
+        # print(i)
 
         # Generate a heatmap for the current set of considered ground users
         heatmap = get_3D_heatmap(ground_users, blocks, scene, min_height, max_height, considered_GU)
         # Find the best UAV position based on the heatmap
         UAV_position = find_center_of_max_values(heatmap)
 
-        print(UAV_position)
+        # print(UAV_position)
         
         if UAV_position:  # Ensure a valid UAV position was found
             UAV_positions.append(UAV_position)
@@ -89,7 +94,7 @@ def find_UAV_positions(ground_users, max_UAV_positions, blocks, scene, min_heigh
             considered_GU = update_considered_GU(ground_users, considered_GU, UAV_position, blocks)
 
             # Optional: Visualize the 2D combined heatmap (commented out)
-            # visualize_2D_heatmap_combined(heatmap=heatmap, min_height=min_height, max_height= max_height)
+            visualize_2D_heatmap_combined(heatmap=heatmap, min_height=min_height, max_height= max_height)
             if not considered_GU:  # If all ground users are covered, end the loop early
                 break
         else:
@@ -103,7 +108,14 @@ def find_UAV_positions_kmeans(ground_users, max_UAV_positions, blocks, scene, mi
     UAV_positions = []  # To store the UAV positions found
 
     # Convert ground_users to an array for KMeans
-    ground_users_array = np.array([user.position for user in ground_users if user.id in considered_GU])
+    # ground_users_array = np.array([user.position for user in ground_users if user.id in considered_GU])
+
+    # print(considered_GU)
+    # print_nodes(ground_users, True)
+
+    ground_users_array = np.array([user.position for user in ground_users])
+
+    # print(ground_users_array)
 
     # Apply KMeans clustering
     if len(ground_users_array) > 0 and max_UAV_positions > 0:
@@ -144,27 +156,5 @@ def find_UAV_positions_dbscan(ground_users, eps, min_samples, blocks, scene, min
         # This requires integrating the update logic with your specific scenario
         
     return UAV_positions
-
-# def get_3D_heatmap(ground_users, blocks, scene_info, min_height, max_height):
-#     x_length = scene_info['xLength']
-#     y_length = scene_info['yLength']
-#     # 初始化一个三维数组来存储每个点的得分
-#     heatmap = np.zeros((x_length, y_length, max_height - min_height + 1))
-    
-#     # 遍历每个高度
-#     for z in range(min_height, max_height + 1):
-#         # 遍历每个x和y坐标
-#         for x in range(x_length):
-#             for y in range(y_length):
-#                 for user in ground_users:
-#                     # 检查从当前位置到ground_user的直视线是否被阻挡
-#                     # print(user)
-#                     curPos = Nodes([x,y,z])
-#                     # curPos.position = (x,y,z)
-#                     if not path_is_blocked(blocks,  curPos,  user):
-#                         # 如果未被阻挡，增加该点的得分
-#                         heatmap[x, y, z - min_height] += 1
-#     return heatmap
-
 
 

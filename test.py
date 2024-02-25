@@ -112,7 +112,7 @@ scene = ini['scenario']
 
 
 max_UAV_positions = 3
-ground_users = generate_users(5, blocks, scene['xLength'], scene['yLength'])
+ground_users = generate_users(10, blocks, scene['xLength'], scene['yLength'])
 # print_nodes(ground_users, True)
 
 min_height = 10  
@@ -121,5 +121,10 @@ max_height = 15
 UAV_positions = find_UAV_positions(ground_users, max_UAV_positions, blocks, scene, min_height, max_height)
 print("Founded UAV positions by averaging: ", UAV_positions)
 
-# UAV_positions = find_UAV_positions_kmeans(ground_users, max_UAV_positions, blocks, scene, min_height, max_height)
-# print("Founded UAV positions by KMeans: ", UAV_positions)
+# UAV_positions_kmeans = find_UAV_positions_kmeans(ground_users, max_UAV_positions, blocks, scene, min_height, max_height)
+# print("Founded UAV positions by KMeans: ", UAV_positions_kmeans)
+
+# eps = 15
+# min_samples = 5
+# UAV_positions_DBSCAN = find_UAV_positions_dbscan(ground_users, eps, min_samples, blocks, scene, min_height, max_height)
+# print("Founded UAV positions by DBSCAN: ", UAV_positions_DBSCAN)
