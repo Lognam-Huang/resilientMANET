@@ -95,6 +95,7 @@ def find_UAV_positions(ground_users, max_UAV_positions, blocks, scene, min_heigh
 
             # Optional: Visualize the 2D combined heatmap (commented out)
             visualize_2D_heatmap_combined(heatmap=heatmap, min_height=min_height, max_height= max_height)
+            
             if not considered_GU:  # If all ground users are covered, end the loop early
                 break
         else:
