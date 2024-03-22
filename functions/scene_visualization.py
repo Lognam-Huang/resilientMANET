@@ -17,17 +17,19 @@ def scene_visualization(ground_users, UAV_nodes = None, air_base_station = None,
     ax.set_zlabel('Z Axis')
 
     # set box size of each UAV_nodes
-    node_size = 10
+    node_size = 2
     
     if blocks:    
-        for block in blocks:                
-            x, y = block['bottomCorner']
+        for block in blocks:    
+            # print(block)
+            # print(block['bottomCorner'])            
+            x, y, z = block['bottomCorner']
             dx, dy = block['size']
             dz = block['height']
             color = (1, 1, 1, 0.5)
             # label = block['label']
             
-            ax.bar3d(x, y, 0, dx, dy, dz, shade=True, color=color)
+            ax.bar3d(x, y, z, dx, dy, dz, shade=True, color=color)
 
             # 添加标记文字在块的中心
             # ax.text(x + dx/2, y + dy/2, dz/2, label, color='black', ha='center', va='center') 
@@ -108,7 +110,7 @@ def scene_visualization(ground_users, UAV_nodes = None, air_base_station = None,
 #     plt.subplots_adjust(bottom=0.2)  # 调整子图位置，为颜色条留出空间
 #     plt.show()
     
-def visualize_2D_heatmap_combined(heatmap, min_height, max_height, colormap='hot'):
+def visualize_2D_heatmap_combined(heatmap, min_height, max_height = 0, colormap='hot'):
     layers = heatmap.shape[2]  # Z轴的层数
     cols = int(np.ceil(np.sqrt(layers)))  # 计算列数
     rows = layers // cols + (1 if layers % cols else 0)  # 计算行数

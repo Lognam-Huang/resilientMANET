@@ -7,7 +7,7 @@ import pandas as pd
 from itertools import combinations
 
 # quantify RS and overload
-from quantify_topo import *
+from key_functions.quantify_topo import *
 
 # node coordinations
 # simple demonstration

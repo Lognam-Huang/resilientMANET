@@ -46,7 +46,10 @@ def generate_UAVs(UAVNumber, blocks, groundX, groundY, UAVHeight, edgeMin, nodeT
 
     UAVNodes = []
 
+    node_number = 0
+
     for i in range(len(userNodes)):
-        UAVNodes.append(Nodes(userNodes[i], nodeType, 0))
+        UAVNodes.append(Nodes(userNodes[i], nodeType, 0, node_number))
+        node_number += 1
 
     return UAVNodes

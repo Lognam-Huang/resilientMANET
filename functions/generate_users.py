@@ -28,8 +28,12 @@ def generate_users(user_number, blocks, ground_x, ground_y):
             user_nodes.append([x, y])
 
     ground_users = []
+
+    node_number = 0
+
     for node in user_nodes:
         # ground_users.append(Nodes([node[0], node[1], 0], 'ground users', 0))
-        ground_users.append(Nodes((node[0], node[1], 0), 'ground users', 0))
+        ground_users.append(Nodes((node[0], node[1], 0), 'ground users', 0, node_number))
+        node_number += 1
 
     return ground_users

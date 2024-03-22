@@ -24,7 +24,7 @@ import pandas as pd
 from itertools import combinations
 
 # quantify RS and overload
-from quantify_topo import *
+from key_functions.quantify_topo import *
 
 import random
 
@@ -46,16 +46,16 @@ UAV_coords = np.array([
     (783, 626, 235),
     (411, 254, 224),
     (600, 725, 224),
-    (419, 38, 151),
-    (423, 215, 183),
-    (643, 641, 198),
+    # (419, 38, 151),
+    # (423, 215, 183),
+    # (643, 641, 198),
 ])
 
 ABS_coords = np.array([
     # (440,390,500),
 
     # (294, 467, 500),
-    (445, 0, 500),
+    # (445, 0, 500),
 
     (511, 133, 500),
     (244, 637, 500),
@@ -176,8 +176,8 @@ OL_track = []
 max_reward = 0
 num_nodes = len(ABS_coords) + len(UAV_coords)
 
-# state = '0' * int((num_nodes*(num_nodes-1)/2))
-state = '1' * int((num_nodes*(num_nodes-1)/2))
+state = '0' * int((num_nodes*(num_nodes-1)/2))
+# state = '1' * int((num_nodes*(num_nodes-1)/2))
 
 start_time = time.time()
 

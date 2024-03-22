@@ -4,19 +4,19 @@
         "yLength": 25
     },
     "baseStation": {
-        "bottomCorner": [0, 0],
+        "bottomCorner": [0, 0, 0],
         "size": [5, 5],
         "height": [10]
     },
     "blocks": [
         {
-            "bottomCorner": [5, 5],
+            "bottomCorner": [5, 5, 0],
             "size": [5, 5],
             "height": 10
         },
 
         {
-            "bottomCorner": [20, 20],
+            "bottomCorner": [20, 20, 0],
             "size": [3, 3],
             "height": 15
         }
