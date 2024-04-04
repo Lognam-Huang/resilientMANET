@@ -58,134 +58,66 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
     min_cluster_size: The minimum number of points required to form a cluster in DBSCAN.
     obstacles: List of obstacles that can obstruct line of sight.
     area_info: Dictionary with keys 'xLength' and 'yLength' defining the simulation area dimensions.
-    altitude_range: Tuple of minimum and maximum altitudes to consider for UAV deployment.
+    min_altitude, max_altitude: The altitude range to consider for UAV deployment.
     uav_info: Data structure containing information about UAVs, such as data rate and communication range.
 
     Returns:
     A list of dictionaries representing the maximum communication capacities for each ground user after positioning UAVs.
     """
+    # Initialize indices for active ground users and UAVs
     active_ground_users_indices = list(range(len(ground_users)))
     active_uavs_indices = list(range(len(uavs)))
-    heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
+    max_capacity_records = []
 
-    max_capacity_records = [find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude)]
-
+    # Main loop to find optimal positions for UAVs
     while active_uavs_indices:
+        # Generate visibility heatmap for current ground user positions
+        heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
+
+        # Find maximum communication capacity for current UAV positions
+        max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
+
+        # Find the highest value in the heatmap and its points
         max_value = np.max(heatmap)
         max_value_points = np.argwhere(heatmap == max_value)
-        
+
+        # Perform DBSCAN clustering on points with the highest visibility value
         clustering = DBSCAN(eps=clustering_epsilon, min_samples=min_cluster_size).fit(max_value_points)
         cluster_labels = clustering.labels_
-        
+
+        # Determine the largest cluster of points
         unique_labels, counts = np.unique(cluster_labels[cluster_labels >= 0], return_counts=True)
         if counts.size == 0:
-            return None  # Exit if all points are considered noise by DBSCAN
-        
+            print("All points are considered noise by DBSCAN")
+            return None
+
         largest_cluster_label = unique_labels[np.argmax(counts)]
         largest_cluster_points = max_value_points[cluster_labels == largest_cluster_label]
 
-        # print("Now TESTING:")
-        # print(unique_labels)
-        # print(counts)
-        # print(largest_cluster_label)
-        # print(len(largest_cluster_points))
+        # Select points from the largest cluster for UAV positioning
+        if len(largest_cluster_points) < 2:
+            print("Not enough points in the cluster for further optimization")
+            break
 
-        if active_ground_users_indices:
-            selected_point = largest_cluster_points[np.random.choice(len(largest_cluster_points))]
-            selected_point[2] += min_altitude  # Adjust altitude to absolute value
+        selected_indices = np.random.choice(len(largest_cluster_points), size=2, replace=False)
+        selected_points = largest_cluster_points[selected_indices]
 
-            current_uav = active_uavs_indices.pop(0)
-            uavs[current_uav].set_position((selected_point[0], selected_point[1], selected_point[2]))
+        # Move or place UAVs to selected points from the cluster
+        for i, point in enumerate(selected_points):
+            if i < len(active_uavs_indices):
+                uav_index = active_uavs_indices.pop(0)
+                uavs[uav_index].set_position((point[0], point[1], point[2] + min_altitude))
+                print(f"UAV at index {uav_index} moved to {uavs[uav_index].position}")
 
-            print("Trying to cover more GUs:")
-            print(str(selected_point))
+        # Update the connectivity and recalculate the heatmap and capacities after UAV movement
+        active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
+        max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
 
-            # print("According to current heatmap, the max value is:")
-            # print(np.max(heatmap))
-            # print(active_ground_users_indices)
-
-            active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
-            heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
-            max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
-        else:            
-            print("Trying to optimize positions:")
-                
-            active_ground_users_indices, target_uav = find_most_connected_ground_users(ground_users)
-            print(active_ground_users_indices)
-            print(target_uav)
-            # print_nodes(ground_users)
-            # print_specific_nodes(uavs, target_uav)
-            
-            heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
-
-            print("TESTING")
-            print("According to new heatmap, the max value is:")
-            print(np.max(heatmap))
-
-            max_value = np.max(heatmap)
-            
-            max_value_points = np.argwhere(heatmap == max_value)
-            
-            clustering = DBSCAN(eps=clustering_epsilon, min_samples=min_cluster_size).fit(max_value_points)
-            cluster_labels = clustering.labels_
-            
-            unique_labels, counts = np.unique(cluster_labels[cluster_labels >= 0], return_counts=True)
-            if counts.size == 0:
-                return None  # Exit if all points are considered noise by DBSCAN
-            
-            largest_cluster_label = unique_labels[np.argmax(counts)]
-            largest_cluster_points = max_value_points[cluster_labels == largest_cluster_label]
-            
-            
-            if len(largest_cluster_points) < 2:
-                print("There is not enough points in the cluster for further optimization")
-                break
-
-            # distances = squareform(pdist(largest_cluster_points, 'euclidean'))
-            # furthest_points_indices = np.unravel_index(distances.argmax(), distances.shape)
-            # selected_points = largest_cluster_points[list(furthest_points_indices)]
-
-            selected_indices = np.random.choice(len(largest_cluster_points), size=2, replace=False)
-            selected_points = largest_cluster_points[selected_indices]
-
-
-            # for point, uav_index in zip(selected_points, active_uavs_indices[:2]):
-            #     point[2] += min_altitude
-            #     uavs[uav_index].set_position((point[0], point[1], point[2]))
-
-            #     print("Trying to optimize positions:")
-            #     print(str(point))
-
-            #     active_uavs_indices.remove(uav_index)
-
-            
-            print("Modify existed UAV node at:")
-            print(uavs[target_uav].position)
-
-            uavs[target_uav].set_position((selected_points[0][0],selected_points[0][1],selected_points[0][2]+min_altitude))
-
-            print("New position of existed UAV node is:")
-            print(uavs[target_uav].position)
-
-            uav_index = active_uavs_indices[:1][0]
-            uavs[uav_index].set_position((selected_points[1][0],selected_points[1][1],selected_points[1][2]+min_altitude))
-            
-            print("Add a new UAV node for workload at:")
-            print(uavs[uav_index].position)
-
-            active_uavs_indices.remove(uav_index)
-
-            active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
-
-            # print("Check whether all GUs are covered:")
-            # print(active_ground_users_indices)
-
-            max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
-        
-        print("Check whether all GUs are covered:")
+        print("Current ground user coverage:")
         print(active_ground_users_indices)
 
     return max_capacity_records
+
 
 def update_connected_ground_users(ground_users, uavs, max_altitude, obstacles):
     """
@@ -305,6 +237,7 @@ def find_most_connected_ground_users(nodes_list):
 
     return most_connected_user_numbers, most_common_node
 
+# not used at the present
 def find_furthest_points_in_largest_cluster(heatmap, epsilon, min_samples):
     """
     Identify two furthest apart points within the largest cluster of maximum value points in a heatmap using DBSCAN clustering.
