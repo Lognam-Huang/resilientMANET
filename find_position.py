@@ -1,10 +1,11 @@
 import json
 
-# from functions.get_3D_heatmap import get_max_cluster_point
+from functions.get_3D_heatmap import get_max_cluster_point
 from key_functions.uav_coverage_optimization import *
 from functions.generate_users import generate_users
 from functions.generate_UAVs import generate_UAVs
 from functions.scene_visualization import scene_visualization
+from functions.print_nodes import print_nodes
 
 # Load scene data from JSON file
 with open('scene_data_simple.json', 'r') as file:
@@ -15,7 +16,7 @@ UAVInfo = scene_data['UAV']
 scene = scene_data['scenario']
 
 # Generate ground users and UAVs
-ground_users = generate_users(10, blocks, scene['xLength'], scene['yLength'])
+ground_users = generate_users(15, blocks, scene['xLength'], scene['yLength'])
 UAVs = generate_UAVs(5, blocks, scene['xLength'], scene['yLength'], 50, 3, "basic UAV")
 
 # Set specific positions for some ground users
@@ -38,10 +39,15 @@ max_capacities_tracks = find_optimal_uav_positions(
     ground_users, UAVs, eps, min_samples, blocks, scene, min_height, max_height, UAVInfo
 )
 
+print("All uavs nodes are at:")
+# print_nodes(ground_users)
+print_nodes(UAVs, True)
+
 
 
 # Plot the capacities of ground users over time
+# print(max_capacities_tracks[4])
 plot_gu_capacities(max_capacities_tracks)
 
 # Visualize the scene with ground users, UAVs, and blocks
-scene_visualization(ground_users, UAVs, blocks=blocks, scene_info=scene)
+# scene_visualization(ground_users, UAVs, blocks=blocks, scene_info=scene)

@@ -41,48 +41,51 @@ import matplotlib.patches as patches
 
 
 def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, max_movement_distance):
-    # 创建颜色映射，每个时间单位一个颜色
+    # Create a color map with a unique color for each time step
     colors = plt.cm.viridis(np.linspace(0, 1, n))
     
-    # 初始化图表
+    # Initialize the plot
     fig, ax = plt.subplots()
     ax.set_xlim(0, xLength)
     ax.set_ylim(0, yLength)
     
-    # 绘制blocks
+    # Draw the blocks on the plot
     for block in blocks:
         bx, by, _ = block['bottomCorner']
         bw, bh = block['size']
         block_rect = patches.Rectangle((bx, by), bw, bh, linewidth=1, edgecolor='r', facecolor='none')
         ax.add_patch(block_rect)
 
-    # 为每个时间单位绘制所有用户的移动
+    # For each time step, draw the movement of all users
     for time_step in range(n):
-        # 移动用户
-        move_ground_users(ground_users, blocks, xLength, yLength, max_movement_distance)
-        # 绘制移动路径
-        for gu in ground_users:
-            # 如果是第一个时间步骤，记录起始位置
-            if time_step == 0:
+        # Initialize the starting positions for the first time step
+        if time_step == 0:
+            for gu in ground_users:
                 gu.start_pos = gu.position
-            # 否则，使用上一个时间步骤的终点作为起点
-            else:
+                
+        # Move the users
+        move_ground_users(ground_users, blocks, xLength, yLength, max_movement_distance)
+        
+        # Draw the movement paths
+        for gu in ground_users:
+            # Update the start position for subsequent time steps
+            if time_step != 0:
                 gu.start_pos = gu.end_pos
 
-            # 记录新位置
+            # Record the new position
             gu.end_pos = gu.position
             
-            # 绘制从起始位置到新位置的箭头
+            # Draw an arrow from the start to the new position
             ax.arrow(gu.start_pos[0], gu.start_pos[1], gu.end_pos[0] - gu.start_pos[0], gu.end_pos[1] - gu.start_pos[1],
                      head_width=0.5, head_length=1, fc=colors[time_step], ec=colors[time_step])
 
-        # 添加时间步骤到图例
+        # Add a legend entry for this time step
         ax.plot([], [], color=colors[time_step], label=f'Time Step: {time_step + 1}')
     
-    # 添加图例
+    # Add the legend to the plot
     ax.legend(loc='upper left')
     
-    # 显示最终的可视化结果
+    # Display the final visualization
     plt.show()
 
 
@@ -98,8 +101,6 @@ ground_users = generate_users(10, blocks, scene['xLength'], scene['yLength'])
 
 # print_nodes(ground_users, True)
 
-max_movement_distance = 15
+max_movement_distance = 3
 
-# 假定其他变量已经按照你的代码加载和定义
-
-simulate_and_visualize_movements(5, ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+simulate_and_visualize_movements(10, ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)

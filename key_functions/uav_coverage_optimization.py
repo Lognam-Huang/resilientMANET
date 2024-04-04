@@ -6,6 +6,8 @@ from sklearn.cluster import DBSCAN
 from functions.calculate_data_rate import *
 from scipy.spatial.distance import pdist, squareform
 
+from functions.print_nodes import *
+
 def generate_visibility_heatmap(ground_users, obstacles, area_dimensions, min_altitude, max_altitude, target_user_indices=None):
     """
     Generate a 3D heatmap of visibility for ground users within a specified area and altitude range.
@@ -32,7 +34,12 @@ def generate_visibility_heatmap(ground_users, obstacles, area_dimensions, min_al
         for x in range(x_length):
             for y in range(y_length):
                 for user_index in target_user_indices:
-                    user = ground_users[user_index - 1]  # Adjusting for 0-based index if necessary
+                    user = ground_users[user_index]  # Adjusting for 0-based index if necessary
+
+                    # print("User index is:"+str(user_index))
+                    # print("User number of GU is:")
+                    # print_node_number(user)
+
                     viewpoint = Nodes([x, y, altitude])
                     if not path_is_blocked(obstacles, viewpoint, user):
                         heatmap[x, y, altitude - min_altitude] += 1
@@ -61,7 +68,7 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
     active_uavs_indices = list(range(len(uavs)))
     heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
 
-    max_capacity_records = [find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info)]
+    max_capacity_records = [find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude)]
 
     while active_uavs_indices:
         max_value = np.max(heatmap)
@@ -77,6 +84,12 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
         largest_cluster_label = unique_labels[np.argmax(counts)]
         largest_cluster_points = max_value_points[cluster_labels == largest_cluster_label]
 
+        # print("Now TESTING:")
+        # print(unique_labels)
+        # print(counts)
+        # print(largest_cluster_label)
+        # print(len(largest_cluster_points))
+
         if active_ground_users_indices:
             selected_point = largest_cluster_points[np.random.choice(len(largest_cluster_points))]
             selected_point[2] += min_altitude  # Adjust altitude to absolute value
@@ -84,25 +97,93 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
             current_uav = active_uavs_indices.pop(0)
             uavs[current_uav].set_position((selected_point[0], selected_point[1], selected_point[2]))
 
+            print("Trying to cover more GUs:")
+            print(str(selected_point))
+
+            # print("According to current heatmap, the max value is:")
+            # print(np.max(heatmap))
+            # print(active_ground_users_indices)
+
             active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
             heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
-            max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info))
-        else:
+            max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
+        else:            
+            print("Trying to optimize positions:")
+                
+            active_ground_users_indices, target_uav = find_most_connected_ground_users(ground_users)
+            print(active_ground_users_indices)
+            print(target_uav)
+            # print_nodes(ground_users)
+            # print_specific_nodes(uavs, target_uav)
+            
+            heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
+
+            print("TESTING")
+            print("According to new heatmap, the max value is:")
+            print(np.max(heatmap))
+
+            max_value = np.max(heatmap)
+            
+            max_value_points = np.argwhere(heatmap == max_value)
+            
+            clustering = DBSCAN(eps=clustering_epsilon, min_samples=min_cluster_size).fit(max_value_points)
+            cluster_labels = clustering.labels_
+            
+            unique_labels, counts = np.unique(cluster_labels[cluster_labels >= 0], return_counts=True)
+            if counts.size == 0:
+                return None  # Exit if all points are considered noise by DBSCAN
+            
+            largest_cluster_label = unique_labels[np.argmax(counts)]
+            largest_cluster_points = max_value_points[cluster_labels == largest_cluster_label]
+            
+            
             if len(largest_cluster_points) < 2:
+                print("There is not enough points in the cluster for further optimization")
                 break
 
-            distances = squareform(pdist(largest_cluster_points, 'euclidean'))
-            furthest_points_indices = np.unravel_index(distances.argmax(), distances.shape)
-            selected_points = largest_cluster_points[list(furthest_points_indices)]
+            # distances = squareform(pdist(largest_cluster_points, 'euclidean'))
+            # furthest_points_indices = np.unravel_index(distances.argmax(), distances.shape)
+            # selected_points = largest_cluster_points[list(furthest_points_indices)]
 
-            for point, uav_index in zip(selected_points, active_uavs_indices[:2]):
-                point[2] += min_altitude
-                uavs[uav_index].set_position((point[0], point[1], point[2]))
-                active_uavs_indices.remove(uav_index)
+            selected_indices = np.random.choice(len(largest_cluster_points), size=2, replace=False)
+            selected_points = largest_cluster_points[selected_indices]
+
+
+            # for point, uav_index in zip(selected_points, active_uavs_indices[:2]):
+            #     point[2] += min_altitude
+            #     uavs[uav_index].set_position((point[0], point[1], point[2]))
+
+            #     print("Trying to optimize positions:")
+            #     print(str(point))
+
+            #     active_uavs_indices.remove(uav_index)
+
+            
+            print("Modify existed UAV node at:")
+            print(uavs[target_uav].position)
+
+            uavs[target_uav].set_position((selected_points[0][0],selected_points[0][1],selected_points[0][2]+min_altitude))
+
+            print("New position of existed UAV node is:")
+            print(uavs[target_uav].position)
+
+            uav_index = active_uavs_indices[:1][0]
+            uavs[uav_index].set_position((selected_points[1][0],selected_points[1][1],selected_points[1][2]+min_altitude))
+            
+            print("Add a new UAV node for workload at:")
+            print(uavs[uav_index].position)
+
+            active_uavs_indices.remove(uav_index)
 
             active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
-            heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
-            max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info))
+
+            # print("Check whether all GUs are covered:")
+            # print(active_ground_users_indices)
+
+            max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
+        
+        print("Check whether all GUs are covered:")
+        print(active_ground_users_indices)
 
     return max_capacity_records
 
@@ -122,7 +203,10 @@ def update_connected_ground_users(ground_users, uavs, max_altitude, obstacles):
     considered_ground_users = []
     disconnected_users_count = len(ground_users)
 
-    for index, gu in enumerate(ground_users, start=1):
+    for index, gu in enumerate(ground_users, start=0):
+    # for index, gu in enumerate(ground_users, start=1):
+        # print("idx = ")
+        # print(index)
         is_connected = False
         for uav in uavs:
             if uav.position[2] > max_altitude:
@@ -138,7 +222,7 @@ def update_connected_ground_users(ground_users, uavs, max_altitude, obstacles):
 
     return considered_ground_users, disconnected_users_count
 
-def find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info):
+def find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude):
     """
     Calculate the maximum communication capacity for each ground user based on the line of sight to UAVs.
 
@@ -153,20 +237,33 @@ def find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_inf
     """
     maximum_capacities = {}
 
+    # minimum_capacity is used for checking if there are enormous efficiency downhills while optimizing overload
+    minimum_capacity = math.inf
+
     for ground_user in ground_users:
         max_capacity = 0  # Initialize the maximum capacity for the current ground user
 
         for uav in uavs:
+            if uav.position[2] > max_altitude:
+                continue
+            
             is_blocked = path_is_blocked(obstacles, uav, ground_user)
             data_rate = calculate_data_rate(uav_info, uav.position, ground_user.position, is_blocked)
             
             # Update the maximum capacity if the current data rate is higher
             if data_rate > max_capacity:
                 max_capacity = data_rate
-                ground_user.set_connection(uav.node_number)  # Store the connection to the UAV
+
+                if not is_blocked:
+                    ground_user.set_connection(uav.node_number)  # Store the connection to the UAV
 
         maximum_capacities[ground_user] = max_capacity
 
+        minimum_capacity = min(minimum_capacity, max_capacity)        
+
+    print("The worst capacity of all GU at the moment is:")
+    print(minimum_capacity)
+    
     return maximum_capacities
 
 def find_most_connected_ground_users(nodes_list):
@@ -181,7 +278,8 @@ def find_most_connected_ground_users(nodes_list):
     - list: A list of node numbers for ground users that are connected to the most frequently connected node.
     """
     # Extract only ground users from the nodes list
-    ground_users = [node for node in nodes_list if node.type == "ground user"]
+    # ground_users = [node for node in nodes_list if node.type == "ground user"]
+    ground_users = nodes_list
 
     # Count the occurrences of each connected node among ground users
     connection_counts = {}
@@ -191,13 +289,21 @@ def find_most_connected_ground_users(nodes_list):
 
     # Determine the node with the highest number of connections
     most_common_node = max(connection_counts, key=connection_counts.get, default=None)
-    if not most_common_node:
+
+    print("Each UAV cover some GUs:")
+    print(connection_counts)
+    # print(most_common_node)
+
+    if most_common_node == None:
+        print("There is no frequently used UAV node")
         return []
 
     # Identify all ground users that are connected to this most common node
     most_connected_user_numbers = [user.node_number for user in ground_users if most_common_node in user.connected_nodes]
 
-    return most_connected_user_numbers
+    # print(most_connected_user_numbers)
+
+    return most_connected_user_numbers, most_common_node
 
 def find_furthest_points_in_largest_cluster(heatmap, epsilon, min_samples):
     """
@@ -247,7 +353,8 @@ def plot_gu_capacities(capacities_tracks):
 
     for capacities_dict in capacities_tracks:
         for gu, capacity in capacities_dict.items():
-            gu_id = id(gu)
+            # gu_id = id(gu)
+            gu_id = gu.node_number
             gu_capacities.setdefault(gu_id, []).append(capacity)
 
     plt.figure(figsize=(12, 8))
