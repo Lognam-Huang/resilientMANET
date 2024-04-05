@@ -16,8 +16,8 @@ UAVInfo = scene_data['UAV']
 scene = scene_data['scenario']
 
 # Generate ground users and UAVs
-ground_users = generate_users(15, blocks, scene['xLength'], scene['yLength'])
-UAVs = generate_UAVs(5, blocks, scene['xLength'], scene['yLength'], 50, 3, "basic UAV")
+ground_users = generate_users(25, blocks, scene['xLength'], scene['yLength'])
+UAVs = generate_UAVs(10, blocks, scene['xLength'], scene['yLength'], 50, 3, "basic UAV")
 
 # Set specific positions for some ground users
 specified_positions = [(3, 3, 0), (24, 24, 0), (3, 8, 0), (8, 2, 0), (24, 22, 0), (21, 24, 0)]
@@ -39,15 +39,23 @@ max_capacities_tracks = find_optimal_uav_positions(
     ground_users, UAVs, eps, min_samples, blocks, scene, min_height, max_height, UAVInfo
 )
 
-print("All uavs nodes are at:")
-# print_nodes(ground_users)
-print_nodes(UAVs, True)
-
+# print("All uavs nodes are at:")
+# # print_nodes(ground_users)
+# print_nodes(UAVs, True)
 
 
 # Plot the capacities of ground users over time
 # print(max_capacities_tracks[4])
 plot_gu_capacities(max_capacities_tracks)
+
+# this is a failure
+# plot_gu_uav_statistics(max_capacities_tracks)
+
+# plot 2 images separatedly
+# plot_gu_summary_and_uav_load(max_capacities_tracks)
+
+# plot 2 images together
+plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
 
 # Visualize the scene with ground users, UAVs, and blocks
 # scene_visualization(ground_users, UAVs, blocks=blocks, scene_info=scene)
