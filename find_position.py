@@ -40,12 +40,10 @@ max_capacities_tracks = find_optimal_uav_positions(
 )
 
 # print("All uavs nodes are at:")
-# # print_nodes(ground_users)
+# print_nodes(ground_users)
 # print_nodes(UAVs, True)
 
-
 # Plot the capacities of ground users over time
-# print(max_capacities_tracks[4])
 plot_gu_capacities(max_capacities_tracks)
 
 # this is a failure
