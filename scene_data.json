@@ -30,6 +30,7 @@
         "Power": 10,
         "TransmittingAntennaGain": 10,
         "ReceievingAntennaGain": 10,
-        "CarrierFrequency": 28000000000        
+        "CarrierFrequency": 28000000000,
+        "UAVSpeed": 15        
     }
 }

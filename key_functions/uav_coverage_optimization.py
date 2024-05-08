@@ -133,6 +133,8 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
         print("Check whether all GUs are covered:")
         print(active_ground_users_indices)
 
+    max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
+    
     return max_capacity_records
 
 def update_connected_ground_users(ground_users, uavs, max_altitude, obstacles):

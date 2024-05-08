@@ -5,7 +5,7 @@ from key_functions.uav_coverage_optimization import *
 from functions.generate_users import generate_users
 from functions.generate_UAVs import generate_UAVs
 from functions.scene_visualization import scene_visualization
-from functions.print_nodes import print_nodes
+from functions.print_nodes import print_nodes, get_nodes_position
 
 # Load scene data from JSON file
 with open('scene_data_simple.json', 'r') as file:
@@ -16,8 +16,8 @@ UAVInfo = scene_data['UAV']
 scene = scene_data['scenario']
 
 # Generate ground users and UAVs
-ground_users = generate_users(25, blocks, scene['xLength'], scene['yLength'])
-UAVs = generate_UAVs(10, blocks, scene['xLength'], scene['yLength'], 50, 3, "basic UAV")
+ground_users = generate_users(15, blocks, scene['xLength'], scene['yLength'])
+UAVs = generate_UAVs(3, blocks, scene['xLength'], scene['yLength'], 50, 3, "basic UAV")
 
 # Set specific positions for some ground users
 specified_positions = [(3, 3, 0), (24, 24, 0), (3, 8, 0), (8, 2, 0), (24, 22, 0), (21, 24, 0)]
@@ -42,6 +42,10 @@ max_capacities_tracks = find_optimal_uav_positions(
 # print("All uavs nodes are at:")
 # print_nodes(ground_users)
 # print_nodes(UAVs, True)
+
+# get positions for MAPPO
+UAV_positions = get_nodes_position(UAVs)
+print(UAV_positions)
 
 # Plot the capacities of ground users over time
 plot_gu_capacities(max_capacities_tracks)
