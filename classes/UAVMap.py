@@ -71,3 +71,11 @@ class UAVMap:
     def __str__(self):
         return f"UAVMap(allPaths={self.allPaths})"
 
+def find_best_paths_to_bs(UAVMap):
+    best_paths = {}
+
+    for uav, paths in UAVMap.allPaths.items():
+        best_path = max(paths, key=lambda x: x['DR'])
+        best_paths[uav] = best_path['path']
+    
+    return best_paths

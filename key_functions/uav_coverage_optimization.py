@@ -46,7 +46,7 @@ def generate_visibility_heatmap(ground_users, obstacles, area_dimensions, min_al
 
     return heatmap
 
-def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_cluster_size, obstacles, area_info, min_altitude, max_altitude, uav_info):
+def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_cluster_size, obstacles, area_info, min_altitude, max_altitude, uav_info, print_para=False):
     """
     Determine optimal positions for UAVs to maximize coverage of ground users by analyzing
     the density of ground users within the 3D space and clustering high-density areas.
@@ -64,6 +64,21 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
     Returns:
     A list of dictionaries representing the maximum communication capacities for each ground user after positioning UAVs.
     """
+
+    if print_para:
+        print("find_optimal_uav_positions called with the following parameters:")
+        print("Ground Users:")
+        print_nodes(ground_users, onlyPosition=True)
+        print("UAVs:")
+        print_nodes(uavs, onlyPosition=True)
+        print("Clustering Epsilon:", clustering_epsilon)
+        print("Min Cluster Size:", min_cluster_size)
+        print("Obstacles:", obstacles)
+        print("Area Info:", area_info)
+        print("Min Altitude:", min_altitude)
+        print("Max Altitude:", max_altitude)
+        print("UAV Info:", uav_info)
+
     active_ground_users_indices = list(range(len(ground_users)))
     active_uavs_indices = list(range(len(uavs)))
     max_capacity_records = []
@@ -248,7 +263,7 @@ def find_most_connected_ground_users(nodes_list):
 
     if most_common_node == None:
         print("There is no frequently used UAV node")
-        return []
+        return [], None
 
     # Identify all ground users that are connected to this most common node
     most_connected_user_numbers = [user.node_number for user in ground_users if most_common_node in user.connected_nodes]

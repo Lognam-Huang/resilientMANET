@@ -90,17 +90,19 @@ def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, 
 
 
 
-# Load scene data from JSON file
-with open('scene_data_simple.json', 'r') as file:
-    scene_data = json.load(file)
+if __name__ == "__main__":
 
-blocks = scene_data['blocks']
-scene = scene_data['scenario']
+    # Load scene data from JSON file
+    with open('scene_data_simple.json', 'r') as file:
+        scene_data = json.load(file)
 
-ground_users = generate_users(10, blocks, scene['xLength'], scene['yLength'])
+    blocks = scene_data['blocks']
+    scene = scene_data['scenario']
 
-# print_nodes(ground_users, True)
+    ground_users = generate_users(10, blocks, scene['xLength'], scene['yLength'])
 
-max_movement_distance = 3
+    # print_nodes(ground_users, True)
 
-simulate_and_visualize_movements(10, ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+    max_movement_distance = 3
+
+    simulate_and_visualize_movements(10, ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)

@@ -162,71 +162,122 @@ def generate_random_binary_string(input_string):
     random_string = ''.join(random.choice(['0', '1']) for _ in range(length))
     return random_string
 
-# Q-learning hyperparameters
-epsilon = 0.1
-# randomness of choosing actions
-best_state = ""
+def find_best_topology(UAV_coords, ABS_coords, eps, episodes=50, visualize=False):
+    best_state = ""
+    q_table = {}
+    reward_track = []
+    RS_track = []
+    OL_track = []
+    max_reward = 0
+    num_nodes = len(ABS_coords) + len(UAV_coords)
+    state = '0' * int((num_nodes * (num_nodes - 1) / 2))
+    start_time = time.time()
 
-q_table = {}
+    epsilon = eps
 
-reward_track = []
-RS_track = []
-OL_track = []
+    for episode in range(episodes):
+        next_possible_states = generate_adjacent_states(state)
+        states_scores, end_flag = process_states(next_possible_states, q_table)
 
-max_reward = 0
-num_nodes = len(ABS_coords) + len(UAV_coords)
+        next_state, next_state_score = take_action(states_scores, epsilon)
 
-state = '0' * int((num_nodes*(num_nodes-1)/2))
-# state = '1' * int((num_nodes*(num_nodes-1)/2))
+        if next_state_score[0] > max_reward:
+            max_reward = next_state_score[0]
+            best_state = next_state
 
-start_time = time.time()
+        reward_track.append(next_state_score[0])
+        RS_track.append(next_state_score[1])
+        OL_track.append(next_state_score[2])
 
-for episode in range(50):
-    next_possible_states = generate_adjacent_states(state)
-    states_scores, end_flag = process_states(next_possible_states, q_table)
+        if not end_flag:
+            state = generate_random_binary_string(state)
+            continue
 
-    next_state, next_state_score = take_action(states_scores, epsilon)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"The code block ran in {elapsed_time} seconds")
+    print(f"Best state: {best_state}")
+    print(f"Max reward: {max_reward}")
 
-    if next_state_score[0] > max_reward:
-        max_reward = next_state_score[0]
-        best_state = next_state
-        # print("Q")
-    
-    # print(episode)
-    # reward_track.append(max_reward)
-    reward_track.append(next_state_score[0])
-    RS_track.append(next_state_score[1])
-    OL_track.append(next_state_score[2])
+    if visualize:
+        # visualization
+        plt.plot(reward_track, label='Reward', color='blue')
+        plt.plot(RS_track, label='RS Value', color='red')
+        plt.plot(OL_track, label='OL Value', color='green')
+        plt.title('Track Values Over Episodes')  # set title
+        plt.xlabel('Episode')  # set x label
+        plt.ylabel('Value')  # set y label
+        plt.legend()  # show legend to distinguish tracks
+        plt.show()
 
-    if not end_flag: 
-        state = generate_random_binary_string(state)
-        # break
-        continue
+    return best_state, max_reward, reward_track, RS_track, OL_track
 
-end_time = time.time()
-elapsed_time = end_time - start_time
-print(f"The code block ran in {elapsed_time} seconds")
+if __name__ == "__main__":
+    # Q-learning hyperparameters
+    epsilon = 0.1
+    # randomness of choosing actions
+    best_state = ""
 
+    q_table = {}
 
-# print(generate_adjacent_states('00110011011100'))
-# print(generate_adjacent_states('01001110'))
-# q_table = {'01101': 0.745, '10011': 0.658}
-# input_state = '01111'
-# adjacent_states = generate_adjacent_states(input_state)
-# print(process_states(adjacent_states, q_table))
+    reward_track = []
+    RS_track = []
+    OL_track = []
 
+    max_reward = 0
+    num_nodes = len(ABS_coords) + len(UAV_coords)
+
+    state = '0' * int((num_nodes*(num_nodes-1)/2))
+    # state = '1' * int((num_nodes*(num_nodes-1)/2))
+
+    start_time = time.time()
+
+    for episode in range(50):
+        next_possible_states = generate_adjacent_states(state)
+        states_scores, end_flag = process_states(next_possible_states, q_table)
+
+        next_state, next_state_score = take_action(states_scores, epsilon)
+
+        if next_state_score[0] > max_reward:
+            max_reward = next_state_score[0]
+            best_state = next_state
+            # print("Q")
         
-print(best_state)
-print(max_reward)
+        # print(episode)
+        # reward_track.append(max_reward)
+        reward_track.append(next_state_score[0])
+        RS_track.append(next_state_score[1])
+        OL_track.append(next_state_score[2])
 
-# visualization
-plt.plot(reward_track, label='Reward', color='blue')
-plt.plot(RS_track, label='RS Value', color='red')
-plt.plot(OL_track, label='OL Value', color='green') 
+        if not end_flag: 
+            state = generate_random_binary_string(state)
+            # break
+            continue
 
-plt.title('Track Values Over Episodes')  # set title
-plt.xlabel('Episode')  # set x label
-plt.ylabel('Value')  # set y label
-plt.legend()  # show legend to distinguish tracks
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"The code block ran in {elapsed_time} seconds")
 
-plt.show()
+
+    # print(generate_adjacent_states('00110011011100'))
+    # print(generate_adjacent_states('01001110'))
+    # q_table = {'01101': 0.745, '10011': 0.658}
+    # input_state = '01111'
+    # adjacent_states = generate_adjacent_states(input_state)
+    # print(process_states(adjacent_states, q_table))
+
+            
+    print(best_state)
+    print(max_reward)
+
+    # visualization
+    plt.plot(reward_track, label='Reward', color='blue')
+    plt.plot(RS_track, label='RS Value', color='red')
+    plt.plot(OL_track, label='OL Value', color='green') 
+
+    plt.title('Track Values Over Episodes')  # set title
+    plt.xlabel('Episode')  # set x label
+    plt.ylabel('Value')  # set y label
+    plt.legend()  # show legend to distinguish tracks
+
+    plt.show()

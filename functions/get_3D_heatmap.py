@@ -38,9 +38,6 @@ def get_3D_heatmap(ground_users, blocks, scene_info, min_height, max_height, con
     return heatmap
 
 
-
-
-
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 
