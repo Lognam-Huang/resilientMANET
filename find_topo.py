@@ -32,54 +32,54 @@ import time
 
 # node coordinations
 # simple demonstration
-UAV_coords = np.array([
-    # (250,200,200),
-    # (250,600,200),
-    # (600,350,200),
+# UAV_coords = np.array([
+#     # (250,200,200),
+#     # (250,600,200),
+#     # (600,350,200),
 
-    # (588, 127, 246),
-    # (665, 310, 180),
-    # (428, 777, 201),
-    (513, 769, 193),
-    (548, 317, 216),
+#     # (588, 127, 246),
+#     # (665, 310, 180),
+#     # (428, 777, 201),
+#     (513, 769, 193),
+#     (548, 317, 216),
 
-    (783, 626, 235),
-    (411, 254, 224),
-    # (600, 725, 224),
-    # (419, 38, 151),
-    # (423, 215, 183),
-    # (643, 641, 198),
-])
+#     (783, 626, 235),
+#     (411, 254, 224),
+#     # (600, 725, 224),
+#     # (419, 38, 151),
+#     # (423, 215, 183),
+#     # (643, 641, 198),
+# ])
 
-ABS_coords = np.array([
-    # (440,390,500),
+# ABS_coords = np.array([
+#     # (440,390,500),
 
-    # (294, 467, 500),
-    # (445, 0, 500),
+#     # (294, 467, 500),
+#     # (445, 0, 500),
 
-    (511, 133, 500),
-    (244, 637, 500),
-])
+#     (511, 133, 500),
+#     (244, 637, 500),
+# ])
 
-reward_hyper = {
-    'DRPenalty': 0.5,
-    'BPHopConstraint': 4,
-    'BPDRConstraint': 100000000,
-    'droppedRatio': 0.2,
-    'ratioDR': 0.6,
-    'ratioBP': 0.4,
-    'weightDR': 0.3,
-    'weightBP': 0.4,
-    'weightNP': 0.3,
-    'overloadConstraint': 10000
-}
+# reward_hyper = {
+#     'DRPenalty': 0.5,
+#     'BPHopConstraint': 4,
+#     'BPDRConstraint': 100000000,
+#     'droppedRatio': 0.2,
+#     'ratioDR': 0.6,
+#     'ratioBP': 0.4,
+#     'weightDR': 0.3,
+#     'weightBP': 0.4,
+#     'weightNP': 0.3,
+#     'overloadConstraint': 10000
+# }
 
 # Get reward of a state, including resilience score and optimization score
-def Reward(state):
+def Reward(state, scene_info, UAV_coords, ABS_coords, reward_hyper):
     # notice that score = RS-overload
     # or RS*overload
 
-    UAVMap = get_UAVMap(state=state, UAV_position=UAV_coords, ABS_position=ABS_coords)
+    UAVMap = get_UAVMap(state=state, UAV_position=UAV_coords, ABS_position=ABS_coords, scene_info=scene_info)
 
     # Unpack hyperparameters from the dictionary
     DRPenalty = reward_hyper['DRPenalty']
@@ -93,17 +93,17 @@ def Reward(state):
     weightNP = reward_hyper['weightNP']
     overloadConstraint = reward_hyper['overloadConstraint']
 
-    ResilienceScore = get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP)
+    ResilienceScore = get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP, scene_info)
 
     # as for the reward function, we need also to consider the balance in the UAV network
     # here we use gini coefficient
     overloadConstraint = 10000
-    OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint)
+    OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint, scene_info)
 
     # now we just return RS*overload
     rewardScore = ResilienceScore*OverloadScore
 
-    return rewardScore, ResilienceScore, OverloadScore
+    return rewardScore, ResilienceScore, OverloadScore, UAVMap
     # return rewardScore
 
 def generate_adjacent_states(state):
@@ -123,7 +123,7 @@ def generate_adjacent_states(state):
 
     return adjacent_states
 
-def process_states(adjacent_states, q_table):
+def process_states(adjacent_states, q_table, scene_info, UAV_coords, ABS_coords, reward_hyper):
     next_state_sum = len(adjacent_states)
     next_state_all = {}
     
@@ -132,7 +132,7 @@ def process_states(adjacent_states, q_table):
             next_state_all[state] = q_table[state]
             next_state_sum -= 1
         else:
-            next_state_score = Reward(state)
+            next_state_score = Reward(state, scene_info, UAV_coords, ABS_coords, reward_hyper)
             next_state_all[state] = next_state_score
             q_table[state] = next_state_score
     return next_state_all, next_state_sum > 0
@@ -162,7 +162,7 @@ def generate_random_binary_string(input_string):
     random_string = ''.join(random.choice(['0', '1']) for _ in range(length))
     return random_string
 
-def find_best_topology(UAV_coords, ABS_coords, eps, episodes=50, visualize=False):
+def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, visualize=False, scene_info = None, print_prog = False):
     best_state = ""
     q_table = {}
     reward_track = []
@@ -173,17 +173,20 @@ def find_best_topology(UAV_coords, ABS_coords, eps, episodes=50, visualize=False
     state = '0' * int((num_nodes * (num_nodes - 1) / 2))
     start_time = time.time()
 
+    best_state_UAVMap = None
+
     epsilon = eps
 
     for episode in range(episodes):
         next_possible_states = generate_adjacent_states(state)
-        states_scores, end_flag = process_states(next_possible_states, q_table)
+        states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, UAV_coords, ABS_coords, reward_hyper)
 
         next_state, next_state_score = take_action(states_scores, epsilon)
 
         if next_state_score[0] > max_reward:
             max_reward = next_state_score[0]
             best_state = next_state
+            best_state_UAVMap = next_state_score[3]
 
         reward_track.append(next_state_score[0])
         RS_track.append(next_state_score[1])
@@ -193,11 +196,12 @@ def find_best_topology(UAV_coords, ABS_coords, eps, episodes=50, visualize=False
             state = generate_random_binary_string(state)
             continue
 
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"The code block ran in {elapsed_time} seconds")
-    print(f"Best state: {best_state}")
-    print(f"Max reward: {max_reward}")
+    if print_prog:
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"The code block ran in {elapsed_time} seconds")
+        print(f"Best state: {best_state}")
+        print(f"Max reward: {max_reward}")
 
     if visualize:
         # visualization
@@ -210,7 +214,7 @@ def find_best_topology(UAV_coords, ABS_coords, eps, episodes=50, visualize=False
         plt.legend()  # show legend to distinguish tracks
         plt.show()
 
-    return best_state, max_reward, reward_track, RS_track, OL_track
+    return best_state, max_reward, reward_track, RS_track, OL_track, best_state_UAVMap
 
 if __name__ == "__main__":
     # Q-learning hyperparameters

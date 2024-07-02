@@ -19,15 +19,19 @@ def aa():
     
     # necessary data
 # read scenario data
-with open('scene_data.json', 'r') as f:
-    ini = json.load(f)
+# with open('scene_data.json', 'r') as f:
+#     ini = json.load(f)
 
-# groundBaseStation = ini['baseStation']
-blocks = ini['blocks']
-UAVInfo = ini['UAV']
-scene = ini['scenario']
+# # groundBaseStation = ini['baseStation']
+# blocks = ini['blocks']
+# UAVInfo = ini['UAV']
+# scene = ini['scenario']
     
-def get_UAVMap(state, UAV_position = 0, ABS_position = 0):
+def get_UAVMap(state, UAV_position = 0, ABS_position = 0, scene_info = None):
+    blocks = scene_info['blocks']
+    UAVInfo = scene_info['UAV']
+    scene = scene_info['scenario']
+    
     # print(state)
     # print(UAV_position)
     # print(ABS_position)
@@ -340,8 +344,12 @@ def integrate_quantification(value1, value2, value3, weight1, weight2, weight3):
     
     return integrated_value
 
-def get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP):
+def get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP, scene_info):
     # quantify resilience score: data rate
+    blocks = scene_info['blocks']
+    UAVInfo = scene_info['UAV']
+    scene = scene_info['scenario']
+    
 
     DRScore = quantify_data_rate(UAVMap, DRPenalty, UAVInfo)
     # print("Data rate score of current topology:")
@@ -365,7 +373,11 @@ def get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, rat
 
     return ResilienceScore
 
-def measure_overload(UAVMap, hop_constraint, DR_constraint, overload_constraint):
+def measure_overload(UAVMap, hop_constraint, DR_constraint, overload_constraint, scene_info):
+    blocks = scene_info['blocks']
+    UAVInfo = scene_info['UAV']
+    scene = scene_info['scenario']
+    
     AllPaths = UAVMap.allPaths
     # print(UAVMap)
     # print(AllPaths)

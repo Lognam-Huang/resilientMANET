@@ -46,7 +46,7 @@ def generate_visibility_heatmap(ground_users, obstacles, area_dimensions, min_al
 
     return heatmap
 
-def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_cluster_size, obstacles, area_info, min_altitude, max_altitude, uav_info, print_para=False):
+def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_cluster_size, obstacles, area_info, min_altitude, max_altitude, uav_info, print_para=False, print_prog=False):
     """
     Determine optimal positions for UAVs to maximize coverage of ground users by analyzing
     the density of ground users within the 3D space and clustering high-density areas.
@@ -145,8 +145,9 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
             active_uavs_indices.remove(uav_index)
             active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
             
-        print("Check whether all GUs are covered:")
-        print(active_ground_users_indices)
+        if print_prog:
+            print("Check whether all GUs are covered:")
+            print(active_ground_users_indices)
 
     max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
     
@@ -187,7 +188,7 @@ def update_connected_ground_users(ground_users, uavs, max_altitude, obstacles):
 
     return considered_ground_users, disconnected_users_count
 
-def find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude):
+def find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude, print_prog=False):
     """
     Calculate the maximum communication capacity for each ground user based on the line of sight to UAVs.
 
@@ -228,12 +229,13 @@ def find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_inf
 
         minimum_capacity = min(minimum_capacity, max_capacity)        
 
-    print("The worst capacity of all GU at the moment is:")
-    print(minimum_capacity)
+    if print_prog:
+        print("The worst capacity of all GU at the moment is:")
+        print(minimum_capacity)
     
     return maximum_capacities
 
-def find_most_connected_ground_users(nodes_list):
+def find_most_connected_ground_users(nodes_list, print_prog=False):
     """
     Finds the ground user node that is most frequently connected to others and returns the list
     of node numbers of ground users connected to this node.
@@ -257,9 +259,10 @@ def find_most_connected_ground_users(nodes_list):
     # Determine the node with the highest number of connections
     most_common_node = max(connection_counts, key=connection_counts.get, default=None)
 
-    print("Each UAV cover some GUs:")
-    print(connection_counts)
-    # print(most_common_node)
+    if print_prog:
+        print("Each UAV cover some GUs:")
+        print(connection_counts)
+        # print(most_common_node)
 
     if most_common_node == None:
         print("There is no frequently used UAV node")
