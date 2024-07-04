@@ -73,7 +73,7 @@ UAV_coords = np.array(get_nodes_position(UAV_nodes))
 
 # Q-learning hyperparameters
 epsilon = 0.1
-training_episodes=25
+training_episodes=20
 
 best_state, max_reward, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(UAV_coords, ABS_coords, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper)
 
@@ -81,7 +81,7 @@ print(best_state)
 print(max_reward)
 
 # Lognam: try to have TD
-sim_time = 0
+sim_time = 5
 
 # Lognam: try to switch scenes
 max_movement_distance = 5
@@ -107,17 +107,26 @@ from classes.UAVMap import *
 uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
 gu_to_uav_connections = extract_gu_to_uav_connections(ground_users)
 
-print(cur_UAVMap)
-print(uav_to_bs_connections)
-print(gu_to_uav_connections)
+# print(cur_UAVMap)
+# print(uav_to_bs_connections)
+# print(gu_to_uav_connections)
 
 from simu_functions import *
 
 GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
 
-print(GU_capacity)
-print(UAV_capacity)
-print(UAV_overload)
+# print(GU_capacity)
+# print(UAV_capacity)
+# print(UAV_overload)
+
+
+all_gu_capacity = [] 
+all_gu_capacity.append(GU_capacity)
+
+all_UAV_capacity = []
+all_UAV_capacity.append(UAV_capacity)
+all_UAV_overload = []
+all_UAV_overload.append(UAV_overload)
 
 # print(cur_UAVMap.allPaths.get(0, []))
 
@@ -150,14 +159,23 @@ for cur_time_frame in range(sim_time):
     uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
     gu_to_uav_connections = extract_gu_to_uav_connections(ground_users)
 
+    GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
+    all_gu_capacity.append(GU_capacity)
+    all_UAV_capacity.append(UAV_capacity)
+    all_UAV_overload.append(UAV_overload)
+
     scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
 
+# print(all_UAV_capacity)
+# print(all_UAV_overload)
 
-print(max_reward_TD)
-print(max_RS_TD)
-print(max_OL_TD)
+visualize_all_gu_capacity(all_gu_capacity=all_gu_capacity)
+visualize_uav_capacity(all_uav_capacity=all_UAV_capacity)
+visualize_all_UAV_overload(all_UAV_overload=all_UAV_overload)
 
-plt.plot(max_reward_TD, label='Reward TD', color='blue')
-plt.plot(max_RS_TD, label='RS Score TD', color='green')
-plt.plot(max_OL_TD, label='OL Score TD', color='red')
+
+# print(max_reward_TD)
+# print(max_RS_TD)
+# print(max_OL_TD)
+visualize_metrics(max_reward_TD, max_RS_TD, max_OL_TD)
