@@ -4,9 +4,9 @@
         "yLength": 25
     },
     "baseStation": {
-        "bottomCorner": [0, 0, 0],
+        "bottomCorner": [5, 5, 0],
         "size": [5, 5],
-        "height": [10]
+        "height": [12]
     },
     "blocks": [
         {
@@ -43,6 +43,8 @@
         "TransmittingAntennaGain": 10,
         "ReceievingAntennaGain": 10,
         "CarrierFrequency": 28000000000,
-        "UAVSpeed": 15         
+        "UAVSpeed": 15,
+        "min_height": 10,
+        "max_height": 15             
     }
 }

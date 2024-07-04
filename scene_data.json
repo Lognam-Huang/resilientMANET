@@ -1,7 +1,7 @@
 {
     "scenario": {
-        "xLength": 800,
-        "yLength": 800
+        "xLength": 600,
+        "yLength": 600
     },
     "baseStation": {
         "bottomCorner": [0, 0, 0],
@@ -10,19 +10,79 @@
     },
     "blocks": [
         {
-            "bottomCorner": [350, 380, 0],
-            "size": [80, 80],
-            "height": 100
-        },
-        {
-            "bottomCorner": [350, 10, 0],
-            "size": [60, 80],
+            "bottomCorner": [30, 520, 0],
+            "size": [50, 50],
             "height": 200
         },
         {
-            "bottomCorner": [20, 570, 0],
-            "size": [100, 80],
-            "height": 400
+            "bottomCorner": [80, 80, 0],
+            "size": [60, 100],
+            "height": 25
+        },
+        {
+            "bottomCorner": [80, 440, 0],
+            "size": [80, 60],
+            "height": 125
+        },
+        {
+            "bottomCorner": [160, 360, 0],
+            "size": [80, 80],
+            "height": 10
+        },
+        {
+            "bottomCorner": [200, 200, 0],
+            "size": [60, 60],
+            "height": 15
+        },
+        {
+            "bottomCorner": [200, 520, 0],
+            "size": [80, 60],
+            "height": 12
+        },
+        {
+            "bottomCorner": [250, 150, 0],
+            "size": [80, 60],
+            "height": 125
+        },
+        {
+            "bottomCorner": [300, 50, 0],
+            "size": [60, 40],
+            "height": 10
+        },
+        {
+            "bottomCorner": [350, 440, 0],
+            "size": [120, 40],
+            "height": 250
+        },
+        {
+            "bottomCorner": [400, 400, 0],
+            "size": [80, 80],
+            "height": 75
+        },
+        {
+            "bottomCorner": [450, 100, 0],
+            "size": [40, 120],
+            "height": 15
+        },
+        {
+            "bottomCorner": [550, 480, 0],
+            "size": [40, 40],
+            "height": 75
+        },
+        {
+            "bottomCorner": [600, 250, 0],
+            "size": [60, 60],
+            "height": 125
+        },
+        {
+            "bottomCorner": [650, 100, 0],
+            "size": [60, 60],
+            "height": 15
+        },
+        {
+            "bottomCorner": [650, 400, 0],
+            "size": [60, 80],
+            "height": 17
         }
     ],
     "UAV": {        

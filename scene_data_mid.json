@@ -1,0 +1,63 @@
+{
+    "scenario": {
+        "xLength": 200,
+        "yLength": 200
+    },
+    "baseStation": {
+        "bottomCorner": [50, 170, 0],
+        "size": [10, 10],
+        "height": [180]
+    },
+    "blocks": [
+        {
+            "bottomCorner": [10, 170, 0],
+            "size": [40, 40],
+            "height": 150
+        },
+        {
+            "bottomCorner": [40, 40, 0],
+            "size": [30, 40],
+            "height": 80
+        },
+        {
+            "bottomCorner": [60, 150, 0],
+            "size": [40, 30],
+            "height": 25
+        },
+        {
+            "bottomCorner": [90, 100, 0],
+            "size": [20, 20],
+            "height": 100
+        },
+        {
+            "bottomCorner": [120, 40, 0],
+            "size": [20, 60],
+            "height": 50
+        },
+        {
+            "bottomCorner": [140, 160, 0],
+            "size": [30, 30],
+            "height": 80
+        },
+        {
+            "bottomCorner": [160, 70, 0],
+            "size": [20, 20],
+            "height": 25
+        },
+        {
+            "bottomCorner": [180, 10, 0],
+            "size": [10, 20],
+            "height": 30
+        }
+    ],
+    "UAV": {        
+        "bandwidth": 1000000000,
+        "Power": 10,
+        "TransmittingAntennaGain": 10,
+        "ReceievingAntennaGain": 10,
+        "CarrierFrequency": 28000000000,
+        "UAVSpeed": 15 ,
+        "min_height": 50,
+        "max_height": 55        
+    }
+}

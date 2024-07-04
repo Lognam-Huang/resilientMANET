@@ -8,6 +8,8 @@ from scipy.spatial.distance import pdist, squareform
 
 from functions.print_nodes import *
 
+import time
+
 def generate_visibility_heatmap(ground_users, obstacles, area_dimensions, min_altitude, max_altitude, target_user_indices=None):
     """
     Generate a 3D heatmap of visibility for ground users within a specified area and altitude range.
@@ -83,6 +85,8 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
     active_uavs_indices = list(range(len(uavs)))
     max_capacity_records = []
 
+    start_time = time.time()
+
     while active_uavs_indices:
 
         target_uav = None
@@ -145,9 +149,14 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
             active_uavs_indices.remove(uav_index)
             active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
             
-        if print_prog:
-            print("Check whether all GUs are covered:")
-            print(active_ground_users_indices)
+    if print_prog:
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"The code block ran in {elapsed_time} seconds")
+    
+    
+    # print("Check whether all GUs are covered:")
+    # print(active_ground_users_indices)
 
     max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
     
