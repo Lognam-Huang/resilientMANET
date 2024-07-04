@@ -99,10 +99,10 @@ if __name__ == "__main__":
     blocks = scene_data['blocks']
     scene = scene_data['scenario']
 
-    ground_users = generate_users(10, blocks, scene['xLength'], scene['yLength'])
+    ground_users = generate_users(5, blocks, scene['xLength'], scene['yLength'])
 
     # print_nodes(ground_users, True)
 
-    max_movement_distance = 3
+    max_movement_distance = 5
 
-    simulate_and_visualize_movements(10, ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+    simulate_and_visualize_movements(3, ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)

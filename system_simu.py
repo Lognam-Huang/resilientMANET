@@ -81,7 +81,7 @@ print(best_state)
 print(max_reward)
 
 # Lognam: try to have TD
-sim_time = 5
+sim_time = 0
 
 # Lognam: try to switch scenes
 max_movement_distance = 5
@@ -128,6 +128,8 @@ all_UAV_capacity.append(UAV_capacity)
 all_UAV_overload = []
 all_UAV_overload.append(UAV_overload)
 
+scene_visualization(UAV_nodes=UAV_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
+
 # print(cur_UAVMap.allPaths.get(0, []))
 
 for cur_time_frame in range(sim_time):
@@ -170,12 +172,14 @@ for cur_time_frame in range(sim_time):
 # print(all_UAV_capacity)
 # print(all_UAV_overload)
 
-visualize_all_gu_capacity(all_gu_capacity=all_gu_capacity)
-visualize_uav_capacity(all_uav_capacity=all_UAV_capacity)
-visualize_all_UAV_overload(all_UAV_overload=all_UAV_overload)
+if sim_time > 0:
+
+    visualize_all_gu_capacity(all_gu_capacity=all_gu_capacity)
+    visualize_uav_capacity(all_uav_capacity=all_UAV_capacity)
+    visualize_all_UAV_overload(all_UAV_overload=all_UAV_overload)
 
 
-# print(max_reward_TD)
-# print(max_RS_TD)
-# print(max_OL_TD)
-visualize_metrics(max_reward_TD, max_RS_TD, max_OL_TD)
+    # print(max_reward_TD)
+    # print(max_RS_TD)
+    # print(max_OL_TD)
+    visualize_metrics(max_reward_TD, max_RS_TD, max_OL_TD)

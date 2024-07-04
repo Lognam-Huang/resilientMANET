@@ -162,6 +162,34 @@ def generate_random_binary_string(input_string):
     random_string = ''.join(random.choice(['0', '1']) for _ in range(length))
     return random_string
 
+import seaborn as sns
+
+def visualize_q_table(q_table):
+    """
+    可视化Q-table的方法，忽略UAVMap对象
+    :param q_table: Q-table，以字典形式存储，键为状态，值为(Q值, Resilience Score, Overload Score, UAVMap对象)元组
+    """
+    # 提取状态和对应的Q值、Resilience Score、Overload Score
+    states = list(q_table.keys())
+    q_values = [q_table[state][0] for state in states]
+    resilience_scores = [q_table[state][1] for state in states]
+    overload_scores = [q_table[state][2] for state in states]
+
+    # 创建数据矩阵
+    data_matrix = np.array([q_values, resilience_scores, overload_scores])
+
+    # 设置图表标签
+    row_labels = ['Q Value', 'Resilience Score', 'Overload Score']
+    col_labels = states
+
+    # 创建热力图
+    plt.figure(figsize=(12, 6))
+    sns.heatmap(data_matrix, annot=True, cmap='Blues', xticklabels=col_labels, yticklabels=row_labels)
+    plt.xlabel('States')
+    plt.ylabel('Metrics')
+    plt.title('Q-table Visualization (Ignoring UAVMap objects)')
+    plt.show()
+
 def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, visualize=False, scene_info = None, print_prog = False):
     best_state = ""
     q_table = {}
@@ -213,8 +241,13 @@ def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, v
         plt.ylabel('Value')  # set y label
         plt.legend()  # show legend to distinguish tracks
         plt.show()
+    
+    # print(q_table)
+    visualize_q_table(q_table=q_table)
 
     return best_state, max_reward, reward_track, RS_track, OL_track, best_state_UAVMap
+
+
 
 if __name__ == "__main__":
     # Q-learning hyperparameters
