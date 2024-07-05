@@ -4,9 +4,9 @@
         "yLength": 200
     },
     "baseStation": {
-        "bottomCorner": [50, 170, 0],
+        "bottomCorner": [180, 10, 0],
         "size": [10, 10],
-        "height": [180]
+        "height": [35]
     },
     "blocks": [
         {

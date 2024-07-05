@@ -132,12 +132,13 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
     line_color = (0.5,0,0)
     if connection_GU_UAV:
         for gu, path in connection_GU_UAV.items():
-            start = gu
-            end = path[0]+len(ground_users)
-            start_pos = get_position_by_index(start, ground_users, UAV_nodes, air_base_station)
-            end_pos = get_position_by_index(end, ground_users, UAV_nodes, air_base_station)
+            if path:
+                start = gu
+                end = path[0]+len(ground_users)
+                start_pos = get_position_by_index(start, ground_users, UAV_nodes, air_base_station)
+                end_pos = get_position_by_index(end, ground_users, UAV_nodes, air_base_station)
 
-            ax.plot([start_pos[0], end_pos[0]], [start_pos[1], end_pos[1]], [start_pos[2], end_pos[2]], color=line_color, alpha=line_alpha)
+                ax.plot([start_pos[0], end_pos[0]], [start_pos[1], end_pos[1]], [start_pos[2], end_pos[2]], color=line_color, alpha=line_alpha)
     
     if connection_UAV_BS:
         for uav, path in connection_UAV_BS.items():

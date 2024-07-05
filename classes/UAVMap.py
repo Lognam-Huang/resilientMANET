@@ -75,8 +75,9 @@ def find_best_paths_to_bs(UAVMap):
     best_paths = {}
 
     for uav, paths in UAVMap.allPaths.items():
-        best_path = max(paths, key=lambda x: x['DR'])
-        best_paths[uav] = best_path['path']
+        if uav > -1 and len(paths)>0:
+            best_path = max(paths, key=lambda x: x['DR'])
+            best_paths[uav] = best_path['path']
     
     return best_paths
 

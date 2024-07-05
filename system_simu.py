@@ -81,11 +81,8 @@ best_state, max_reward, reward_track, RS_track, OL_track, cur_UAVMap = find_best
                                                                                           ,print_prog=True
                                                                                           )
 
-print(best_state)
-print(max_reward)
-
 # Lognam: try to have TD
-sim_time = 0
+sim_time = 25
 
 # Lognam: try to switch scenes
 max_movement_distance = 15
@@ -107,13 +104,13 @@ max_RS_TD.append(max(RS_track))
 max_OL_TD.append(max(OL_track))
 
 from classes.UAVMap import *
+print(cur_UAVMap)
 
 uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
 gu_to_uav_connections = extract_gu_to_uav_connections(ground_users)
 
 scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
-# print(cur_UAVMap)
 # print(uav_to_bs_connections)
 # print(gu_to_uav_connections)
 
@@ -134,8 +131,6 @@ all_UAV_capacity.append(UAV_capacity)
 all_UAV_overload = []
 all_UAV_overload.append(UAV_overload)
 
-scene_visualization(UAV_nodes=UAV_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
-
 # print(cur_UAVMap.allPaths.get(0, []))
 
 for cur_time_frame in range(sim_time):
@@ -146,13 +141,14 @@ for cur_time_frame in range(sim_time):
     max_capacities_tracks = find_optimal_uav_positions(
         ground_users=ground_users, uavs=UAV_nodes, clustering_epsilon=eps, min_cluster_size=min_samples, obstacles=blocks, area_info=scene, min_altitude=min_height, max_altitude=max_height, uav_info=UAVInfo
         # , print_para=True
+        , print_prog=True
     )
     
     # print("Finding positions")
 
     UAV_coords = np.array(get_nodes_position(UAV_nodes))
     best_state, max_reward, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(UAV_coords, ABS_coords, epsilon, episodes=50, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
-        # , print_prog=True
+        , print_prog=True
         )
 
     max_reward_TD.append(max_reward)
@@ -175,26 +171,20 @@ for cur_time_frame in range(sim_time):
     # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
 
-# print(all_UAV_capacity)
-# print(all_UAV_overload)
+
 
 if sim_time > 0:
-<<<<<<< HEAD
-=======
-
-    visualize_all_gu_capacity(all_gu_capacity=all_gu_capacity)
-    visualize_uav_capacity(all_uav_capacity=all_UAV_capacity)
-    visualize_all_UAV_overload(all_UAV_overload=all_UAV_overload)
->>>>>>> a90000bd9059d5e55db5bcb1eadc164b7894d0d7
 
     visualize_all_gu_capacity(all_gu_capacity=all_gu_capacity)
     visualize_uav_capacity(all_uav_capacity=all_UAV_capacity)
     visualize_all_UAV_overload(all_UAV_overload=all_UAV_overload)
 
-<<<<<<< HEAD
-=======
-    # print(max_reward_TD)
-    # print(max_RS_TD)
-    # print(max_OL_TD)
->>>>>>> a90000bd9059d5e55db5bcb1eadc164b7894d0d7
     visualize_metrics(max_reward_TD, max_RS_TD, max_OL_TD)
+
+    print(all_gu_capacity)
+    print(all_UAV_capacity)
+    print(all_UAV_overload)
+
+    print(max_reward_TD)
+    print(max_RS_TD)
+    print(max_OL_TD)    

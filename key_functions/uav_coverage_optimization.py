@@ -35,6 +35,10 @@ def generate_visibility_heatmap(ground_users, obstacles, area_dimensions, min_al
     for altitude in range(min_altitude, max_altitude + 1):
         for x in range(x_length):
             for y in range(y_length):
+
+                if is_position_inside_block(position=(x,y,altitude), blocks=obstacles):
+                    continue
+
                 for user_index in target_user_indices:
                     user = ground_users[user_index]  # Adjusting for 0-based index if necessary
 
@@ -114,6 +118,10 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
             selected_point = largest_cluster_points[np.random.choice(len(largest_cluster_points))]
             selected_point[2] += min_altitude  # Adjust altitude to absolute value
 
+            # if not is_position_inside_block(selected_point, obstacles):
+            #         # break
+            #     continue
+
             current_uav = active_uavs_indices.pop(0)
             uavs[current_uav].set_position((selected_point[0], selected_point[1], selected_point[2]))
 
@@ -131,6 +139,10 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
 
             selected_indices = np.random.choice(len(largest_cluster_points), size=2, replace=False)
             selected_points = largest_cluster_points[selected_indices]
+
+            # if not is_position_inside_block(selected_points[0], obstacles) and not is_position_inside_block(selected_points[1], obstacles):
+            #         # break
+            #     continue
             
             # print("Modify existed UAV node at:")
             # print(uavs[target_uav].position)
@@ -149,16 +161,19 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
             active_uavs_indices.remove(uav_index)
             active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
             
-    if print_prog:
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        print(f"The code block ran in {elapsed_time} seconds")
-    
-    
     # print("Check whether all GUs are covered:")
     # print(active_ground_users_indices)
 
     max_capacity_records.append(find_maximum_capacity_per_ground_user(ground_users, uavs, obstacles, uav_info, max_altitude))
+
+    if print_prog:
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"The code block ran in {elapsed_time} seconds")
+
+        print("All UAV positions:")
+        for uav in uavs:
+            print(f"UAV {uav.node_number} position: {uav.position}")
     
     return max_capacity_records
 
@@ -323,8 +338,17 @@ def find_furthest_points_in_largest_cluster(heatmap, epsilon, min_samples):
 
     return furthest_points
 
-import matplotlib.pyplot as plt
+def is_position_inside_block(position, blocks):
+    x, y, z = position
+    for block in blocks:
+        bx, by, bz = block["bottomCorner"]
+        sx, sy = block["size"]
+        h = block['height']
+        if (bx <= x <= bx + sx) and (by <= y <= by + sy) and (bz <= z <= bz + h):
+            return True
+    return False
 
+import matplotlib.pyplot as plt
 
 def plot_gu_capacities(capacities_tracks):
     """
