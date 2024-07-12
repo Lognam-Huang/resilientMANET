@@ -3,6 +3,7 @@ from functions.calculate_data_rate import calculate_data_rate
 
 def calculate_capacity_and_overload(ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes):
     gu_to_bs_capacity = {}
+    
     for gu_index, uav_index in gu_to_uav_connections.items():
         cur_gu = ground_users[gu_index]
 

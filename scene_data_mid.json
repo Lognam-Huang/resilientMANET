@@ -3,11 +3,18 @@
         "xLength": 200,
         "yLength": 200
     },
-    "baseStation": {
-        "bottomCorner": [180, 10, 0],
-        "size": [10, 10],
-        "height": [35]
-    },
+    "baseStation": [
+        {
+            "bottomCorner": [180, 10, 0],
+            "size": [10, 10],
+            "height": [35]
+        },
+        {
+            "bottomCorner": [60, 150, 0],
+            "size": [10, 10],
+            "height": [35]
+        }
+    ],
     "blocks": [
         {
             "bottomCorner": [10, 170, 0],
@@ -58,6 +65,6 @@
         "CarrierFrequency": 28000000000,
         "UAVSpeed": 15 ,
         "min_height": 50,
-        "max_height": 55        
+        "max_height": 56        
     }
 }

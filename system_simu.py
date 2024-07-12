@@ -5,9 +5,9 @@ from gu_movement import move_ground_users, simulate_and_visualize_movements
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-with open('scene_data_mid.json', 'r') as file:
+# with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -15,8 +15,9 @@ scene = scene_data['scenario']
 UAVInfo = scene_data['UAV']
 baseStation = scene_data['baseStation']
 
-num_GU = 6
+num_GU = 5
 num_UAV = 3
+num_BS = 1
 
 from functions.generate_users import generate_users
 ground_users = generate_users(num_GU, blocks, scene['xLength'], scene['yLength'])
@@ -27,8 +28,9 @@ defaultHeightUAV = 200
 UAV_nodes = generate_UAVs(num_UAV, blocks, scene['xLength'], scene['yLength'], defaultHeightUAV, 10, 'basic UAV')
 
 defaultHeightABS = 500
-ABS_nodes = generate_UAVs(1, blocks, scene['xLength'], scene['yLength'], defaultHeightABS, 10, 'Air Base Station')
-ABS_nodes[0].set_position((baseStation['bottomCorner'][0], baseStation['bottomCorner'][1], baseStation['height'][0]))
+ABS_nodes = generate_UAVs(num_BS, blocks, scene['xLength'], scene['yLength'], defaultHeightABS, 10, 'Air Base Station')
+for i in range(num_BS):
+    ABS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
 
 # Define parameters for 3D heatmap generation and UAV positioning
 min_height = UAVInfo['min_height']
@@ -48,9 +50,10 @@ max_capacities_tracks = find_optimal_uav_positions(
     , print_prog=True
 )
 
+print(max_capacities_tracks)
 
-# plot_gu_capacities(max_capacities_tracks)
-# plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
+plot_gu_capacities(max_capacities_tracks)
+plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
 
 # Lognam: find UAV connection
 from find_topo import *
@@ -82,10 +85,10 @@ best_state, max_reward, reward_track, RS_track, OL_track, cur_UAVMap = find_best
                                                                                           )
 
 # Lognam: try to have TD
-sim_time = 25
+sim_time = 0
 
 # Lognam: try to switch scenes
-max_movement_distance = 15
+max_movement_distance = 20
 
 max_reward_TD = []
 reward_track_TD = []

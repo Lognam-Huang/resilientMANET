@@ -3,11 +3,13 @@
         "xLength": 25,
         "yLength": 25
     },
-    "baseStation": {
+    "baseStation": [
+        {
         "bottomCorner": [5, 5, 0],
         "size": [5, 5],
         "height": [12]
-    },
+        }
+    ],
     "blocks": [
         {
             "bottomCorner": [5, 5, 0],

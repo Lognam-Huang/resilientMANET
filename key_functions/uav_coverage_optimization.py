@@ -519,6 +519,73 @@ def plot_gu_summary_and_uav_load(capacities_tracks):
 import numpy as np
 import matplotlib.pyplot as plt
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+def plot_combined_gu_capacity_and_uav_load_separate(capacities_tracks):
+    """
+    Plot the summary statistics (min, mean, max) of GU capacities and the load on each UAV over time
+    in a combined chart with shared x-axis and dual y-axis.
+
+    Parameters:
+    capacities_tracks: List of dictionaries, each mapping ground users to a tuple of capacity and UAV ID.
+    """
+    min_capacities = []
+    mean_capacities = []
+    max_capacities = []
+    uav_loads_per_time = []
+
+    # Process capacity data to compute summary statistics
+    for capacities_dict in capacities_tracks:
+        capacities = [cap[0] for cap in capacities_dict.values()]
+        min_capacities.append(np.min(capacities))
+        mean_capacities.append(np.mean(capacities))
+        max_capacities.append(np.max(capacities))
+
+        # Calculate the load on each UAV
+        uav_loads = {}
+        for cap in capacities_dict.values():
+            uav_id = cap[1]
+            uav_loads[uav_id] = uav_loads.get(uav_id, 0) + 1
+
+        uav_loads_per_time.append(uav_loads)
+
+    # Create the figure and subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6), sharex=True)
+
+    # Plot the GU capacities on the first subplot (left)
+    time_points = range(len(capacities_tracks))
+    ax1.set_xlabel('Time/Scenario')
+    ax1.set_ylabel('Capacity')
+    ax1.plot(time_points, min_capacities, label='Min Capacity', marker='o', color='tab:blue')
+    ax1.plot(time_points, mean_capacities, label='Mean Capacity', marker='o', color='tab:green')
+    ax1.plot(time_points, max_capacities, label='Max Capacity', marker='o', color='tab:red')
+    ax1.tick_params(axis='y')
+    ax1.legend(loc='upper left')
+    ax1.set_title('GU Capacities Over Time')
+
+    # Plot the UAV loads on the second subplot (right)
+    ax2.set_xlabel('Time/Scenario')
+    ax2.set_ylabel('Number of GUs')
+    total_gus = sum([len(capacities_dict) for capacities_dict in capacities_tracks]) / len(capacities_tracks)
+    bottom = np.zeros(len(time_points))
+
+    for uav_id in {uav for loads in uav_loads_per_time for uav in loads}:
+        loads = [uav_loads.get(uav_id, 0) for uav_loads in uav_loads_per_time]
+        ax2.bar(time_points, loads, label=f'UAV {uav_id}', alpha=0.5, edgecolor='black', bottom=bottom)
+        bottom += loads
+
+    ax2.tick_params(axis='y')
+    ax2.set_ylim(0, total_gus)
+    ax2.legend(loc='upper left')
+    ax2.set_title('UAV Load Over Time')
+
+    # Add a main title for the entire figure
+    plt.suptitle('GU Capacities and UAV Load Over Time')
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.show()
+
+
 def plot_combined_gu_capacity_and_uav_load(capacities_tracks):
     """
     Plot the summary statistics (min, mean, max) of GU capacities and the load on each UAV over time
