@@ -37,3 +37,37 @@ def generate_users(user_number, blocks, ground_x, ground_y):
         node_number += 1
 
     return ground_users
+
+def add_new_users(existing_users, total_user_number=0, extra_user_number=0, blocks=None, ground_x=None, ground_y=None):
+    new_users = []
+    node_count = 0
+    max_node_number = max(user.node_number for user in existing_users) + 1
+
+    if total_user_number >0 and extra_user_number>0:
+        print("Conflict GU increasement condition")
+    elif total_user_number > 0:
+        while node_count < total_user_number:
+            x = random.random() * ground_x
+            y = random.random() * ground_y
+            node_status = 0
+
+            for block in blocks:
+                square_x_length = block['size'][0]
+                square_y_length = block['size'][1]
+                square_bottom_corner = block['bottomCorner']
+                if (x >= square_bottom_corner[0] and x <= square_bottom_corner[0] + square_x_length) and \
+                    (y >= square_bottom_corner[1] and y <= square_bottom_corner[1] + square_y_length):
+                    node_status = 1
+                    break
+
+            if node_status == 0:
+                node_count += 1
+                new_users.append([x, y])
+
+        for node in new_users:
+            existing_users.append(Nodes((node[0], node[1], 0), 'ground users', 0, max_node_number))
+            max_node_number += 1
+    # elif extra_user_number>0:
+    #     for i in range(extra_user_number):
+
+    return existing_users
