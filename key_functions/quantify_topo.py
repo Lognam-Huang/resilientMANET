@@ -529,6 +529,11 @@ def quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, ho
                         total_score += p['DR'] / best_DR
                     else:
                         total_score += (p['DR'] / best_DR) / hop_difference
+    
+    print("zz")
+    print(total_score / filtered_path_count)
+    print(filtered_path_count / total_path_count)
+    print("xx")
 
     score = 0 if filtered_path_count == 0 else (total_score / filtered_path_count) * (filtered_path_count / total_path_count)
     return score
