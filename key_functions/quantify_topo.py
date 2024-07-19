@@ -440,5 +440,160 @@ def get_nodes_with_max_dr(data):
     # print(max_dr_path)
     return max_dr_path
 
+
+# def get_RS_with_GU(ground_users, gu_to_uav_connections, UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP, scene_info, gu_to_bs_capacity):
+#     blocks = scene_info['blocks']
+#     UAVInfo = scene_info['UAV']
+#     scene = scene_info['scenario']
+
+#     DRScore = quantify_data_rate_with_GU(ground_users, gu_to_uav_connections, UAVMap, DRPenalty, UAVInfo, gu_to_bs_capacity)
+#     BPScore = quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, BPHopConstraint, BPDRConstraint)
+#     NPScore = quantify_network_partitioning_with_GU(ground_users, gu_to_uav_connections, UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP)
+
+#     ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, weightBP, weightNP)
+#     return ResilienceScore
+
+
+# def quantify_data_rate_with_GU(ground_users, gu_to_uav_connections, UAVMap, r, UAVInfo, gu_to_bs_capacity):
+#     # gu_to_bs_capacity = calculate_capacity_and_overload(ground_users, gu_to_uav_connections, UAVMap)
+    
+#     data_rates = list(gu_to_bs_capacity.values())
+#     min_DR = min(data_rates)
+#     avg_DR = sum(data_rates) / len(data_rates)
+
+#     def norm(score, UAVInfo):
+#         normScore = min(score / UAVInfo['bandwidth'], 1)
+#         return normScore
+
+#     score = r * norm(min_DR, UAVInfo) + (1 - r) * norm(avg_DR, UAVInfo)
+#     return score
+
+def get_RS_with_GU(ground_users, gu_to_uav_connections, UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP, scene_info, gu_to_bs_capacity):
+    blocks = scene_info['blocks']
+    UAVInfo = scene_info['UAV']
+    scene = scene_info['scenario']
+
+    DRScore = quantify_data_rate_with_GU(ground_users, gu_to_uav_connections, UAVMap, DRPenalty, UAVInfo, gu_to_bs_capacity)
+    BPScore = quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, BPHopConstraint, BPDRConstraint)
+    NPScore = quantify_network_partitioning_with_GU(ground_users, gu_to_uav_connections, UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP,  gu_to_bs_capacity)
+
+    print(DRScore)
+    print(BPScore)
+    print(NPScore)
+
+    ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, weightBP, weightNP)
+    return ResilienceScore
+
+
+def quantify_data_rate_with_GU(ground_users, gu_to_uav_connections, UAVMap, r, UAVInfo, gu_to_bs_capacity):
+    data_rates = list(gu_to_bs_capacity.values())
+    min_DR = min(data_rates)
+    avg_DR = sum(data_rates) / len(data_rates)
+
+    def norm(score, UAVInfo):
+        normScore = min(score / UAVInfo['bandwidth'], 1)
+        return normScore
+
+    score = r * norm(min_DR, UAVInfo) + (1 - r) * norm(avg_DR, UAVInfo)
+    return score
+
+def quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, hop_constraint, DR_constraint):
+    AllPaths = UAVMap.allPaths
+
+    def hop_count(path):
+        return len(path) - 1
+
+    best_paths = {}
+    for gu_index, uav_index in gu_to_uav_connections.items():
+        filtered_paths = [p for p in AllPaths[uav_index[0]] if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint]
+        if filtered_paths:
+            best_path = max(filtered_paths, key=lambda p: p['DR'])
+            best_paths[gu_index] = (best_path['DR'], hop_count(best_path['path']))
+        else:
+            best_paths[gu_index] = (None, float('inf'))
+
+    total_score = 0
+    filtered_path_count = 0
+    total_path_count = sum(len(paths) for paths in AllPaths.values())
+
+    for gu_index, uav_index in gu_to_uav_connections.items():
+        for p in AllPaths[uav_index[0]]:
+            if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint:
+                best_DR, best_hop = best_paths[gu_index]
+                filtered_path_count += 1
+                if p['DR'] == best_DR:
+                    total_score += 1
+                else:
+                    hop_difference = hop_count(p['path']) - best_hop
+                    if hop_difference <= 0:
+                        total_score += p['DR'] / best_DR
+                    else:
+                        total_score += (p['DR'] / best_DR) / hop_difference
+    
+    print("zz")
+    print(total_score / filtered_path_count)
+    print(filtered_path_count / total_path_count)
+    print("xx")
+
+    score = 0 if filtered_path_count == 0 else (total_score / filtered_path_count) * (filtered_path_count / total_path_count)
+    return score
+
+def quantify_network_partitioning_with_GU(ground_users, gu_to_uav_connections, UAVMap, ratio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP, gu_to_bs_capacity):
+    if ratioDR + ratioBP != 1:
+        raise ValueError("The sum of ratio must be 1.")
+
+    allDroppedNodes = select_all_drops(UAVMap, ratio)
+    avgDRScore = 0
+    avgBPScore = 0
+    allDroppedSituation = len(allDroppedNodes)
+
+    for curNodes in allDroppedNodes:
+        droppedUAVMap = copy.deepcopy(UAVMap)
+        for curNode in curNodes:
+            droppedUAVMap = remove_node(droppedUAVMap, curNode)
+
+        curDRScore = quantify_data_rate_with_GU(ground_users, gu_to_uav_connections, droppedUAVMap, DRPenalty, UAVInfo, gu_to_bs_capacity)
+        curBPScore = quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, droppedUAVMap, BPHopConstraint, BPDRConstraint)
+        avgDRScore += curDRScore
+        avgBPScore += curBPScore
+
+    if allDroppedSituation == 0:
+        avgDRScore = quantify_data_rate_with_GU(ground_users, gu_to_uav_connections, UAVMap, DRPenalty, UAVInfo, gu_to_bs_capacity)
+        avgBPScore = quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, BPHopConstraint, BPDRConstraint)
+    else:
+        avgDRScore /= allDroppedSituation
+        avgBPScore /= allDroppedSituation
+
+    score = 0 if DRScore == 0 else ratioDR * (avgDRScore / DRScore)
+    score += 0 if BPScore == 0 else ratioBP * (avgBPScore / BPScore)
+    return score
+
+def measure_overload_with_GU(ground_users, gu_to_uav_connections, UAVMap, hop_constraint, DR_constraint, overload_constraint, scene_info):
+    AllPaths = UAVMap.allPaths
+    UAVInfo = scene_info['UAV']
+
+    def hop_count(path):
+        return len(path)
+
+    gu_overload = {gu_index: 0 for gu_index in gu_to_uav_connections.keys()}
+
+    for gu_index, uav_index in gu_to_uav_connections.items():
+        paths = AllPaths[uav_index[0]]
+        filtered_paths = [p for p in paths if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint]
+        if filtered_paths:
+            curPathDR = max(p['DR'] for p in filtered_paths)
+            gu_overload[gu_index] += min(curPathDR, UAVInfo['bandwidth'])
+
+    def gini_coefficient(loads):
+        loads = sorted(loads.values())
+        n = len(loads)
+        cumulative_loads = sum(loads)
+        sum_of_differences = sum(abs(x - y) for x in loads for y in loads)
+        gini = 0 if cumulative_loads == 0 else sum_of_differences / (2 * n**2 * cumulative_loads)
+        return gini
+
+    overload_score = 1 - gini_coefficient(gu_overload)
+    return overload_score
+
 def d():
     print(1)

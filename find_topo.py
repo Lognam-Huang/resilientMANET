@@ -103,8 +103,62 @@ def Reward(state, scene_info, UAV_coords, ABS_coords, reward_hyper):
     # now we just return RS*overload
     rewardScore = ResilienceScore*OverloadScore
 
+    # Lognam: try to make sure every UAV has a path towards BS, directly or indirectly
+    if not all_uavs_connected_to_abs(UAVMap, len(UAV_coords)):
+        rewardScore *= 0.5
+
     return rewardScore, ResilienceScore, OverloadScore, UAVMap
     # return rewardScore
+
+def all_uavs_connected_to_abs(UAVMap, num_uavs):
+    def bfs(start, targets, graph):
+        visited = set()
+        queue = [start]
+        
+        while queue:
+            node = queue.pop(0)
+            if node in targets:
+                return True
+            if node not in visited:
+                visited.add(node)
+                queue.extend(graph.get(node, []))
+        
+        return False
+
+    # 初始化UAV和BS的集合
+    uav_set = set(range(num_uavs))
+    bs_set = set()
+
+    # 初始化图，包含所有UAV和可能的BS节点
+    graph = {i: [] for i in range(num_uavs)}
+
+    # 提取所有路径中的BS节点
+    for uav, paths in UAVMap.allPaths.items():
+        for path_info in paths:
+            path = path_info['path']
+            for node in path:
+                if node >= num_uavs:
+                    bs_set.add(node)
+    
+    # 确保图中包含所有BS节点
+    for bs in bs_set:
+        graph[bs] = []
+
+    # 从UAVMap中提取路径信息并构建图
+    for uav, paths in UAVMap.allPaths.items():
+        for path_info in paths:
+            path = path_info['path']
+            for i in range(len(path) - 1):
+                graph[path[i]].append(path[i + 1])
+                graph[path[i + 1]].append(path[i])
+
+    # 检查每个UAV是否能连接到任意一个BS
+    for uav in uav_set:
+        if not bfs(uav, bs_set, graph):
+            return False
+
+    return True
+
 
 def generate_adjacent_states(state):
     adjacent_states = []
@@ -169,6 +223,9 @@ def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, v
     RS_track = []
     OL_track = []
     max_reward = 0
+    best_RS = 0
+    best_OL = 0
+    
     num_nodes = len(ABS_coords) + len(UAV_coords)
     state = '0' * int((num_nodes * (num_nodes - 1) / 2))
     start_time = time.time()
@@ -184,8 +241,10 @@ def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, v
         next_state, next_state_score = take_action(states_scores, epsilon)
 
         if next_state_score[0] > max_reward:
-            max_reward = next_state_score[0]
             best_state = next_state
+            max_reward = next_state_score[0]
+            best_RS = next_state_score[1]
+            best_OL = next_state_score[2]
             best_state_UAVMap = next_state_score[3]
 
         reward_track.append(next_state_score[0])
@@ -214,7 +273,9 @@ def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, v
         plt.legend()  # show legend to distinguish tracks
         plt.show()
 
-    return best_state, max_reward, reward_track, RS_track, OL_track, best_state_UAVMap
+    return best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, best_state_UAVMap
+
+
 
 if __name__ == "__main__":
     # Q-learning hyperparameters

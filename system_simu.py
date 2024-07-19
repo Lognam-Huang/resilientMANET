@@ -47,13 +47,13 @@ from key_functions.uav_coverage_optimization import *
 max_capacities_tracks = find_optimal_uav_positions(
     ground_users=ground_users, uavs=UAV_nodes, clustering_epsilon=eps, min_cluster_size=min_samples, obstacles=blocks, area_info=scene, min_altitude=min_height, max_altitude=max_height, uav_info=UAVInfo
     # , print_para=True
-    , print_prog=True
+    # , print_prog=True
 )
 
-print(max_capacities_tracks)
+# print(max_capacities_tracks)
 
-plot_gu_capacities(max_capacities_tracks)
-plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
+# plot_gu_capacities(max_capacities_tracks)
+# plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
 
 # Lognam: find UAV connection
 from find_topo import *
@@ -78,11 +78,16 @@ UAV_coords = np.array(get_nodes_position(UAV_nodes))
 epsilon = 0.1
 training_episodes=20
 
-scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
+# scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
 
-best_state, max_reward, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(UAV_coords, ABS_coords, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
-                                                                                          ,print_prog=True
+best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(UAV_coords, ABS_coords, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
+                                                                                        #   ,print_prog=True
                                                                                           )
+
+# print(best_state)
+# print(max_reward)
+# print(best_RS)
+# print(best_OL)
 
 # Lognam: try to have TD
 sim_time = 0
@@ -107,32 +112,78 @@ max_RS_TD.append(max(RS_track))
 max_OL_TD.append(max(OL_track))
 
 from classes.UAVMap import *
-print(cur_UAVMap)
+# print(cur_UAVMap)
+
+
+from simu_functions import *
 
 uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
-gu_to_uav_connections = extract_gu_to_uav_connections(ground_users)
+gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+print(gu_to_uav_connections)
 
 scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
 # print(uav_to_bs_connections)
 # print(gu_to_uav_connections)
 
-from simu_functions import *
-
-GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
+# GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
 
 # print(GU_capacity)
 # print(UAV_capacity)
 # print(UAV_overload)
 
+rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
+    ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data
+)
+
+print("Reward Score:", rewardScore)
+print("Resilience Score:", ResilienceScore)
+print("Overload Score:", OverloadScore)
+print("GU to BS Capacity:", gu_to_bs_capacity)
+print("UAV to BS Capacity:", uav_to_bs_capacity)
+print("UAV Overload:", uav_overload)
 
 all_gu_capacity = [] 
-all_gu_capacity.append(GU_capacity)
+all_gu_capacity.append(gu_to_bs_capacity)
 
 all_UAV_capacity = []
-all_UAV_capacity.append(UAV_capacity)
+all_UAV_capacity.append(uav_to_bs_capacity)
 all_UAV_overload = []
-all_UAV_overload.append(UAV_overload)
+all_UAV_overload.append(uav_overload)
+
+move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+
+scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+
+
+rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
+    ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data
+)
+
+print("Reward Score:", rewardScore)
+print("Resilience Score:", ResilienceScore)
+print("Overload Score:", OverloadScore)
+print("GU to BS Capacity:", gu_to_bs_capacity)
+print("UAV to BS Capacity:", uav_to_bs_capacity)
+print("UAV Overload:", uav_overload)
+
+move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+
+scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+
+
+rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
+    ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data
+)
+
+print("Reward Score:", rewardScore)
+print("Resilience Score:", ResilienceScore)
+print("Overload Score:", OverloadScore)
+print("GU to BS Capacity:", gu_to_bs_capacity)
+print("UAV to BS Capacity:", uav_to_bs_capacity)
+print("UAV Overload:", uav_overload)
 
 # print(cur_UAVMap.allPaths.get(0, []))
 
@@ -166,12 +217,24 @@ for cur_time_frame in range(sim_time):
     uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
     gu_to_uav_connections = extract_gu_to_uav_connections(ground_users)
 
-    GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
+    # GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
+
+    rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
+        ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data
+    )
+
+    print("Reward Score:", rewardScore)
+    print("Resilience Score:", ResilienceScore)
+    print("Overload Score:", OverloadScore)
+    print("GU to BS Capacity:", gu_to_bs_capacity)
+    print("UAV to BS Capacity:", uav_to_bs_capacity)
+    print("UAV Overload:", uav_overload)
+
     all_gu_capacity.append(GU_capacity)
     all_UAV_capacity.append(UAV_capacity)
     all_UAV_overload.append(UAV_overload)
 
-    # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+    scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
 
 

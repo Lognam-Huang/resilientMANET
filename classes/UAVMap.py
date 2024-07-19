@@ -81,10 +81,10 @@ def find_best_paths_to_bs(UAVMap):
     
     return best_paths
 
-def extract_gu_to_uav_connections(ground_users):
-    gu_to_uav = {}
+# def extract_gu_to_uav_connections(ground_users):
+#     gu_to_uav = {}
 
-    for gu_index, user in enumerate(ground_users):
-        gu_to_uav[gu_index] = user.connected_nodes
+#     for gu_index, user in enumerate(ground_users):
+#         gu_to_uav[gu_index] = user.connected_nodes
 
-    return gu_to_uav
+#     return gu_to_uav
