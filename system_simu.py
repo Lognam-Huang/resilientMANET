@@ -112,37 +112,47 @@ max_RS_TD.append(max(RS_track))
 max_OL_TD.append(max(OL_track))
 
 from classes.UAVMap import *
-print(cur_UAVMap)
+# print(cur_UAVMap)
 
 
 from simu_functions import *
 
 uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
-gu_to_uav_connections = extract_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
 print(gu_to_uav_connections)
 
 scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
-print(uav_to_bs_connections)
-print(gu_to_uav_connections)
+# print(uav_to_bs_connections)
+# print(gu_to_uav_connections)
 
-GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
+# GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
 
-print(GU_capacity)
-print(UAV_capacity)
-print(UAV_overload)
+# print(GU_capacity)
+# print(UAV_capacity)
+# print(UAV_overload)
 
+rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
+    ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data
+)
+
+print("Reward Score:", rewardScore)
+print("Resilience Score:", ResilienceScore)
+print("Overload Score:", OverloadScore)
+print("GU to BS Capacity:", gu_to_bs_capacity)
+print("UAV to BS Capacity:", uav_to_bs_capacity)
+print("UAV Overload:", uav_overload)
 
 all_gu_capacity = [] 
-all_gu_capacity.append(GU_capacity)
+all_gu_capacity.append(gu_to_bs_capacity)
 
 all_UAV_capacity = []
-all_UAV_capacity.append(UAV_capacity)
+all_UAV_capacity.append(uav_to_bs_capacity)
 all_UAV_overload = []
-all_UAV_overload.append(UAV_overload)
+all_UAV_overload.append(uav_overload)
 
 move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
-gu_to_uav_connections = extract_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
 
 scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
@@ -159,7 +169,7 @@ print("UAV to BS Capacity:", uav_to_bs_capacity)
 print("UAV Overload:", uav_overload)
 
 move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
-gu_to_uav_connections = extract_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
 
 scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 

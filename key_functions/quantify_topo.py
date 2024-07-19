@@ -477,6 +477,10 @@ def get_RS_with_GU(ground_users, gu_to_uav_connections, UAVMap, DRPenalty, BPHop
     BPScore = quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, BPHopConstraint, BPDRConstraint)
     NPScore = quantify_network_partitioning_with_GU(ground_users, gu_to_uav_connections, UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP,  gu_to_bs_capacity)
 
+    print(DRScore)
+    print(BPScore)
+    print(NPScore)
+
     ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, weightBP, weightNP)
     return ResilienceScore
 

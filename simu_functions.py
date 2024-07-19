@@ -84,7 +84,7 @@ def calculate_capacity_and_overload(ground_users, gu_to_uav_connections, uav_to_
 
 from functions.path_is_blocked import path_is_blocked
 
-def extract_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks):
+def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks):
     gu_to_uav = {}
 
     for gu_index, user in enumerate(ground_users):
