@@ -514,10 +514,12 @@ def quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, ho
 
     total_score = 0
     filtered_path_count = 0
-    total_path_count = sum(len(paths) for paths in AllPaths.values())
+    # total_path_count = sum(len(paths) for paths in AllPaths.values())
+    total_path_count = 0
 
     for gu_index, uav_index in gu_to_uav_connections.items():
         for p in AllPaths[uav_index[0]]:
+            total_path_count += 1
             if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint:
                 best_DR, best_hop = best_paths[gu_index]
                 filtered_path_count += 1
@@ -530,10 +532,10 @@ def quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, ho
                     else:
                         total_score += (p['DR'] / best_DR) / hop_difference
     
-    print("zz")
-    print(total_score / filtered_path_count)
-    print(filtered_path_count / total_path_count)
-    print("xxx")
+    # print("zz")
+    # print(total_score / filtered_path_count)
+    # print(filtered_path_count / total_path_count)
+    # print("xxx")
 
     score = 0 if filtered_path_count == 0 else (total_score / filtered_path_count) * (filtered_path_count / total_path_count)
     return score

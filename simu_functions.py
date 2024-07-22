@@ -4,7 +4,7 @@ from functions.calculate_data_rate import calculate_data_rate
 # from find_topo import get_RS, measure_overload
 from key_functions.quantify_topo import get_RS_with_GU, measure_overload_with_GU
 
-def calculate_current_topology_metrics(ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes, reward_hyper, scene_info):
+def calculate_current_topology_metrics(ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes, reward_hyper, scene_info, print_metrics=False):
     # 计算地面用户到基站的容量、UAV到基站的容量和UAV的过载
     gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_capacity_and_overload(
         ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes
@@ -28,6 +28,14 @@ def calculate_current_topology_metrics(ground_users, gu_to_uav_connections, uav_
 
     # 计算 reward 分数
     rewardScore = ResilienceScore * OverloadScore
+
+    if print_metrics:
+        print("Reward Score:", rewardScore)
+        print("Resilience Score:", ResilienceScore)
+        print("Overload Score:", OverloadScore)
+        print("GU to BS Capacity:", gu_to_bs_capacity)
+        print("UAV to BS Capacity:", uav_to_bs_capacity)
+        print("UAV Overload:", uav_overload)
 
     return rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload
 
@@ -164,6 +172,7 @@ def visualize_uav_capacity(all_uav_capacity):
     plt.show()
 
 def visualize_metrics(max_reward_TD, max_RS_TD, max_OL_TD):
+
     """
     可视化 max_reward_TD, max_RS_TD 和 max_OL_TD 在同一张图中
     :param max_reward_TD: List of max reward over time
@@ -190,3 +199,29 @@ def visualize_metrics(max_reward_TD, max_RS_TD, max_OL_TD):
 
     # 显示图表
     plt.show()
+
+from gu_movement import move_ground_users
+def move_gu_and_update_connections(ground_users, blocks, x_length, y_length, max_movement_distance, UAV_nodes, UAVInfo):
+    """
+    移动地面用户并重新计算GU到UAV的连接。
+
+    参数:
+    ground_users: 地面用户列表。
+    blocks: 障碍物列表。
+    x_length: 场景的x方向长度。
+    y_length: 场景的y方向长度。
+    max_movement_distance: 地面用户的最大移动距离。
+    UAV_nodes: UAV节点列表。
+    UAVInfo: UAV信息字典。
+
+    返回:
+    更新后的GU到UAV连接字典。
+    """
+    
+    # 移动地面用户
+    move_ground_users(ground_users, blocks, x_length, y_length, max_movement_distance)
+
+    # 重新计算GU到UAV的连接
+    gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+    
+    return gu_to_uav_connections

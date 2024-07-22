@@ -50,8 +50,6 @@ max_capacities_tracks = find_optimal_uav_positions(
     # , print_prog=True
 )
 
-# print(max_capacities_tracks)
-
 # plot_gu_capacities(max_capacities_tracks)
 # plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
 
@@ -84,11 +82,6 @@ best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_
                                                                                         #   ,print_prog=True
                                                                                           )
 
-# print(best_state)
-# print(max_reward)
-# print(best_RS)
-# print(best_OL)
-
 # Lognam: try to have TD
 sim_time = 0
 
@@ -102,11 +95,6 @@ max_RS_TD = []
 max_OL_TD = []
 
 
-# print(max_reward)
-
-# print(RS_track)
-# print(max(RS_track))
-
 max_reward_TD.append(max_reward)
 max_RS_TD.append(max(RS_track))
 max_OL_TD.append(max(OL_track))
@@ -116,21 +104,10 @@ from classes.UAVMap import *
 
 
 from simu_functions import *
-
 uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
 gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
-print(gu_to_uav_connections)
 
 scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
-
-# print(uav_to_bs_connections)
-# print(gu_to_uav_connections)
-
-# GU_capacity, UAV_capacity, UAV_overload = calculate_capacity_and_overload(ground_users=ground_users, gu_to_uav_connections=gu_to_uav_connections, uav_to_bs_connections=uav_to_bs_connections, uav_info=UAVInfo, cur_UAVMap=cur_UAVMap, UAV_nodes=UAV_nodes)
-
-# print(GU_capacity)
-# print(UAV_capacity)
-# print(UAV_overload)
 
 rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
     ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data
@@ -173,10 +150,13 @@ gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVIn
 
 scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
+gu_to_uav_connections = move_gu_and_update_connections(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, UAV_nodes, UAVInfo)
+
 
 rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
-    ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data
+    ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
 )
+
 
 print("Reward Score:", rewardScore)
 print("Resilience Score:", ResilienceScore)
@@ -186,6 +166,37 @@ print("UAV to BS Capacity:", uav_to_bs_capacity)
 print("UAV Overload:", uav_overload)
 
 # print(cur_UAVMap.allPaths.get(0, []))
+
+for cur_time_frame in range(sim_time):
+    gu_to_uav_connections = move_gu_and_update_connections(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, UAV_nodes, UAVInfo)
+
+    rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
+        ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
+    )
+
+    if 2>1:
+        
+        max_capacities_tracks = find_optimal_uav_positions(
+            ground_users=ground_users, uavs=UAV_nodes, clustering_epsilon=eps, min_cluster_size=min_samples, obstacles=blocks, area_info=scene, min_altitude=min_height, max_altitude=max_height, uav_info=UAVInfo
+            # , print_para=True
+            , print_prog=True
+        )
+
+        UAV_coords = np.array(get_nodes_position(UAV_nodes))
+        best_state, max_reward, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(UAV_coords, ABS_coords, epsilon, episodes=50, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
+            , print_prog=True
+            )
+        break
+    
+    # print("Finding positions")
+
+    UAV_coords = np.array(get_nodes_position(UAV_nodes))
+    best_state, max_reward, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(UAV_coords, ABS_coords, epsilon, episodes=50, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
+        , print_prog=True
+        )
+
+        
+
 
 for cur_time_frame in range(sim_time):
     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
