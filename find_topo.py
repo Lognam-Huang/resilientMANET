@@ -74,12 +74,21 @@ import time
 #     'overloadConstraint': 10000
 # }
 
+from key_functions.quantify_topo import quantify_data_rate_with_GU, quantify_backup_path_with_GU, quantify_network_partitioning_with_GU
+from simu_functions import calculate_capacity_and_overload, get_gu_to_uav_connections
+from classes.UAVMap import find_best_paths_to_bs
+from functions.print_nodes import get_nodes_position, print_nodes
+
 # Get reward of a state, including resilience score and optimization score
-def Reward(state, scene_info, UAV_coords, ABS_coords, reward_hyper):
+def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
     # notice that score = RS-overload
     # or RS*overload
 
-    UAVMap = get_UAVMap(state=state, UAV_position=UAV_coords, ABS_position=ABS_coords, scene_info=scene_info)
+    # print_nodes(UAV_nodes)
+    UAV_coords = np.array(get_nodes_position(UAV_nodes))
+    
+
+    UAVMap = get_UAVMap(state=state, UAV_position= UAV_coords, ABS_position=ABS_coords, scene_info=scene_info)
 
     # Unpack hyperparameters from the dictionary
     DRPenalty = reward_hyper['DRPenalty']
@@ -93,15 +102,36 @@ def Reward(state, scene_info, UAV_coords, ABS_coords, reward_hyper):
     weightNP = reward_hyper['weightNP']
     overloadConstraint = reward_hyper['overloadConstraint']
 
-    ResilienceScore = get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP, scene_info)
+    uav_to_bs_connections = find_best_paths_to_bs(UAVMap)
+    gu_to_uav_connections = get_gu_to_uav_connections(GU_nodes, UAV_nodes, scene_info['UAV'], scene_info['blocks'])
 
-    # as for the reward function, we need also to consider the balance in the UAV network
-    # here we use gini coefficient
-    overloadConstraint = 10000
-    OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint, scene_info)
+    gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_capacity_and_overload(
+        GU_nodes, gu_to_uav_connections, uav_to_bs_connections, scene_info['UAV'], UAVMap, UAV_nodes
+    )
 
-    # now we just return RS*overload
-    rewardScore = ResilienceScore*OverloadScore
+    # 计算 RS（Resilience Score）
+    ResilienceScore = get_RS_with_GU(
+        GU_nodes, gu_to_uav_connections, UAVMap, 
+        reward_hyper['DRPenalty'], reward_hyper['BPHopConstraint'], reward_hyper['BPDRConstraint'], 
+        reward_hyper['droppedRatio'], reward_hyper['ratioDR'], reward_hyper['ratioBP'], 
+        reward_hyper['weightDR'], reward_hyper['weightBP'], reward_hyper['weightNP'], 
+        scene_info, gu_to_bs_capacity
+    )
+
+    # 计算 OL（Overload Score）
+    OverloadScore = measure_overload_with_GU(uav_overload)
+
+    # 计算 reward 分数
+    rewardScore = ResilienceScore * OverloadScore
+    # ResilienceScore = get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP, scene_info)
+
+    # # as for the reward function, we need also to consider the balance in the UAV network
+    # # here we use gini coefficient
+    # overloadConstraint = 10000
+    # OverloadScore = measure_overload(UAVMap, BPHopConstraint, BPDRConstraint, overloadConstraint, scene_info)
+
+    # # now we just return RS*overload
+    # rewardScore = ResilienceScore*OverloadScore
 
     # Lognam: try to make sure every UAV has a path towards BS, directly or indirectly
     if not all_uavs_connected_to_abs(UAVMap, len(UAV_coords)):
@@ -177,7 +207,7 @@ def generate_adjacent_states(state):
 
     return adjacent_states
 
-def process_states(adjacent_states, q_table, scene_info, UAV_coords, ABS_coords, reward_hyper):
+def process_states(adjacent_states, q_table, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
     next_state_sum = len(adjacent_states)
     next_state_all = {}
     
@@ -186,7 +216,7 @@ def process_states(adjacent_states, q_table, scene_info, UAV_coords, ABS_coords,
             next_state_all[state] = q_table[state]
             next_state_sum -= 1
         else:
-            next_state_score = Reward(state, scene_info, UAV_coords, ABS_coords, reward_hyper)
+            next_state_score = Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper)
             next_state_all[state] = next_state_score
             q_table[state] = next_state_score
     return next_state_all, next_state_sum > 0
@@ -216,7 +246,7 @@ def generate_random_binary_string(input_string):
     random_string = ''.join(random.choice(['0', '1']) for _ in range(length))
     return random_string
 
-def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, visualize=False, scene_info = None, print_prog = False):
+def find_best_topology(GU_nodes, UAV_nodes, ABS_coords, eps, reward_hyper, episodes=50, visualize=False, scene_info = None, print_prog = False):
     best_state = ""
     q_table = {}
     reward_track = []
@@ -225,8 +255,10 @@ def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, v
     max_reward = 0
     best_RS = 0
     best_OL = 0
+
+    # UAV_coords = np.array(get_nodes_position(UAV_nodes))
     
-    num_nodes = len(ABS_coords) + len(UAV_coords)
+    num_nodes = len(ABS_coords) + len(UAV_nodes)
     state = '0' * int((num_nodes * (num_nodes - 1) / 2))
     start_time = time.time()
 
@@ -236,7 +268,7 @@ def find_best_topology(UAV_coords, ABS_coords, eps, reward_hyper, episodes=50, v
 
     for episode in range(episodes):
         next_possible_states = generate_adjacent_states(state)
-        states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, UAV_coords, ABS_coords, reward_hyper)
+        states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper)
 
         next_state, next_state_score = take_action(states_scores, epsilon)
 

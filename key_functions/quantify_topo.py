@@ -477,9 +477,9 @@ def get_RS_with_GU(ground_users, gu_to_uav_connections, UAVMap, DRPenalty, BPHop
     BPScore = quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, BPHopConstraint, BPDRConstraint)
     NPScore = quantify_network_partitioning_with_GU(ground_users, gu_to_uav_connections, UAVMap, droppedRatio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP,  gu_to_bs_capacity)
 
-    print(DRScore)
-    print(BPScore)
-    print(NPScore)
+    # print(DRScore)
+    # print(BPScore)
+    # print(NPScore)
 
     ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, weightDR, weightBP, weightNP)
     return ResilienceScore
@@ -570,31 +570,18 @@ def quantify_network_partitioning_with_GU(ground_users, gu_to_uav_connections, U
     score += 0 if BPScore == 0 else ratioBP * (avgBPScore / BPScore)
     return score
 
-def measure_overload_with_GU(ground_users, gu_to_uav_connections, UAVMap, hop_constraint, DR_constraint, overload_constraint, scene_info):
-    AllPaths = UAVMap.allPaths
-    UAVInfo = scene_info['UAV']
-
-    def hop_count(path):
-        return len(path)
-
-    gu_overload = {gu_index: 0 for gu_index in gu_to_uav_connections.keys()}
-
-    for gu_index, uav_index in gu_to_uav_connections.items():
-        paths = AllPaths[uav_index[0]]
-        filtered_paths = [p for p in paths if hop_count(p['path']) <= hop_constraint and p['DR'] >= DR_constraint]
-        if filtered_paths:
-            curPathDR = max(p['DR'] for p in filtered_paths)
-            gu_overload[gu_index] += min(curPathDR, UAVInfo['bandwidth'])
-
+def measure_overload_with_GU(uav_overload):
     def gini_coefficient(loads):
         loads = sorted(loads.values())
         n = len(loads)
         cumulative_loads = sum(loads)
+        if cumulative_loads == 0:
+            return 0
         sum_of_differences = sum(abs(x - y) for x in loads for y in loads)
-        gini = 0 if cumulative_loads == 0 else sum_of_differences / (2 * n**2 * cumulative_loads)
+        gini = sum_of_differences / (2 * n**2 * cumulative_loads)
         return gini
 
-    overload_score = 1 - gini_coefficient(gu_overload)
+    overload_score = 1 - gini_coefficient(uav_overload)
     return overload_score
 
 def d():

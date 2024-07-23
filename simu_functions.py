@@ -20,11 +20,7 @@ def calculate_current_topology_metrics(ground_users, gu_to_uav_connections, uav_
     )
 
     # 计算 OL（Overload Score）
-    OverloadScore = measure_overload_with_GU(
-        ground_users, gu_to_uav_connections, cur_UAVMap, 
-        reward_hyper['BPHopConstraint'], reward_hyper['BPDRConstraint'], 
-        reward_hyper['overloadConstraint'], scene_info
-    )
+    OverloadScore = measure_overload_with_GU(uav_overload)
 
     # 计算 reward 分数
     rewardScore = ResilienceScore * OverloadScore
@@ -58,8 +54,9 @@ def calculate_capacity_and_overload(ground_users, gu_to_uav_connections, uav_to_
         paths = cur_UAVMap.allPaths.get(uav_index[0], [])
         if paths:
             max_dr_path = max(paths, key=lambda x: x['DR'])
-
-        gu_to_bs_capacity[gu_index] = min(gu_to_uav_data_rate, max_dr_path['DR'])
+            gu_to_bs_capacity[gu_index] = min(gu_to_uav_data_rate, max_dr_path['DR'])
+        else:
+            gu_to_bs_capacity[gu_index] = 0
 
     uav_to_bs_capacity = {}
     for uav_index, paths in cur_UAVMap.allPaths.items():
@@ -75,7 +72,7 @@ def calculate_capacity_and_overload(ground_users, gu_to_uav_connections, uav_to_
                 'DR': 0
             }
 
-    uav_overload = {}
+    # uav_overload = {}
 
     uav_overload = {uav_index: 0 for uav_index in uav_to_bs_capacity.keys()}
 
@@ -116,18 +113,28 @@ def visualize_all_gu_capacity(all_gu_capacity):
     """
     # 准备数据进行可视化
     time_points = list(range(len(all_gu_capacity)))
-    keys = all_gu_capacity[0].keys()
+    
+    # 获取所有时间点出现过的所有GU
+    all_keys = set()
+    for gu_capacity in all_gu_capacity:
+        all_keys.update(gu_capacity.keys())
 
     # 可视化
     plt.figure(figsize=(10, 6))
-    for key in keys:
-        values = [gu_capacity[key] for gu_capacity in all_gu_capacity]
-        plt.plot(time_points, values, label=f'GU {key}')
+    for key in sorted(all_keys):
+        values = []
+        for gu_capacity in all_gu_capacity:
+            if key in gu_capacity:
+                values.append(gu_capacity[key])
+            else:
+                values.append(None)  # 如果某时间点GU不存在，则设为None
+
+        plt.plot(time_points, values, label=f'GU {key}', marker='o')  # 使用marker区分点
 
     plt.xlabel('Time Points')
     plt.ylabel('GU Capacity')
     plt.title('GU Capacity Over Time')
-    plt.legend()
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))  # 将图例放在右上角外
     plt.grid(True)
     plt.show()
 
