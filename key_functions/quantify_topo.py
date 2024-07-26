@@ -537,7 +537,11 @@ def quantify_backup_path_with_GU(ground_users, gu_to_uav_connections, UAVMap, ho
     # print(filtered_path_count / total_path_count)
     # print("xxx")
 
-    score = 0 if filtered_path_count == 0 else (total_score / filtered_path_count) * (filtered_path_count / total_path_count)
+    # score = 0 if filtered_path_count == 0 else (total_score / filtered_path_count) * (filtered_path_count / total_path_count)
+    
+    # Lognam: try to have another BP calculation to encourage exploration
+    score = 0 if filtered_path_count == 0 else total_score 
+
     return score
 
 def quantify_network_partitioning_with_GU(ground_users, gu_to_uav_connections, UAVMap, ratio, DRPenalty, BPHopConstraint, BPDRConstraint, UAVInfo, DRScore, BPScore, ratioDR, ratioBP, gu_to_bs_capacity):
@@ -583,6 +587,16 @@ def measure_overload_with_GU(uav_overload):
 
     overload_score = 1 - gini_coefficient(uav_overload)
     return overload_score
+
+    # Lognam: since the system may seek for over-complicated topology, we may try to minimize the max load among UAV
+    loads = list(uav_overload.values())
+    
+    max_load = max(loads)
+    
+    if max_load == 0:
+        return 1
+    else:
+        return 1 / max_load
 
 def d():
     print(1)

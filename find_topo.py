@@ -122,7 +122,8 @@ def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
     OverloadScore = measure_overload_with_GU(uav_overload)
 
     # 计算 reward 分数
-    rewardScore = ResilienceScore * OverloadScore
+    # rewardScore = ResilienceScore * OverloadScore
+    rewardScore = ResilienceScore 
     # ResilienceScore = get_RS(UAVMap, DRPenalty, BPHopConstraint, BPDRConstraint, droppedRatio, ratioDR, ratioBP, weightDR, weightBP, weightNP, scene_info)
 
     # # as for the reward function, we need also to consider the balance in the UAV network
