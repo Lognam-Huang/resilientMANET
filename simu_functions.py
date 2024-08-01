@@ -7,7 +7,7 @@ from key_functions.quantify_topo import get_RS_with_GU, measure_overload_with_GU
 def calculate_current_topology_metrics(ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes, reward_hyper, scene_info, print_metrics=False):
     # 计算地面用户到基站的容量、UAV到基站的容量和UAV的过载
     gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_capacity_and_overload(
-        ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes
+        ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes, scene_info['blocks']
     )
 
     # 计算 RS（Resilience Score）
@@ -36,7 +36,7 @@ def calculate_current_topology_metrics(ground_users, gu_to_uav_connections, uav_
     return rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload
 
 
-def calculate_capacity_and_overload(ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes):
+def calculate_capacity_and_overload(ground_users, gu_to_uav_connections, uav_to_bs_connections, uav_info, cur_UAVMap, UAV_nodes, block_info):
     gu_to_bs_capacity = {}
     
     for gu_index, uav_index in gu_to_uav_connections.items():
@@ -49,7 +49,8 @@ def calculate_capacity_and_overload(ground_users, gu_to_uav_connections, uav_to_
         # print(cur_gu.position)
 
         # Calculate the data rate from GU to the connected UAV
-        gu_to_uav_data_rate = calculate_data_rate(uav_info, UAV_nodes[uav_index[0]].position, cur_gu.position, False)
+        is_blocked = path_is_blocked(block_info, UAV_nodes[uav_index[0]], cur_gu)
+        gu_to_uav_data_rate = calculate_data_rate(uav_info, UAV_nodes[uav_index[0]].position, cur_gu.position, is_blocked)
 
         paths = cur_UAVMap.allPaths.get(uav_index[0], [])
         if paths:

@@ -129,6 +129,7 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
             # print(str(selected_point))
 
             active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
+            # print(active_ground_users_indices)
         else:
             # print("Trying to optimize positions:")        
             # print("According to new heatmap, the max value is:")

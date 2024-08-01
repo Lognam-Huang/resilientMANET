@@ -106,7 +106,7 @@ def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
     gu_to_uav_connections = get_gu_to_uav_connections(GU_nodes, UAV_nodes, scene_info['UAV'], scene_info['blocks'])
 
     gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_capacity_and_overload(
-        GU_nodes, gu_to_uav_connections, uav_to_bs_connections, scene_info['UAV'], UAVMap, UAV_nodes
+        GU_nodes, gu_to_uav_connections, uav_to_bs_connections, scene_info['UAV'], UAVMap, UAV_nodes, scene_info['blocks']
     )
 
     # 计算 RS（Resilience Score）
@@ -261,6 +261,8 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_coords, eps, reward_hyper, episo
     
     num_nodes = len(ABS_coords) + len(UAV_nodes)
     state = '0' * int((num_nodes * (num_nodes - 1) / 2))
+    # state = '1' * int((num_nodes * (num_nodes - 1) / 2))
+    
     start_time = time.time()
 
     best_state_UAVMap = None
