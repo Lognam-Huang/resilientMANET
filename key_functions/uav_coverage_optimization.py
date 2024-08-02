@@ -91,12 +91,22 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
 
     start_time = time.time()
 
+    # for TD simulation
+    for uav in uavs:
+        uav.set_position((0, 0, max_altitude))
+
     while active_uavs_indices:
 
         target_uav = None
 
         if not active_ground_users_indices:
             active_ground_users_indices, target_uav = find_most_connected_ground_users(ground_users)
+            print("All GUs are connected, now improving UAV load")
+        else:
+            print("There are still some GUs not connect to any UAV:")
+            for active_GU_idx in active_ground_users_indices:
+                # print_nodes(ground_users[active_GU_idx])
+                print_specific_nodes(ground_users, active_GU_idx, True)
         
 
         heatmap = generate_visibility_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, active_ground_users_indices)
@@ -125,11 +135,11 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
             current_uav = active_uavs_indices.pop(0)
             uavs[current_uav].set_position((selected_point[0], selected_point[1], selected_point[2]))
 
-            # print("Trying to cover more GUs:")
-            # print(str(selected_point))
+            print("Trying to cover more GUs:")
+            print(str(selected_point))
 
             active_ground_users_indices, disconnected_users_count = update_connected_ground_users(ground_users, uavs, max_altitude, obstacles)
-            # print(active_ground_users_indices)
+            print(active_ground_users_indices)
         else:
             # print("Trying to optimize positions:")        
             # print("According to new heatmap, the max value is:")

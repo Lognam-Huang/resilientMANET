@@ -5,9 +5,9 @@ from gu_movement import move_ground_users, simulate_and_visualize_movements
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-with open('scene_data_mid.json', 'r') as file:
+# with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -15,8 +15,8 @@ scene = scene_data['scenario']
 UAVInfo = scene_data['UAV']
 baseStation = scene_data['baseStation']
 
-num_GU = 12
-num_UAV = 5
+num_GU = 5
+num_UAV = 3
 num_BS = len(scene_data['baseStation'])
 
 from functions.generate_users import generate_users, add_or_remove_GU
@@ -69,7 +69,7 @@ epsilon = 0.4
 training_episodes= 400
 
 # Lognam: try to have TD
-sim_time = 30
+sim_time = 2
 
 # Lognam: try to switch scenes
 max_movement_distance = 50
@@ -143,6 +143,8 @@ for cur_time_frame in range(sim_time):
             , print_prog=True
         )
 
+        # print_nodes(UAV_nodes)
+
         print("Positions are found, finding connections")
         
         best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(ground_users, UAV_nodes, ABS_coords, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
@@ -160,7 +162,7 @@ for cur_time_frame in range(sim_time):
             ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
         )
     
-    # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+    scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
     reward_TD.append(rewardScore)
     RS_TD.append(ResilienceScore)
