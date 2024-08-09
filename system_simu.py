@@ -50,9 +50,9 @@ from functions.scene_visualization import scene_visualization
 from key_functions.uav_position_finding import *
 position_params = {
     'weights': {
-        'GU': 4,  # Weight for ground user connections
-        'UAV': 2,  # Weight for UAV-to-UAV connections
-        'BS': 1   # Weight for base station connections
+        'GU': 1,  # Weight for ground user connections
+        'UAV': 1,  # Weight for UAV-to-UAV connections
+        'BS': 0   # Weight for base station connections
     },
     'sparsity_parameter': 3  # Controls the density of the heatmap
 }
@@ -107,7 +107,7 @@ constraint_hyper = {
 rewardScore = 0
 OverloadScore = 0
 
-scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
+# scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
 
 # Lognam's testbed
 # ground_users[0].set_position((13,5,0))

@@ -95,11 +95,13 @@ def select_optimal_uav_position(heatmap, uncovered_gu_indices, ground_users, blo
         if connection_score > max_score or (connection_score == max_score and gu_bottleneck > best_gu_bottleneck):
             best_position = position
             max_score = connection_score
+            # best_gu_bottleneck = min(gu_bottleneck, best_gu_bottleneck)
             best_gu_bottleneck = gu_bottleneck
         
-    updated_uncovered_gu_indices = [index for index in uncovered_gu_indices if not path_is_blocked(blocks, Nodes(best_position), ground_users[index])]
+    # updated_uncovered_gu_indices = [index for index in uncovered_gu_indices if not path_is_blocked(blocks, Nodes(best_position), ground_users[index])]
+    updated_uncovered_gu_indices = [index for index in uncovered_gu_indices if path_is_blocked(blocks, Nodes(best_position), ground_users[index])]
 
-    print("New UAV position is found: "+str(best_position)+", with bottleneck: "+str(gu_bottleneck))
+    print("New UAV position is found: "+str(best_position)+" whose connection score is: "+str(max_score)+", with bottleneck: "+str(gu_bottleneck))
 
     return best_position, updated_uncovered_gu_indices
 
