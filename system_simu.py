@@ -43,9 +43,20 @@ from functions.scene_visualization import scene_visualization
 # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=True)
 
 # Lognam: find UAV positions
-from key_functions.uav_coverage_optimization import *
+# from key_functions.uav_coverage_optimization import *
 # plot_gu_capacities(max_capacities_tracks)
 # plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
+
+from key_functions.uav_position_finding import *
+position_params = {
+    'weights': {
+        'GU': 4,  # Weight for ground user connections
+        'UAV': 2,  # Weight for UAV-to-UAV connections
+        'BS': 1   # Weight for base station connections
+    },
+    'sparsity_parameter': 3  # Controls the density of the heatmap
+}
+
 
 # Lognam: find UAV connection
 from find_topo import *
@@ -96,12 +107,12 @@ constraint_hyper = {
 rewardScore = 0
 OverloadScore = 0
 
-# scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
+scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
 
 # Lognam's testbed
 # ground_users[0].set_position((13,5,0))
 # ground_users[0].set_position((5,20,0))
-# UAV_nodes[0].set_position((13,5,20))
+# UAV_nodes[0].set_position((18,25,5))
 # UAV_nodes[1].set_position((15,5,20))
 # print(path_is_blocked(blocks, UAV_nodes[0], ground_users[0]))
 # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
@@ -137,11 +148,28 @@ for cur_time_frame in range(sim_time):
 
         print("Finding positions")
         
+        # max_capacities_tracks = find_optimal_uav_positions(
+        #     ground_users=ground_users, uavs=UAV_nodes, clustering_epsilon=eps, min_cluster_size=min_samples, obstacles=blocks, area_info=scene, min_altitude=min_height, max_altitude=max_height, uav_info=UAVInfo
+        #     # , print_para=True
+        #     , print_prog=True
+        # )
+
         max_capacities_tracks = find_optimal_uav_positions(
-            ground_users=ground_users, uavs=UAV_nodes, clustering_epsilon=eps, min_cluster_size=min_samples, obstacles=blocks, area_info=scene, min_altitude=min_height, max_altitude=max_height, uav_info=UAVInfo
-            # , print_para=True
-            , print_prog=True
+            ground_users=ground_users, 
+            uavs=UAV_nodes, 
+            clustering_epsilon=eps, 
+            min_cluster_size=min_samples, 
+            obstacles=blocks, 
+            area_info=scene, 
+            min_altitude=min_height, 
+            max_altitude=max_height, 
+            uav_info=UAVInfo,
+            weights=position_params['weights'],  # Use weights from the dictionary
+            sparsity_parameter=position_params['sparsity_parameter'],  # Use sparsity_parameter from the dictionary
+            #print_para=True,
+            print_prog=True
         )
+
 
         # print_nodes(UAV_nodes)
 
