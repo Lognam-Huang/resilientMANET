@@ -36,9 +36,6 @@ for i in range(num_BS):
 min_height = UAVInfo['min_height']
 max_height = UAVInfo['max_height']
 
-eps = 15
-min_samples = 5
-
 from functions.scene_visualization import scene_visualization
 # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=True)
 
@@ -55,6 +52,9 @@ position_params = {
         'BS': 0   # Weight for base station connections
     },
     'sparsity_parameter': 3  # Controls the density of the heatmap
+    ,
+    "eps" : 8,
+    "min_samples" : 2
 }
 
 
@@ -157,13 +157,9 @@ for cur_time_frame in range(sim_time):
         max_capacities_tracks = find_optimal_uav_positions(
             ground_users=ground_users, 
             uavs=UAV_nodes, 
-            clustering_epsilon=eps, 
-            min_cluster_size=min_samples, 
-            obstacles=blocks, 
-            area_info=scene, 
-            min_altitude=min_height, 
-            max_altitude=max_height, 
-            uav_info=UAVInfo,
+            clustering_epsilon=position_params['eps'], 
+            min_cluster_size=position_params['min_samples'], 
+            scene_data=scene_data,
             weights=position_params['weights'],  # Use weights from the dictionary
             sparsity_parameter=position_params['sparsity_parameter'],  # Use sparsity_parameter from the dictionary
             #print_para=True,
