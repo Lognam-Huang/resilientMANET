@@ -26,17 +26,25 @@ from sklearn.cluster import DBSCAN
 
 from functions.calculate_data_rate import *
 
-def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1, target_user_indices=None):
+def generate_3D_heatmap(ground_users, obstacles, area_dimensions, min_altitude, max_altitude, weights, uav_info, sparsity_parameter=1, target_user_indices=None):
     """
     Generate a 3D heatmap of connection scores and GU bottlenecks for UAV positioning.
 
     Parameters:
- 
+    ground_users: List of ground user nodes.
+    obstacles: List of objects that can obstruct line of sight.
+    area_dimensions: Dictionary with keys 'xLength' and 'yLength' indicating the area size.
+    min_altitude: Minimum altitude to consider for the heatmap.
+    max_altitude: Maximum altitude to consider for the heatmap.
+    weights: Dictionary with keys for GU, UAV, BS weights.
+    sparsity_parameter: Controls the density of the heatmap by skipping certain points.
+    target_user_indices: Optional list of indices specifying which ground users to include in the heatmap. If None, all users are considered.
+
     Returns:
     heatmap: A dictionary where each key is a coordinate tuple (x, y, z), and the value is a tuple (connection_score, GU_bottleneck).
     """
-    x_length = scene_data['scenario']['xLength']
-    y_length = scene_data['scenario']['yLength']
+    x_length = area_dimensions['xLength']
+    y_length = area_dimensions['yLength']
     heatmap = {}
 
     print("Calculating heatmap for GUs: "+str(target_user_indices))
@@ -44,11 +52,11 @@ def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1,
     if target_user_indices is None:
         target_user_indices = range(len(ground_users))
 
-    for altitude in range(scene_data['UAV']['min_height'], scene_data['UAV']['max_height'] + 1):
+    for altitude in range(min_altitude, max_altitude + 1):
         for x in range(0, x_length, sparsity_parameter):
             for y in range(0, y_length, sparsity_parameter):
 
-                if is_position_inside_block(position=(x, y, altitude), blocks=scene_data['blocks']):
+                if is_position_inside_block(position=(x, y, altitude), blocks=obstacles):
                     continue
 
                 connection_score = 0
@@ -58,13 +66,10 @@ def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1,
                     user = ground_users[user_index]
                     viewpoint = Nodes([x, y, altitude])
 
-                    if not path_is_blocked(scene_data['blocks'], viewpoint, user):
+                    if not path_is_blocked(obstacles, viewpoint, user):
                         connection_score += weights['GU']  # Increment connection score based on GU weight
-                        data_rate = calculate_data_rate(scene_data['UAV'], viewpoint.position, user.position, False)
+                        data_rate = calculate_data_rate(uav_info, viewpoint.position, user.position, False)
                         gu_bottleneck = min(gu_bottleneck, data_rate)  # Update bottleneck with minimum data rate
-
-                        # print(data_rate)
-                        # print(gu_bottleneck)
 
                 heatmap[(x, y, altitude)] = (connection_score, gu_bottleneck)
 
@@ -90,135 +95,147 @@ def select_optimal_uav_position(heatmap, uncovered_gu_indices, ground_users, blo
         if connection_score > max_score or (connection_score == max_score and gu_bottleneck > best_gu_bottleneck):
             best_position = position
             max_score = connection_score
+            # best_gu_bottleneck = min(gu_bottleneck, best_gu_bottleneck)
             best_gu_bottleneck = gu_bottleneck
         
     # updated_uncovered_gu_indices = [index for index in uncovered_gu_indices if not path_is_blocked(blocks, Nodes(best_position), ground_users[index])]
     updated_uncovered_gu_indices = [index for index in uncovered_gu_indices if path_is_blocked(blocks, Nodes(best_position), ground_users[index])]
 
-    print("New UAV position is found: "+str(best_position)+" whose connection score is: "+str(max_score)+", with bottleneck: "+str(best_gu_bottleneck))
+    print("New UAV position is found: "+str(best_position)+" whose connection score is: "+str(max_score)+", with bottleneck: "+str(gu_bottleneck))
 
     return best_position, updated_uncovered_gu_indices
 
-def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_cluster_size, scene_data, weights, sparsity_parameter=1, print_para=False, print_prog=False):
+# def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_cluster_size, obstacles, area_info, min_altitude, max_altitude, uav_info, weights, sparsity_parameter=1, print_para=False, print_prog=False):
+#     """
+#     Determine optimal positions for UAVs to maximize coverage of ground users.
+
+#     Parameters:
+#     ground_users: List of ground user nodes.
+#     uavs: List of UAV nodes.
+#     clustering_epsilon: Maximum distance between two points for DBSCAN clustering.
+#     min_cluster_size: Minimum number of points required to form a cluster in DBSCAN.
+#     obstacles: List of obstacles that can obstruct line of sight.
+#     area_info: Dictionary with keys 'xLength' and 'yLength' defining the simulation area dimensions.
+#     min_altitude: Minimum altitude to consider for UAV deployment.
+#     max_altitude: Maximum altitude to consider for UAV deployment.
+#     uav_info: Data structure containing information about UAVs, such as data rate and communication range.
+#     weights: Dictionary with keys for GU, UAV, BS weights.
+#     sparsity_parameter: Controls the density of the heatmap by skipping certain points.
+#     print_para: Boolean to print parameters for debugging.
+#     print_prog: Boolean to print progress updates.
+
+#     Returns:
+#     final_uav_positions: A list of UAV positions that maximize coverage of ground users.
+#     """
+#     uncovered_gu_indices = list(range(len(ground_users)))
+#     uav_positions = []
+
+#     while uncovered_gu_indices:
+#         print("Covering GUs...")
+#         heatmap = generate_3D_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, weights, uav_info ,sparsity_parameter, target_user_indices=uncovered_gu_indices)
+#         best_position, uncovered_gu_indices = select_optimal_uav_position(heatmap, uncovered_gu_indices, ground_users, obstacles)
+#         uav_positions.append(best_position)
+
+#         print("There are uncovered GUs: "+str(uncovered_gu_indices))
+
+
+#     # After covering all GUs, optimize load distribution using DBSCAN
+#     for uav_position in uav_positions:
+#         print("Optimizing GUs...")
+#         gu_indices_for_this_uav = [index for index in range(len(ground_users)) if path_is_blocked(obstacles, Nodes(uav_position), ground_users[index]) == False]
+
+#         if len(gu_indices_for_this_uav) >= min_cluster_size:
+#             clustering = DBSCAN(eps=clustering_epsilon, min_samples=min_cluster_size).fit([ground_users[index].position for index in gu_indices_for_this_uav])
+#             cluster_labels = clustering.labels_
+
+#             for cluster in set(cluster_labels):
+#                 if cluster == -1:
+#                     continue  # Skip noise points
+#                 cluster_indices = [gu_indices_for_this_uav[i] for i in range(len(cluster_labels)) if cluster_labels[i] == cluster]
+#                 cluster_heatmap = generate_3D_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, weights, uav_info ,sparsity_parameter, target_user_indices=cluster_indices)
+#                 best_cluster_position, _ = select_optimal_uav_position(cluster_heatmap, cluster_indices, ground_users, obstacles)
+#                 uav_positions.append(best_cluster_position)
+
+#     return uav_positions
+
+def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_cluster_size, obstacles, area_info, min_altitude, max_altitude, uav_info, weights, sparsity_parameter=1, print_para=False, print_prog=False):
+    """
+    Determine optimal positions for UAVs to maximize coverage of ground users using hierarchical clustering.
+
+    Parameters:
+    ground_users: List of ground user nodes.
+    uavs: List of UAV nodes.
+    clustering_epsilon: Maximum distance between two points for DBSCAN clustering (not used in this version).
+    min_cluster_size: Minimum number of points required to form a cluster (used for hierarchical clustering).
+    obstacles: List of obstacles that can obstruct line of sight.
+    area_info: Dictionary with keys 'xLength' and 'yLength' defining the simulation area dimensions.
+    min_altitude: Minimum altitude to consider for UAV deployment.
+    max_altitude: Maximum altitude to consider for UAV deployment.
+    uav_info: Data structure containing information about UAVs, such as data rate and communication range.
+    weights: Dictionary with keys for GU, UAV, BS weights.
+    sparsity_parameter: Controls the density of the heatmap by skipping certain points.
+    print_para: Boolean to print parameters for debugging.
+    print_prog: Boolean to print progress updates.
+
+    Returns:
+    final_uav_positions: A list of UAV positions that maximize coverage of ground users.
+    """
     uncovered_gu_indices = list(range(len(ground_users)))
     uav_positions = []
-    available_uav_indices = list(range(len(uavs)))  # Track available UAVs by their indices
 
-    while available_uav_indices:
-        print("Available UAVs: "+str(available_uav_indices))
-        if uncovered_gu_indices:
-            print("Covering GUs...")
-            heatmap = generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter, target_user_indices=uncovered_gu_indices)
-            best_position, uncovered_gu_indices = select_optimal_uav_position(heatmap, uncovered_gu_indices, ground_users, scene_data['blocks'])
-            uav_positions.append(best_position)
+    while uncovered_gu_indices:
+        print("Covering GUs...")
+        heatmap = generate_3D_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, weights, uav_info ,sparsity_parameter, target_user_indices=uncovered_gu_indices)
+        best_position, uncovered_gu_indices = select_optimal_uav_position(heatmap, uncovered_gu_indices, ground_users, obstacles)
+        uav_positions.append(best_position)
 
-            # Remove the used UAV from the available list
-            available_uav_indices.pop(0)  # Assuming you assign UAVs in order, adjust this if necessary
+        print("There are uncovered GUs: " + str(uncovered_gu_indices))
 
+    # After covering all GUs, optimize load distribution using hierarchical clustering
+    for uav_position in uav_positions:
+        print("Optimizing GUs...")
+        gu_indices_for_this_uav = [index for index in range(len(ground_users)) if path_is_blocked(obstacles, Nodes(uav_position), ground_users[index]) == False]
 
-            print("There are uncovered GUs: "+str(uncovered_gu_indices))
-        else:
-            # After covering all GUs, optimize load distribution using DBSCAN
-            print("Optimizing GUs...")
+        if len(gu_indices_for_this_uav) >= min_cluster_size:
+            # Apply hierarchical clustering to split GUs into exactly two clusters
+            gu_positions_for_this_uav = [ground_users[index].position for index in gu_indices_for_this_uav]
+            clusters = apply_hierarchical_clustering(gu_positions_for_this_uav, n_clusters=2)
 
-            # Step 1: Calculate which UAV each GU prefers based on the maximum data rate
-            gu_to_uav_map = {uav_index: [] for uav_index in range(len(uav_positions))}
+            for cluster_indices in clusters.values():
+                cluster_heatmap = generate_3D_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, weights, uav_info, sparsity_parameter, target_user_indices=cluster_indices)
+                best_cluster_position, _ = select_optimal_uav_position(cluster_heatmap, cluster_indices, ground_users, obstacles)
+                
+                # For the first cluster, update the position of the current UAV
+                if len(uav_positions) > 0:
+                    uav_positions[uav_positions.index(uav_position)] = best_cluster_position
+                else:
+                    uav_positions.append(best_cluster_position)
 
-            for gu_index in range(len(ground_users)):
-                best_uav = None
-                max_data_rate = -float('inf')
-
-                for uav_index, uav_position in enumerate(uav_positions):
-                    # if not path_is_blocked(scene_data['blocks'], Nodes(uav_position), ground_users[gu_index]):
-                    data_rate = calculate_data_rate(scene_data['UAV'], uav_position, ground_users[gu_index].position, path_is_blocked(scene_data['blocks'], Nodes(uav_position), ground_users[gu_index]))
-                    if data_rate > max_data_rate:
-                        max_data_rate = data_rate
-                        best_uav = uav_index
-
-                if best_uav is not None:
-                    gu_to_uav_map[best_uav].append(gu_index)
-
-            # Step 2: Find the UAV with the maximum load (most GUs connected)
-            max_load_uav = max(gu_to_uav_map, key=lambda k: len(gu_to_uav_map[k]))
-            gu_indices_for_max_uav = gu_to_uav_map[max_load_uav]
-
-            print("Optimized UAV is: "+str(max_load_uav)+", with covered GUs: "+str(gu_indices_for_max_uav))
-
-            # Step 3: Apply DBSCAN to split GUs into two clusters
-            gu_positions_for_max_uav = [ground_users[index].position for index in gu_indices_for_max_uav]
-            clustering = DBSCAN(eps=clustering_epsilon, min_samples=min_cluster_size).fit(gu_positions_for_max_uav)
-            cluster_labels = clustering.labels_
-
-            clusters = {}
-            for cluster in set(cluster_labels):
-                if cluster == -1:
-                    continue  # Skip noise points
-                cluster_indices = [gu_indices_for_max_uav[i] for i in range(len(cluster_labels)) if cluster_labels[i] == cluster]
-                clusters[cluster] = cluster_indices
-
-            print("DBSCAN is applied, we find "+str(len(clusters))+" clusters")
-
-            # Check if we have exactly two clusters
-            if len(clusters) != 2:
-                print("DBSCAN did not find exactly two clusters, skipping optimization for this UAV.")
-                break  # In case we don't find exactly two clusters, skip optimization
-
-            # Step 4: Find new positions for the UAVs based on the clusters
-            new_positions = []
-            for cluster in clusters.values():
-                cluster_heatmap = generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter, target_user_indices=cluster)
-                best_cluster_position, _ = select_optimal_uav_position(cluster_heatmap, cluster, ground_users, scene_data['blocks'])
-                new_positions.append(best_cluster_position)
-
-            # if len(new_positions) == 2:
-            print("Optimization done, found UAV is updated from "+str(uav_position[max_load_uav])+" to "+str(new_positions[0])+". Meanwhile the new UAV will locate at: "+str(new_positions[1]))
-            # Update the position of the overloaded UAV
-            uav_positions[max_load_uav] = new_positions[0]
-
-            # Add a new UAV position for the second cluster
-            uav_positions.append(new_positions[1])
-            available_uav_indices.pop(0)
-
-
-            # if len(gu_indices_for_max_uav) < min_cluster_size:
-            #     break  # Exit if the largest cluster is too small to optimize further
-
-            # # Apply DBSCAN clustering to the GUs covered by this UAV
-            # clustering = DBSCAN(eps=clustering_epsilon, min_samples=min_cluster_size).fit([ground_users[index].position for index in gu_indices_for_max_uav])
-            # cluster_labels = clustering.labels_
-
-            # for cluster in set(cluster_labels):
-            #     if cluster == -1:
-            #         continue  # Skip noise points
-            #     cluster_indices = [gu_indices_for_max_uav[i] for i in range(len(cluster_labels)) if cluster_labels[i] == cluster]
-
-            #     # Generate heatmap for the cluster to optimize UAV position
-            #     cluster_heatmap = generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter, target_user_indices=cluster_indices)
-            #     best_cluster_position, _ = select_optimal_uav_position(cluster_heatmap, cluster_indices, ground_users, scene_data['blocks'])
-
-            #     # Only add a new UAV position if there are available UAVs
-            #     if available_uav_indices:
-            #         uav_positions.append(best_cluster_position)
-            #         available_uav_indices.pop(0)  # Remove the used UAV from the available list
-            #     else:
-            #         print("No more available UAVs.")
-            #         break  # No more UAVs to use, exit the loop
-
-                # ---
-
-                # gu_indices_for_this_uav = [index for index in range(len(ground_users)) if path_is_blocked(scene_data['blocks'], Nodes(uav_position), ground_users[index]) == False]
-
-                # if len(gu_indices_for_this_uav) >= min_cluster_size:
-                #     clustering = DBSCAN(eps=clustering_epsilon, min_samples=min_cluster_size).fit([ground_users[index].position for index in gu_indices_for_this_uav])
-                #     cluster_labels = clustering.labels_
-
-                #     for cluster in set(cluster_labels):
-                #         if cluster == -1:
-                #             continue  # Skip noise points
-                #         cluster_indices = [gu_indices_for_this_uav[i] for i in range(len(cluster_labels)) if cluster_labels[i] == cluster]
-                #         # cluster_heatmap = generate_3D_heatmap(ground_users, obstacles, area_info, min_altitude, max_altitude, weights, uav_info ,sparsity_parameter, target_user_indices=cluster_indices)
-                #         cluster_heatmap = generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter, target_user_indices=uncovered_gu_indices)
-                #         best_cluster_position, _ = select_optimal_uav_position(cluster_heatmap, cluster_indices, ground_users, scene_data['blocks'])
-                #         uav_positions.append(best_cluster_position)
+                # For the second cluster, add a new UAV position
+                if len(clusters) > 1:
+                    uav_positions.append(best_cluster_position)
 
     return uav_positions
+
+
+from scipy.cluster.hierarchy import linkage, fcluster
+
+def apply_hierarchical_clustering(gu_positions_for_uav, n_clusters=2):
+    """
+    Apply hierarchical clustering to split GUs into a specified number of clusters.
+
+    Parameters:
+    gu_positions_for_uav: List of positions for ground users covered by a UAV.
+    n_clusters: The number of clusters to find (default is 2).
+
+    Returns:
+    clusters: A dictionary where keys are cluster labels and values are lists of indices belonging to each cluster.
+    """
+    Z = linkage(gu_positions_for_uav, method='ward')  # 'ward' minimizes the variance of the clusters
+    cluster_labels = fcluster(Z, n_clusters, criterion='maxclust')  # Force exactly n_clusters clusters
+
+    clusters = {}
+    for i in range(1, n_clusters + 1):  # Cluster labels are 1-based
+        clusters[i-1] = [j for j, label in enumerate(cluster_labels) if label == i]
+
+    return clusters
