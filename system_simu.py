@@ -47,9 +47,9 @@ from functions.scene_visualization import scene_visualization
 from key_functions.uav_position_finding import *
 position_params = {
     'weights': {
-        'GU': 1,  # Weight for ground user connections
-        'UAV': 1,  # Weight for UAV-to-UAV connections
-        'BS': 0   # Weight for base station connections
+        'GU': 4,  # Weight for ground user connections
+        'UAV': 2,  # Weight for UAV-to-UAV connections
+        'BS': 1   # Weight for base station connections
     },
     'sparsity_parameter': 3  # Controls the density of the heatmap
     ,
