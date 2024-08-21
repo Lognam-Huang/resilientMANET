@@ -30,50 +30,6 @@ import random
 
 import time
 
-# node coordinations
-# simple demonstration
-# UAV_coords = np.array([
-#     # (250,200,200),
-#     # (250,600,200),
-#     # (600,350,200),
-
-#     # (588, 127, 246),
-#     # (665, 310, 180),
-#     # (428, 777, 201),
-#     (513, 769, 193),
-#     (548, 317, 216),
-
-#     (783, 626, 235),
-#     (411, 254, 224),
-#     # (600, 725, 224),
-#     # (419, 38, 151),
-#     # (423, 215, 183),
-#     # (643, 641, 198),
-# ])
-
-# ABS_coords = np.array([
-#     # (440,390,500),
-
-#     # (294, 467, 500),
-#     # (445, 0, 500),
-
-#     (511, 133, 500),
-#     (244, 637, 500),
-# ])
-
-# reward_hyper = {
-#     'DRPenalty': 0.5,
-#     'BPHopConstraint': 4,
-#     'BPDRConstraint': 100000000,
-#     'droppedRatio': 0.2,
-#     'ratioDR': 0.6,
-#     'ratioBP': 0.4,
-#     'weightDR': 0.3,
-#     'weightBP': 0.4,
-#     'weightNP': 0.3,
-#     'overloadConstraint': 10000
-# }
-
 from key_functions.quantify_topo import quantify_data_rate_with_GU, quantify_backup_path_with_GU, quantify_network_partitioning_with_GU
 from simu_functions import calculate_capacity_and_overload, get_gu_to_uav_connections
 from classes.UAVMap import find_best_paths_to_bs
@@ -81,26 +37,10 @@ from functions.print_nodes import get_nodes_position, print_nodes
 
 # Get reward of a state, including resilience score and optimization score
 def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
-    # notice that score = RS-overload
-    # or RS*overload
 
-    # print_nodes(UAV_nodes)
     UAV_coords = np.array(get_nodes_position(UAV_nodes))
     
-
     UAVMap = get_UAVMap(state=state, UAV_position= UAV_coords, ABS_position=ABS_coords, scene_info=scene_info)
-
-    # Unpack hyperparameters from the dictionary
-    DRPenalty = reward_hyper['DRPenalty']
-    BPHopConstraint = reward_hyper['BPHopConstraint']
-    BPDRConstraint = reward_hyper['BPDRConstraint']
-    droppedRatio = reward_hyper['droppedRatio']
-    ratioDR = reward_hyper['ratioDR']
-    ratioBP = reward_hyper['ratioBP']
-    weightDR = reward_hyper['weightDR']
-    weightBP = reward_hyper['weightBP']
-    weightNP = reward_hyper['weightNP']
-    overloadConstraint = reward_hyper['overloadConstraint']
 
     uav_to_bs_connections = find_best_paths_to_bs(UAVMap)
     gu_to_uav_connections = get_gu_to_uav_connections(GU_nodes, UAV_nodes, scene_info['UAV'], scene_info['blocks'])
@@ -137,6 +77,44 @@ def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
     # Lognam: try to make sure every UAV has a path towards BS, directly or indirectly
     if not all_uavs_connected_to_abs(UAVMap, len(UAV_coords)):
         rewardScore *= 0.5
+    
+    min_RS_with_one_bs_removed = ResilienceScore  
+
+    # If there are multiple BS, proceed to test each one being "nullified"
+    if len(ABS_coords) > 1:
+        for i in range(len(ABS_coords)):
+            # 将与被移除的BS相关的边设为0
+            modified_state = disable_bs_edges_in_state(state, i, len(UAV_nodes), len(ABS_coords))
+
+            # 重新计算UAVMap，使用修改后的状态
+            modified_UAVMap = get_UAVMap(state=modified_state, UAV_position=UAV_coords, ABS_position=ABS_coords, scene_info=scene_info)
+
+            # 重新计算uav_to_bs_connections
+            modified_uav_to_bs_connections = find_best_paths_to_bs(modified_UAVMap)
+
+            # 重新计算GU-to-BS capacity和UAV overload
+            modified_gu_to_bs_capacity, modified_uav_to_bs_capacity, modified_uav_overload = calculate_capacity_and_overload(
+                GU_nodes, gu_to_uav_connections, modified_uav_to_bs_connections, scene_info['UAV'], modified_UAVMap, UAV_nodes, scene_info['blocks']
+            )
+
+            # 重新计算ResilienceScore
+            RS_with_one_bs_removed = get_RS_with_GU(
+                GU_nodes, gu_to_uav_connections, modified_UAVMap,
+                reward_hyper['DRPenalty'], reward_hyper['BPHopConstraint'], reward_hyper['BPDRConstraint'],
+                reward_hyper['droppedRatio'], reward_hyper['ratioDR'], reward_hyper['ratioBP'],
+                reward_hyper['weightDR'], reward_hyper['weightBP'], reward_hyper['weightNP'],
+                scene_info, modified_gu_to_bs_capacity
+            )
+
+            # 记录最小的ResilienceScore
+            min_RS_with_one_bs_removed = min(min_RS_with_one_bs_removed, RS_with_one_bs_removed)
+
+        # 计算鲁棒性因子
+        robustness_factor = (min_RS_with_one_bs_removed / ResilienceScore if ResilienceScore > 0 else 0)
+        rewardScore *= robustness_factor  # Adjust the original RS
+
+        
+
 
     return rewardScore, ResilienceScore, OverloadScore, UAVMap
     # return rewardScore
@@ -221,26 +199,47 @@ def process_states(adjacent_states, q_table, scene_info, GU_nodes, UAV_nodes, AB
             next_state_all[state] = next_state_score
             q_table[state] = next_state_score
     return next_state_all, next_state_sum > 0
-    
-def take_action(state_scores, epsilon):
-    # Check if state_scores is empty
-    if not state_scores:
-        return None
+ 
+import random
 
-    # Get all key-value pairs where the first value is non-zero
+def take_action(state_scores, epsilon):
+    """
+    在考虑epsilon的情况下选择下一个状态。
+    - 以epsilon的概率随机选择一个状态。
+    - 以(1-epsilon)的概率选择具有最大reward的状态。
+    如果所有reward都为0，则直接随机选择一个状态。
+
+    Parameters:
+    state_scores: 字典，键为状态，值为与该状态相关的分数元组（如 (reward, ...)）。
+    epsilon: 探索的概率。
+
+    Returns:
+    next_state: 被选择的下一个状态。
+    next_state_score: 被选择状态对应的分数。
+    """
+    # 如果state_scores为空，直接返回None
+    if not state_scores:
+        return None, None
+
+    # 获取所有非零reward的状态
     non_zero_items = {k: v for k, v in state_scores.items() if v[0] != 0}
 
-    # If all first values are zero, return None
-    if not non_zero_items:
-        return None
-
-    if random.random() < epsilon:
-        # With probability epsilon, randomly select a key-value pair where the first value is non-zero
-        return random.choice(list(non_zero_items.items()))
+    if non_zero_items:
+        # 如果非零reward的状态存在
+        if random.random() < epsilon:
+            # 以epsilon的概率随机选择一个状态
+            next_state = random.choice(list(state_scores.keys()))
+        else:
+            # 以(1-epsilon)的概率选择具有最大reward的状态
+            max_key = max(non_zero_items, key=lambda k: non_zero_items[k][0])
+            next_state = max_key
     else:
-        # With probability 1-epsilon, select the key-value pair with the largest first value
-        max_key = max(non_zero_items, key=lambda k: non_zero_items[k][0])
-        return max_key, non_zero_items[max_key]
+        # 如果所有reward都为0，随机选择一个状态
+        next_state = random.choice(list(state_scores.keys()))
+
+    next_state_score = state_scores[next_state]
+    return next_state, next_state_score
+
 
 def generate_random_binary_string(input_string):
     length = len(input_string)
@@ -260,8 +259,8 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_coords, eps, reward_hyper, episo
     # UAV_coords = np.array(get_nodes_position(UAV_nodes))
     
     num_nodes = len(ABS_coords) + len(UAV_nodes)
-    state = '0' * int((num_nodes * (num_nodes - 1) / 2))
-    # state = '1' * int((num_nodes * (num_nodes - 1) / 2))
+    # state = '0' * int((num_nodes * (num_nodes - 1) / 2))
+    state = '1' * int((num_nodes * (num_nodes - 1) / 2))
     
     start_time = time.time()
 
@@ -310,7 +309,46 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_coords, eps, reward_hyper, episo
 
     return best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, best_state_UAVMap
 
+def disable_bs_edges_in_state(state, bs_index, num_uavs, num_bss):
+    """
+    将与被“无效”BS相关的边在状态字符串中设置为0。
+    
+    Parameters:
+    state: 原始的状态字符串。
+    bs_index: 要被“无效”的BS的索引（0-based）。
+    num_uavs: UAV的数量。
+    num_bss: BS的总数。
 
+    Returns:
+    modified_state: 状态字符串，其中与指定BS相关的边被设置为0。
+    """
+    num_nodes = num_uavs + num_bss
+    bs_start_index = num_uavs + bs_index  # 与BS相关的节点索引
+    
+    modified_state = list(state)  # 将状态字符串转换为列表以便修改
+    
+    # 将与该BS相关的所有边设置为0
+    for i in range(bs_start_index):
+        edge_index = edge_index_in_state(i, bs_start_index, num_nodes)
+        modified_state[edge_index] = '0'
+    
+    return ''.join(modified_state)
+
+def edge_index_in_state(node1, node2, num_nodes):
+    """
+    根据两个节点的索引，返回状态字符串中对应的边的索引。
+    
+    Parameters:
+    node1: 第一个节点的索引（0-based）。
+    node2: 第二个节点的索引（0-based）。
+    num_nodes: 节点的总数。
+
+    Returns:
+    edge_index: 状态字符串中对应边的索引。
+    """
+    if node1 > node2:
+        node1, node2 = node2, node1
+    return int(node1 * (2 * num_nodes - node1 - 1) / 2 + (node2 - node1 - 1))
 
 if __name__ == "__main__":
     # Q-learning hyperparameters

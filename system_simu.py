@@ -5,9 +5,9 @@ from gu_movement import move_ground_users, simulate_and_visualize_movements
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-# with open('scene_data_mid.json', 'r') as file:
+with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -15,8 +15,8 @@ scene = scene_data['scenario']
 UAVInfo = scene_data['UAV']
 baseStation = scene_data['baseStation']
 
-num_GU = 5
-num_UAV = 3
+num_GU = 3
+num_UAV = 2
 num_BS = len(scene_data['baseStation'])
 
 from functions.generate_users import generate_users, add_or_remove_GU
@@ -51,7 +51,7 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 3  # Controls the density of the heatmap
+    'sparsity_parameter': 5  # Controls the density of the heatmap
     ,
     "eps" : 8,
     "min_samples" : 2
