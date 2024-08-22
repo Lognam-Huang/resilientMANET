@@ -15,8 +15,8 @@ scene = scene_data['scenario']
 UAVInfo = scene_data['UAV']
 baseStation = scene_data['baseStation']
 
-num_GU = 3
-num_UAV = 2
+num_GU = 8
+num_UAV = 5
 num_BS = len(scene_data['baseStation'])
 
 from functions.generate_users import generate_users, add_or_remove_GU
@@ -77,10 +77,10 @@ ABS_coords = np.array(get_nodes_position(ABS_nodes))
 
 # Q-learning hyperparameters
 epsilon = 0.4
-training_episodes= 400
+training_episodes= 200
 
 # Lognam: try to have TD
-sim_time = 2
+sim_time = 20
 
 # Lognam: try to switch scenes
 max_movement_distance = 50
@@ -93,7 +93,7 @@ UAV_capacity_TD = []
 UAV_overload_TD = []
 
 
-from classes.UAVMap import *
+# from classes.UAVMap import *
 
 from simu_functions import *
 
@@ -186,7 +186,7 @@ for cur_time_frame in range(sim_time):
             ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
         )
     
-    scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+    # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
     reward_TD.append(rewardScore)
     RS_TD.append(ResilienceScore)

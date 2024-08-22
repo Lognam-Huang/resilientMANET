@@ -106,6 +106,7 @@ def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
                 scene_info, modified_gu_to_bs_capacity
             )
 
+            # print("If BS"+str(i)+" is down, the RS score will be: "+str(RS_with_one_bs_removed))
             # 记录最小的ResilienceScore
             min_RS_with_one_bs_removed = min(min_RS_with_one_bs_removed, RS_with_one_bs_removed)
 

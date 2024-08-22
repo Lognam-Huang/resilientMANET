@@ -17,6 +17,70 @@ from sklearn.cluster import DBSCAN
 
 from functions.calculate_data_rate import *
 
+# def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1, target_user_indices=None, existing_uav_positions=None, optimized_uav_index=-1):
+    # """
+    # Generate a 3D heatmap of connection scores and GU bottlenecks for UAV positioning.
+
+    # Parameters:
+    # ground_users: List of ground user nodes.
+    # scene_data: Dictionary containing scenario information (e.g., obstacles, BS locations).
+    # weights: Dictionary containing weights for GU, UAV, and BS.
+    # sparsity_parameter: Controls the density of the heatmap by skipping certain points.
+    # target_user_indices: List of indices specifying which ground users to include in the heatmap. If None, all users are considered.
+    # existing_uav_positions: List of positions of already placed UAVs.
+    # optimized_uav_index: Index of the UAV being optimized; -1 if no specific UAV is being optimized.
+
+    # Returns:
+    # heatmap: A dictionary where each key is a coordinate tuple (x, y, z), and the value is a tuple (connection_score, GU_bottleneck).
+    # """
+    # x_length = scene_data['scenario']['xLength']
+    # y_length = scene_data['scenario']['yLength']
+    # heatmap = {}
+
+    # print("Calculating heatmap for GUs: " + str(target_user_indices))
+
+    # if target_user_indices is None:
+    #     target_user_indices = range(len(ground_users))
+
+    # for altitude in range(scene_data['UAV']['min_height'], scene_data['UAV']['max_height'] + 1, sparsity_parameter):
+    #     for x in range(0, x_length, sparsity_parameter):
+    #         for y in range(0, y_length, sparsity_parameter):
+
+    #             if is_position_inside_block(position=(x, y, altitude), blocks=scene_data['blocks']):
+    #                 continue
+
+    #             connection_score = 0
+    #             gu_bottleneck = float('inf')
+    #             viewpoint = Nodes([x, y, altitude])
+
+    #             # Calculate connection score and bottleneck for GUs
+    #             for user_index in target_user_indices:
+    #                 user = ground_users[user_index]
+    #                 if not path_is_blocked(scene_data['blocks'], viewpoint, user):
+    #                     connection_score += weights['GU']  # Increment connection score based on GU weight
+    #                     data_rate = calculate_data_rate(scene_data['UAV'], viewpoint.position, user.position, False)
+    #                     gu_bottleneck = min(gu_bottleneck, data_rate)  # Update bottleneck with minimum data rate
+
+    #             # Calculate connection score for existing UAVs (excluding the one being optimized)
+    #             if existing_uav_positions:
+    #                 for uav_index, uav_position in enumerate(existing_uav_positions):
+    #                     if uav_index == optimized_uav_index:
+    #                         continue  # Skip the UAV that is being optimized
+    #                     if not path_is_blocked(scene_data['blocks'], viewpoint, Nodes(uav_position)):
+    #                         connection_score += weights['UAV']  # Increment connection score based on UAV weight
+
+    #             # Calculate connection score for BS (Base Stations)
+    #             if 'BS' in scene_data:
+    #                 for bs_position in scene_data['BS']:
+    #                     if not path_is_blocked(scene_data['blocks'], viewpoint, Nodes(bs_position)):
+    #                         connection_score += weights['BS']  # Increment connection score based on BS weight
+
+    #             if connection_score > 0:
+    #                 heatmap[(x, y, altitude)] = (connection_score, gu_bottleneck)
+    #             else:
+    #                 heatmap[(x, y, altitude)] = (connection_score, 10)
+
+    # return heatmap
 def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1, target_user_indices=None, existing_uav_positions=None, optimized_uav_index=-1):
     """
     Generate a 3D heatmap of connection scores and GU bottlenecks for UAV positioning.
@@ -45,13 +109,42 @@ def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1,
     for altitude in range(scene_data['UAV']['min_height'], scene_data['UAV']['max_height'] + 1, sparsity_parameter):
         for x in range(0, x_length, sparsity_parameter):
             for y in range(0, y_length, sparsity_parameter):
+                
+                viewpoint = Nodes([x, y, altitude])
+
+                # Check if the current position overlaps with any GU, existing UAV, or BS
+                overlap = False
+                for user_index in target_user_indices:
+                    if ground_users[user_index].position == viewpoint.position:
+                        overlap = True
+                        break
+                
+                if existing_uav_positions:
+                    for uav_index, uav_position in enumerate(existing_uav_positions):
+                        # if uav_position == viewpoint.position:
+                        #     overlap = True
+                        #     break
+                        if np.allclose(uav_position, viewpoint.position):
+                            overlap = True
+                            break
+
+
+                if 'BS' in scene_data:
+                    for bs_position in scene_data['BS']:
+                        if bs_position == viewpoint.position:
+                            overlap = True
+                            break
+
+                if overlap:
+                    # If there's an overlap, skip this point and set score to (-1, 0)
+                    # heatmap[(x, y, altitude)] = (-1, 0)
+                    continue
 
                 if is_position_inside_block(position=(x, y, altitude), blocks=scene_data['blocks']):
                     continue
 
                 connection_score = 0
                 gu_bottleneck = float('inf')
-                viewpoint = Nodes([x, y, altitude])
 
                 # Calculate connection score and bottleneck for GUs
                 for user_index in target_user_indices:
@@ -200,11 +293,13 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
 
             # Step 4: Find new positions for the UAVs based on the clusters
             new_positions = []
+            uav_positions.pop(max_load_uav)
             for cluster in clusters.values():
                 if cluster:  # Only generate a new position if the cluster is not empty
                     # cluster_heatmap = generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter, target_user_indices=[gu_indices_for_max_uav[i] for i in cluster])
                     # cluster_heatmap = generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter, target_user_indices=[gu_indices_for_max_uav[i] for i in cluster], existing_uav_positions=uav_positions)
 
+                    print("Current found UAVs are: "+str(uav_positions))
                     # Generate heatmap considering all UAVs except the one being optimized
                     cluster_heatmap = generate_3D_heatmap(
                         ground_users, 
@@ -219,14 +314,15 @@ def find_optimal_uav_positions(ground_users, uavs, clustering_epsilon, min_clust
 
                     best_cluster_position, _ = select_optimal_uav_position(cluster_heatmap, [gu_indices_for_max_uav[i] for i in cluster], ground_users, scene_data['blocks'])
                     new_positions.append(best_cluster_position)
+                    uav_positions.append(best_cluster_position)
 
             if len(new_positions) == 2:
                 print("Optimization done, found UAV is updated from " + str(uav_positions[max_load_uav]) + " to " + str(new_positions[0]) + ". Meanwhile the new UAV will locate at: " + str(new_positions[1]))
                 # Update the position of the overloaded UAV
-                uav_positions[max_load_uav] = new_positions[0]
+                # uav_positions[max_load_uav] = new_positions[0]
 
                 # Add a new UAV position for the second cluster
-                uav_positions.append(new_positions[1])
+                # uav_positions.append(new_positions[1])
                 available_uav_indices.pop(0)
             else:
                 print("Error: Clustering resulted in an empty cluster. Skipping this optimization.")

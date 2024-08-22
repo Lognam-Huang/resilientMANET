@@ -24,6 +24,9 @@ def calculate_data_rate(UAVInfo, UAV_position, ground_user_position, block_or_no
     d = math.sqrt((UAV_position[0] - ground_user_position[0]) ** 2 +
                   (UAV_position[1] - ground_user_position[1]) ** 2 +
                   (UAV_position[2] - ground_user_position[2]) ** 2)
+    
+    if (d == 0):
+        print("The distance between nodes is 0:"+str(UAV_position)+", "+str(ground_user_position))
 
     # Simplified path loss exponent, may need modification in the future
     n = 4 if block_or_not else 2
