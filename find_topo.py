@@ -36,9 +36,10 @@ from classes.UAVMap import find_best_paths_to_bs
 from functions.print_nodes import get_nodes_position, print_nodes
 
 # Get reward of a state, including resilience score and optimization score
-def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
+def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_nodes, reward_hyper):
 
     UAV_coords = np.array(get_nodes_position(UAV_nodes))
+    ABS_coords = np.array(get_nodes_position(ABS_nodes))
     
     UAVMap = get_UAVMap(state=state, UAV_position= UAV_coords, ABS_position=ABS_coords, scene_info=scene_info)
 
@@ -187,7 +188,7 @@ def generate_adjacent_states(state):
 
     return adjacent_states
 
-def process_states(adjacent_states, q_table, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper):
+def process_states(adjacent_states, q_table, scene_info, GU_nodes, UAV_nodes, ABS_nodes, reward_hyper):
     next_state_sum = len(adjacent_states)
     next_state_all = {}
     
@@ -196,7 +197,7 @@ def process_states(adjacent_states, q_table, scene_info, GU_nodes, UAV_nodes, AB
             next_state_all[state] = q_table[state]
             next_state_sum -= 1
         else:
-            next_state_score = Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper)
+            next_state_score = Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_nodes, reward_hyper)
             next_state_all[state] = next_state_score
             q_table[state] = next_state_score
     return next_state_all, next_state_sum > 0
@@ -247,7 +248,7 @@ def generate_random_binary_string(input_string):
     random_string = ''.join(random.choice(['0', '1']) for _ in range(length))
     return random_string
 
-def find_best_topology(GU_nodes, UAV_nodes, ABS_coords, eps, reward_hyper, episodes=50, visualize=False, scene_info = None, print_prog = False):
+def find_best_topology(GU_nodes, UAV_nodes, ABS_nodes, eps, reward_hyper, episodes=50, visualize=False, scene_info = None, print_prog = False):
     best_state = ""
     q_table = {}
     reward_track = []
@@ -259,7 +260,7 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_coords, eps, reward_hyper, episo
 
     # UAV_coords = np.array(get_nodes_position(UAV_nodes))
     
-    num_nodes = len(ABS_coords) + len(UAV_nodes)
+    num_nodes = len(ABS_nodes) + len(UAV_nodes)
     # state = '0' * int((num_nodes * (num_nodes - 1) / 2))
     state = '1' * int((num_nodes * (num_nodes - 1) / 2))
     
@@ -271,7 +272,7 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_coords, eps, reward_hyper, episo
 
     for episode in range(episodes):
         next_possible_states = generate_adjacent_states(state)
-        states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, GU_nodes, UAV_nodes, ABS_coords, reward_hyper)
+        states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, GU_nodes, UAV_nodes, ABS_nodes, reward_hyper)
 
         next_state, next_state_score = take_action(states_scores, epsilon)
 

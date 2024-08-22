@@ -5,9 +5,9 @@ from gu_movement import move_ground_users, simulate_and_visualize_movements
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-with open('scene_data_mid.json', 'r') as file:
+# with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -15,8 +15,8 @@ scene = scene_data['scenario']
 UAVInfo = scene_data['UAV']
 baseStation = scene_data['baseStation']
 
-num_GU = 8
-num_UAV = 5
+num_GU = 5
+num_UAV = 3
 num_BS = len(scene_data['baseStation'])
 
 from functions.generate_users import generate_users, add_or_remove_GU
@@ -73,14 +73,12 @@ reward_hyper = {
     'overloadConstraint': 10000
 }
 
-ABS_coords = np.array(get_nodes_position(ABS_nodes))
-
 # Q-learning hyperparameters
 epsilon = 0.4
 training_episodes= 200
 
 # Lognam: try to have TD
-sim_time = 20
+sim_time = 5
 
 # Lognam: try to switch scenes
 max_movement_distance = 50
@@ -98,10 +96,10 @@ UAV_overload_TD = []
 from simu_functions import *
 
 constraint_hyper = {
-    'rewardConstraint': 0.9,
-    'RSConstraint': 0.8,
-    'OLConstraint': 0.9,
-    'GUConstraint': 10000000000
+    'rewardConstraint': 0.1,
+    'RSConstraint': 0.1,
+    'OLConstraint': 0.1,
+    'GUConstraint': 0
 }
 
 rewardScore = 0
@@ -116,7 +114,7 @@ OverloadScore = 0
 # UAV_nodes[1].set_position((15,5,20))
 # print(path_is_blocked(blocks, UAV_nodes[0], ground_users[0]))
 # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
-# best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(ground_users, UAV_nodes, ABS_coords, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
+# best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(ground_users, UAV_nodes, ABS_nodes, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
 #     ,print_prog=True
 # )
 # print(cur_UAVMap)
@@ -148,12 +146,6 @@ for cur_time_frame in range(sim_time):
 
         print("Finding positions")
         
-        # max_capacities_tracks = find_optimal_uav_positions(
-        #     ground_users=ground_users, uavs=UAV_nodes, clustering_epsilon=eps, min_cluster_size=min_samples, obstacles=blocks, area_info=scene, min_altitude=min_height, max_altitude=max_height, uav_info=UAVInfo
-        #     # , print_para=True
-        #     , print_prog=True
-        # )
-
         max_capacities_tracks = find_optimal_uav_positions(
             ground_users=ground_users, 
             uavs=UAV_nodes, 
@@ -171,7 +163,7 @@ for cur_time_frame in range(sim_time):
 
         print("Positions are found, finding connections")
         
-        best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(ground_users, UAV_nodes, ABS_coords, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
+        best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(ground_users, UAV_nodes, ABS_nodes, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
           ,print_prog=True
         )
         
@@ -185,6 +177,8 @@ for cur_time_frame in range(sim_time):
         rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
             ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
         )
+    else:
+        print("Current topology is good enough, no topology refreshed is needed")
     
     # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
