@@ -66,5 +66,10 @@
         "UAVSpeed": 15 ,
         "min_height": 50,
         "max_height": 56        
+    },
+    "nodeNumber":{
+        "GU": 12 ,
+        "UAV": 5
     }
+
 }

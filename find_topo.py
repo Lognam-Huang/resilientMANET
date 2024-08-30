@@ -113,6 +113,7 @@ def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_nodes, reward_hyper):
 
         # 计算鲁棒性因子
         robustness_factor = (min_RS_with_one_bs_removed / ResilienceScore if ResilienceScore > 0 else 0)
+        # print("Min RS for missing BS is: "+str(min_RS_with_one_bs_removed)+", and robust fector is: "+str(robustness_factor))
         rewardScore *= robustness_factor  # Adjust the original RS
 
         

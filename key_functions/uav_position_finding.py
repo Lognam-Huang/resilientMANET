@@ -163,15 +163,15 @@ def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1,
                             connection_score += weights['UAV']  # Increment connection score based on UAV weight
 
                 # Calculate connection score for BS (Base Stations)
-                if 'BS' in scene_data:
-                    for bs_position in scene_data['BS']:
-                        if not path_is_blocked(scene_data['blocks'], viewpoint, Nodes(bs_position)):
+                if 'baseStation' in scene_data:                    
+                    for bs in scene_data['baseStation']:
+                        if not path_is_blocked(scene_data['blocks'], viewpoint, Nodes((bs['bottomCorner'][0], bs['bottomCorner'][1], bs['height'][0]))):
                             connection_score += weights['BS']  # Increment connection score based on BS weight
 
                 if connection_score > 0:
                     heatmap[(x, y, altitude)] = (connection_score, gu_bottleneck)
                 else:
-                    heatmap[(x, y, altitude)] = (connection_score, 10)
+                    heatmap[(x, y, altitude)] = (connection_score, 0)
 
     return heatmap
 

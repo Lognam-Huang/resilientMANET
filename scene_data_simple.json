@@ -8,11 +8,6 @@
         "bottomCorner": [5, 5, 0],
         "size": [5, 5],
         "height": [12]
-        },
-        {
-            "bottomCorner": [15, 15, 0],
-            "size": [5, 5],
-            "height": [12]
         }
     ],
     "blocks": [
@@ -52,6 +47,11 @@
         "CarrierFrequency": 28000000000,
         "UAVSpeed": 15,
         "min_height": 10,
-        "max_height": 15             
+        "max_height": 15      
+    },
+    "nodeNumber":{
+        "GU": 6 ,
+        "UAV": 3
     }
+
 }

@@ -14,9 +14,10 @@ blocks = scene_data['blocks']
 scene = scene_data['scenario']
 UAVInfo = scene_data['UAV']
 baseStation = scene_data['baseStation']
+nodeNumber = scene_data['nodeNumber']
 
-num_GU = 5
-num_UAV = 3
+num_GU = nodeNumber['GU']
+num_UAV = nodeNumber['UAV']
 num_BS = len(scene_data['baseStation'])
 
 from functions.generate_users import generate_users, add_or_remove_GU
@@ -47,11 +48,11 @@ from functions.scene_visualization import scene_visualization
 from key_functions.uav_position_finding import *
 position_params = {
     'weights': {
-        'GU': 4,  # Weight for ground user connections
+        'GU': 8,  # Weight for ground user connections
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 5  # Controls the density of the heatmap
+    'sparsity_parameter': 1  # Controls the density of the heatmap
     ,
     "eps" : 8,
     "min_samples" : 2
@@ -78,7 +79,7 @@ epsilon = 0.4
 training_episodes= 200
 
 # Lognam: try to have TD
-sim_time = 5
+sim_time = 50
 
 # Lognam: try to switch scenes
 max_movement_distance = 50
@@ -96,10 +97,10 @@ UAV_overload_TD = []
 from simu_functions import *
 
 constraint_hyper = {
-    'rewardConstraint': 0.1,
-    'RSConstraint': 0.1,
-    'OLConstraint': 0.1,
-    'GUConstraint': 0
+    'rewardConstraint': 0.8,
+    'RSConstraint': 0.8,
+    'OLConstraint': 0.8,
+    'GUConstraint': 100000000
 }
 
 rewardScore = 0
