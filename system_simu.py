@@ -5,9 +5,9 @@ from gu_movement import move_ground_users, simulate_and_visualize_movements
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-# with open('scene_data_mid.json', 'r') as file:
+with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -52,7 +52,7 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 1  # Controls the density of the heatmap
+    'sparsity_parameter': 5  # Controls the density of the heatmap
     ,
     "eps" : 8,
     "min_samples" : 2
@@ -76,10 +76,10 @@ reward_hyper = {
 
 # Q-learning hyperparameters
 epsilon = 0.4
-training_episodes= 200
+training_episodes= 600
 
 # Lognam: try to have TD
-sim_time = 50
+sim_time = 30
 
 # Lognam: try to switch scenes
 max_movement_distance = 50
