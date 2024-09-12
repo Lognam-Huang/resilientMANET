@@ -17,70 +17,7 @@ from sklearn.cluster import DBSCAN
 
 from functions.calculate_data_rate import *
 
-# def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1, target_user_indices=None, existing_uav_positions=None, optimized_uav_index=-1):
-    # """
-    # Generate a 3D heatmap of connection scores and GU bottlenecks for UAV positioning.
 
-    # Parameters:
-    # ground_users: List of ground user nodes.
-    # scene_data: Dictionary containing scenario information (e.g., obstacles, BS locations).
-    # weights: Dictionary containing weights for GU, UAV, and BS.
-    # sparsity_parameter: Controls the density of the heatmap by skipping certain points.
-    # target_user_indices: List of indices specifying which ground users to include in the heatmap. If None, all users are considered.
-    # existing_uav_positions: List of positions of already placed UAVs.
-    # optimized_uav_index: Index of the UAV being optimized; -1 if no specific UAV is being optimized.
-
-    # Returns:
-    # heatmap: A dictionary where each key is a coordinate tuple (x, y, z), and the value is a tuple (connection_score, GU_bottleneck).
-    # """
-    # x_length = scene_data['scenario']['xLength']
-    # y_length = scene_data['scenario']['yLength']
-    # heatmap = {}
-
-    # print("Calculating heatmap for GUs: " + str(target_user_indices))
-
-    # if target_user_indices is None:
-    #     target_user_indices = range(len(ground_users))
-
-    # for altitude in range(scene_data['UAV']['min_height'], scene_data['UAV']['max_height'] + 1, sparsity_parameter):
-    #     for x in range(0, x_length, sparsity_parameter):
-    #         for y in range(0, y_length, sparsity_parameter):
-
-    #             if is_position_inside_block(position=(x, y, altitude), blocks=scene_data['blocks']):
-    #                 continue
-
-    #             connection_score = 0
-    #             gu_bottleneck = float('inf')
-    #             viewpoint = Nodes([x, y, altitude])
-
-    #             # Calculate connection score and bottleneck for GUs
-    #             for user_index in target_user_indices:
-    #                 user = ground_users[user_index]
-    #                 if not path_is_blocked(scene_data['blocks'], viewpoint, user):
-    #                     connection_score += weights['GU']  # Increment connection score based on GU weight
-    #                     data_rate = calculate_data_rate(scene_data['UAV'], viewpoint.position, user.position, False)
-    #                     gu_bottleneck = min(gu_bottleneck, data_rate)  # Update bottleneck with minimum data rate
-
-    #             # Calculate connection score for existing UAVs (excluding the one being optimized)
-    #             if existing_uav_positions:
-    #                 for uav_index, uav_position in enumerate(existing_uav_positions):
-    #                     if uav_index == optimized_uav_index:
-    #                         continue  # Skip the UAV that is being optimized
-    #                     if not path_is_blocked(scene_data['blocks'], viewpoint, Nodes(uav_position)):
-    #                         connection_score += weights['UAV']  # Increment connection score based on UAV weight
-
-    #             # Calculate connection score for BS (Base Stations)
-    #             if 'BS' in scene_data:
-    #                 for bs_position in scene_data['BS']:
-    #                     if not path_is_blocked(scene_data['blocks'], viewpoint, Nodes(bs_position)):
-    #                         connection_score += weights['BS']  # Increment connection score based on BS weight
-
-    #             if connection_score > 0:
-    #                 heatmap[(x, y, altitude)] = (connection_score, gu_bottleneck)
-    #             else:
-    #                 heatmap[(x, y, altitude)] = (connection_score, 10)
-
-    # return heatmap
 def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1, target_user_indices=None, existing_uav_positions=None, optimized_uav_index=-1):
     """
     Generate a 3D heatmap of connection scores and GU bottlenecks for UAV positioning.

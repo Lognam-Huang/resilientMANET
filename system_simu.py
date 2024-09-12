@@ -5,9 +5,9 @@ from gu_movement import move_ground_users, simulate_and_visualize_movements
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-with open('scene_data_mid.json', 'r') as file:
+# with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -181,7 +181,7 @@ for cur_time_frame in range(sim_time):
     else:
         print("Current topology is good enough, no topology refreshed is needed")
     
-    # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+    scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
     reward_TD.append(rewardScore)
     RS_TD.append(ResilienceScore)
