@@ -52,7 +52,7 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 5  # Controls the density of the heatmap
+    'sparsity_parameter': 1  # Controls the density of the heatmap
     ,
     "eps" : 8,
     "min_samples" : 2
@@ -76,7 +76,7 @@ reward_hyper = {
 
 # Q-learning hyperparameters
 epsilon = 0.4
-training_episodes= 600
+training_episodes= 450
 
 # Lognam: try to have TD
 sim_time = 30
@@ -181,7 +181,7 @@ for cur_time_frame in range(sim_time):
     else:
         print("Current topology is good enough, no topology refreshed is needed")
     
-    scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+    # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
     reward_TD.append(rewardScore)
     RS_TD.append(ResilienceScore)

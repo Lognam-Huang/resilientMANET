@@ -259,11 +259,15 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_nodes, eps, reward_hyper, episod
     best_RS = 0
     best_OL = 0
 
+    best_reward_track = []
+    best_RS_track = []
+    best_OL_track = []
+
     # UAV_coords = np.array(get_nodes_position(UAV_nodes))
     
     num_nodes = len(ABS_nodes) + len(UAV_nodes)
-    # state = '0' * int((num_nodes * (num_nodes - 1) / 2))
-    state = '1' * int((num_nodes * (num_nodes - 1) / 2))
+    state = '0' * int((num_nodes * (num_nodes - 1) / 2))
+    # state = '1' * int((num_nodes * (num_nodes - 1) / 2))
     
     start_time = time.time()
 
@@ -284,9 +288,15 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_nodes, eps, reward_hyper, episod
             best_OL = next_state_score[2]
             best_state_UAVMap = next_state_score[3]
 
+            print("New topology with highest reward is found, new reward is: "+str(max_reward))
+
         reward_track.append(next_state_score[0])
         RS_track.append(next_state_score[1])
         OL_track.append(next_state_score[2])
+
+        best_reward_track.append(max_reward)
+        best_RS_track.append(best_RS)
+        best_OL_track.append(best_OL)
 
         if not end_flag:
             state = generate_random_binary_string(state)
@@ -310,6 +320,15 @@ def find_best_topology(GU_nodes, UAV_nodes, ABS_nodes, eps, reward_hyper, episod
         plt.legend()  # show legend to distinguish tracks
         plt.show()
 
+        # # Visualization of the best (maximum) values over episodes
+        # plt.plot(best_reward_track, label='Best Reward', color='blue')
+        # plt.plot(best_RS_track, label='Best RS Value', color='red')
+        # plt.plot(best_OL_track, label='Best OL Value', color='green')
+        # plt.title('Best Values Over Episodes')  # set title
+        # plt.xlabel('Episode')  # set x label
+        # plt.ylabel('Best Value')  # set y label
+        # plt.legend()  # show legend to distinguish tracks
+        # plt.show()
     return best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, best_state_UAVMap
 
 def disable_bs_edges_in_state(state, bs_index, num_uavs, num_bss):
