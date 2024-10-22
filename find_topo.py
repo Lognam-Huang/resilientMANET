@@ -116,9 +116,6 @@ def Reward(state, scene_info, GU_nodes, UAV_nodes, ABS_nodes, reward_hyper):
         # print("Min RS for missing BS is: "+str(min_RS_with_one_bs_removed)+", and robust fector is: "+str(robustness_factor))
         rewardScore *= robustness_factor  # Adjust the original RS
 
-        
-
-
     return rewardScore, ResilienceScore, OverloadScore, UAVMap
     # return rewardScore
 

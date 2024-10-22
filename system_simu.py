@@ -41,7 +41,7 @@ from functions.scene_visualization import scene_visualization
 # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=True)
 
 # Lognam: find UAV positions
-# from key_functions.uav_coverage_optimization import *
+from key_functions.uav_coverage_optimization import *
 # plot_gu_capacities(max_capacities_tracks)
 # plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
 
@@ -79,7 +79,7 @@ epsilon = 0.4
 training_episodes= 450
 
 # Lognam: try to have TD
-sim_time = 30
+sim_time = 10
 
 # Lognam: try to switch scenes
 max_movement_distance = 50
@@ -155,12 +155,9 @@ for cur_time_frame in range(sim_time):
             scene_data=scene_data,
             weights=position_params['weights'],  # Use weights from the dictionary
             sparsity_parameter=position_params['sparsity_parameter'],  # Use sparsity_parameter from the dictionary
-            #print_para=True,
-            print_prog=True
+            # print_para=True,
+            print_prog=False
         )
-
-
-        # print_nodes(UAV_nodes)
 
         print("Positions are found, finding connections")
         
@@ -181,7 +178,7 @@ for cur_time_frame in range(sim_time):
     else:
         print("Current topology is good enough, no topology refreshed is needed")
     
-    # scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+    scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
 
     reward_TD.append(rewardScore)
     RS_TD.append(ResilienceScore)

@@ -22,6 +22,7 @@ class Nodes:
         Return a string representation of the node's information, starting with a separator line.
         """
         separator = "=" * 30
+
         info = [
             separator,
             f"Node Information:",
@@ -31,16 +32,26 @@ class Nodes:
             f"Node Number: {self.node_number}"
         ]
 
-        type_mapping = {
-            "ground users": "UAVs connected to current ground users are:",
-            "basic UAV": "UAVs connected to current UAV are:",
-            "Air Base Station": "UAV connected to current ABS are:"
-        }
+        # type_mapping = {
+        #     "ground users": "UAVs connected to current ground users are:",
+        #     "basic UAV": "UAVs connected to current UAV are:",
+        #     "Air Base Station": "UAV connected to current ABS are:"
+        # }
         
-        info.append(type_mapping.get(self.type, "Unknown type of Nodes"))
+        # info.append(type_mapping.get(self.type, "Unknown type of Nodes"))
+
+        
 
         if self.connected_nodes:
-            connected_info = [f"Node {node}, " for node in self.connected_nodes]
+            # if (self.type == 0):
+            #     connected_info = [f"UAV Node {node}, " for node in self.connected_nodes]
+            # elif (self.type == 1):
+            #     connected_info = [f"UAV Node {node}, " for node in self.connected_nodes]
+            # elif (self.type == 2):
+            #     connected_info = [f"UAV Node {node}, " for node in self.connected_nodes]
+            # else:
+            #     TypeError
+            connected_info = [f"UAV Node {node}, " for node in self.connected_nodes]
             info.append(''.join(connected_info).rstrip(', '))
         else:
             info.append("None")
@@ -91,6 +102,15 @@ class Nodes:
                     print(f"Illegal value: {item}. Index must be a non-negative integer.")
         else:
             print("Illegal input: Input must be an integer or a list of integers.")
+
+    def set_DR(self, cell_data):
+        if isinstance(cell_data, float) and cell_data >= 0:
+            self.data_rate = [float(cell_data)]
+        elif isinstance(cell_data, list) and all(isinstance(item, float) and item >= 0 for item in cell_data):
+            self.data_rate = [float(item) for item in cell_data]
+        else:
+            raise ValueError("Input must be a number or a list of non-negative number.")
+
 
 
 

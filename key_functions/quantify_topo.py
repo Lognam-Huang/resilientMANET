@@ -31,10 +31,6 @@ def get_UAVMap(state, UAV_position = 0, ABS_position = 0, scene_info = None):
     blocks = scene_info['blocks']
     UAVInfo = scene_info['UAV']
     scene = scene_info['scenario']
-    
-    # print(state)
-    # print(UAV_position)
-    # print(ABS_position)
 
     # print(len(UAV_position))
     num_UAV = len(UAV_position)
@@ -60,19 +56,11 @@ def get_UAVMap(state, UAV_position = 0, ABS_position = 0, scene_info = None):
 
     for i in range(0,num_ABS):
         ABSNodes[i].set_position(ABS_position[i])
-    
-    # print_nodes(UAVNodes, True)
-    # print_nodes(ABSNodes, True)
         
     # we should set connection based on the state 
     get_connected_edges(''.join(str(int(i)) for i in state), UAVNodes, ABSNodes)
-    # print(len(UAVNodes))
-
-    # print_nodes(UAVNodes, False)
-    # print_nodes(ABSNodes, False)
 
     NodeMap = UAVMap(UAVNodes, ABSNodes, blocks, UAVInfo)
-    # print(NodeMap)
 
     return NodeMap
 
