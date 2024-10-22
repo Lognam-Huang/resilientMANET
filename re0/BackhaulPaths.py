@@ -6,6 +6,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from functions.path_is_blocked import path_is_blocked
 from functions.calculate_data_rate import calculate_data_rate
 
+from node_functions import print_node
+
 class BackhaulPaths:
     def __init__(self, UAVs, ABSs, blocks, UAVInfo):
         self.UAVs = UAVs
@@ -22,10 +24,20 @@ class BackhaulPaths:
     def findAllPaths(self, UAVs, ABSs, blocks):
         numUAV = len(UAVs)
         numABS = len(ABSs)
-                
+
+
+        # for uav in UAVs:
+        #     uav.reset_connection()
+
         for k in range (numABS):
             curABS = ABSs[k]
             for curConnectedUAV in curABS.connected_nodes:
+                if curConnectedUAV >= len(UAVs):
+                    print("OOOO")
+                    print(curConnectedUAV)
+                    print(len(UAVs))
+                    # print_node(UAVs)
+                    print_node(ABSs)
                 UAVs[curConnectedUAV].add_connection(numUAV+k)
         
         for i in range(numUAV):

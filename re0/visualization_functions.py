@@ -133,30 +133,57 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
 
     line_color = (0.5,0,0)
     
+    from node_functions import print_node
+    # print_node(UAV_nodes)
+    
+    for gu in ground_users:
+        gu_x, gu_y, gu_z = gu.position[0], gu.position[1], gu.position[2]
+        uav_index =  gu.connected_nodes[0]
+        uav_x, uav_y, uav_z = UAV_nodes[uav_index].position[0], UAV_nodes[uav_index].position[1], UAV_nodes[uav_index].position[2]
+
+        ax.plot([gu_x, uav_x], [gu_y, uav_y], [gu_z, uav_z], color=(0.5,0,0), alpha=line_alpha)
+    
+    for uav in UAV_nodes:
+        start_uav_x, start_uav_y, start_uav_z = uav.position[0], uav.position[1], uav.position[2]
+        for target_uav_index in uav.connected_nodes:
+            # print(target_uav_index)
+            target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
+
+            ax.plot([start_uav_x, target_uav_x], [start_uav_y, target_uav_y], [start_uav_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
+    
+    for bs in air_base_station:
+        bs_x, bs_y, bs_z = bs.position[0], bs.position[1], bs.position[2]
+        for target_uav_index in bs.connected_nodes:
+            target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
+
+            ax.plot([bs_x, target_uav_x], [bs_y, target_uav_y], [bs_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
+        
     # GU-UAV连接线
-    if ground_users and UAV_nodes:
-        for user in ground_users:
-            gu_x, gu_y, gu_z = user.position[0], user.position[1], 0  # Ground users 的 z 坐标为 0
-            for UAV in UAV_nodes:  # 假设所有 GU 都与 UAV 相连
-                uav_x, uav_y, uav_z = UAV.position[0], UAV.position[1], UAV.position[2]
-                ax.plot([gu_x, uav_x], [gu_y, uav_y], [gu_z, uav_z], color=line_color, alpha=line_alpha)
+    # if ground_users and UAV_nodes:
+    #     for user in ground_users:
+    #         # print(user.position)
+    #         gu_x, gu_y, gu_z = user.position[0], user.position[1], 0  # Ground users 的 z 坐标为 0
+    #         for UAV in UAV_nodes:  # 假设所有 GU 都与 UAV 相连
+    #             print(UAV.position)
+    #             uav_x, uav_y, uav_z = UAV.position[0], UAV.position[1], UAV.position[2]
+    #             ax.plot([gu_x, uav_x], [gu_y, uav_y], [gu_z, uav_z], color=line_color, alpha=line_alpha)
 
     # UAV-UAV连接线
-    if UAV_nodes:
-        for i, UAV1 in enumerate(UAV_nodes):
-            for j, UAV2 in enumerate(UAV_nodes):
-                if i < j:  # 避免重复连接
-                    uav1_x, uav1_y, uav1_z = UAV1.position[0], UAV1.position[1], UAV1.position[2]
-                    uav2_x, uav2_y, uav2_z = UAV2.position[0], UAV2.position[1], UAV2.position[2]
-                    ax.plot([uav1_x, uav2_x], [uav1_y, uav2_y], [uav1_z, uav2_z], color=line_color, alpha=line_alpha)
+    # if UAV_nodes:
+    #     for i, UAV1 in enumerate(UAV_nodes):
+    #         for j, UAV2 in enumerate(UAV_nodes):
+    #             if i < j:  # 避免重复连接
+    #                 uav1_x, uav1_y, uav1_z = UAV1.position[0], UAV1.position[1], UAV1.position[2]
+    #                 uav2_x, uav2_y, uav2_z = UAV2.position[0], UAV2.position[1], UAV2.position[2]
+    #                 ax.plot([uav1_x, uav2_x], [uav1_y, uav2_y], [uav1_z, uav2_z], color=line_color, alpha=line_alpha)
 
-    # UAV-BS连接线
-    if UAV_nodes and air_base_station:
-        for UAV in UAV_nodes:
-            uav_x, uav_y, uav_z = UAV.position[0], UAV.position[1], UAV.position[2]
-            for ABS in air_base_station:
-                abs_x, abs_y, abs_z = ABS.position[0], ABS.position[1], ABS.position[2]
-                ax.plot([uav_x, abs_x], [uav_y, abs_y], [uav_z, abs_z], color=line_color, alpha=line_alpha)
+    # # UAV-BS连接线
+    # if UAV_nodes and air_base_station:
+    #     for UAV in UAV_nodes:
+    #         uav_x, uav_y, uav_z = UAV.position[0], UAV.position[1], UAV.position[2]
+    #         for ABS in air_base_station:
+    #             abs_x, abs_y, abs_z = ABS.position[0], ABS.position[1], ABS.position[2]
+    #             ax.plot([uav_x, abs_x], [uav_y, abs_y], [uav_z, abs_z], color=line_color, alpha=line_alpha)
 
     # if connection_GU_UAV:
     #     for gu, path in connection_GU_UAV.items():

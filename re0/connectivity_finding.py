@@ -18,7 +18,7 @@ def generate_adjacent_states(state):
 def process_states(adjacent_states, q_table, scene_info, GU_nodes, UAV_nodes, ABS_nodes, reward_hyper):
     next_state_sum = len(adjacent_states)
     next_state_all = {}
-    
+
     for state in adjacent_states:
         if state in q_table:
             next_state_all[state] = q_table[state]
@@ -56,7 +56,6 @@ def take_action(state_scores, epsilon):
 
 # Get reward of a state, including resilience score and optimization score
 def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
-    
     backhaul_connection = get_backhaul_connection(state=state, UAV_nodes= UAV_nodes, BS_nodes=BS_nodes, scene_info=scene_info)
 
     resilience_score = get_RS(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper, scene_info)
@@ -78,7 +77,7 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
 
             modified_backhaul_connection = get_backhaul_connection(state=modified_state, UAV_nodes= UAV_nodes, BS_nodes=BS_nodes, scene_info=scene_info)
 
-            modified_resilience_score = get_RS(GU_nodes, modified_backhaul_connection, reward_hyper, scene_info)
+            modified_resilience_score = get_RS(GU_nodes, UAV_nodes, modified_backhaul_connection, reward_hyper, scene_info)
 
             min_reward_score_with_one_bs_removed = min(min_reward_score_with_one_bs_removed,  modified_resilience_score)
 
@@ -104,43 +103,47 @@ from itertools import combinations
 
 def set_connected_edges(state, UAV_nodes, BS_nodes):
 
-    m = len(UAV_nodes)
-    n = len(BS_nodes)
-    total_nodes = m + n
-    edges = list(combinations(range(total_nodes), 2))
-    connected_edges = [edges[i] for i, state in enumerate(state) if state == '1']
+    a = len(UAV_nodes)
+    b = len(BS_nodes)
+
+    L = len(state)  
+    n = (1 + math.sqrt(1 + 8 * L)) / 2
     
-    # Initialize connection lists for each node
-    UAVConnections = {i: [] for i in range(m)}  # for m UAV nodes
-    ABSConnections = {i: [] for i in range(n)}  # for n ABS nodes
+    if n != a+b or L != ((a+b)*(a+b-1)/2):
+        ValueError("Invalid number of nodes or state")
     
-    # Fill in the connections based on the connected edges
-    for edge in connected_edges:
-        a, b = edge
-        
-        # Both nodes are UAVs
-        if a < m and b < m:
-            UAVConnections[a].append(b)
-            UAVConnections[b].append(a)
-        # One node is UAV (a) and other is ABS (b)
-        elif a < m and b >= m:
-            ABSConnections[b - m].append(a)  # Keep a as is for UAV
-        # One node is UAV (b) and other is ABS (a)
-        elif b < m and a >= m:
-            ABSConnections[a - m].append(b)  # Keep b as is for UAV
+    n = int(n)  
+    edges = []  
+    node_pairs = [(i, j) for i in range(n) for j in range(i+1, n)]
+
+    for index, pair in enumerate(node_pairs):
+        if state[index] == '1':
+            edges.append(pair)
     
-    # Now call the set_connection method for each UAV and ABS node
-    for idx, connections in UAVConnections.items():
-        UAV_nodes[idx].set_connection(sorted(list(set(connections))))  # Remove duplicates and sort
+    for uav in UAV_nodes:
+        uav.reset_connection()
+    for bs in BS_nodes:
+        bs.reset_connection()
+
+    for start_node, end_node in edges:
+        if end_node < a:
+            UAV_nodes[start_node].add_connection(end_node)
+            UAV_nodes[end_node].add_connection(start_node)
+        elif end_node < a+b:
+            if start_node < a:
+                BS_nodes[end_node-a].add_connection(start_node)
+            else:
+                BS_nodes[end_node-a].add_bs_connection(start_node)
+            # BS_nodes[end_node].add_connection(start_node)
+        else:
+            ValueError
     
-    for idx, connections in ABSConnections.items():
-        BS_nodes[idx].set_connection(sorted(list(set(connections))))  # Remove duplicates and sort
+    return edges
+
 
 from node_functions import print_node
 def get_RS(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper, scene_info):
     UAVInfo = scene_info['UAV']
-
-    # print_node(GU_nodes)
 
     DRScore = quantify_data_rate(GU_nodes, backhaul_connection, reward_hyper['DRPenalty'], UAVInfo)
     BPScore = quantify_backup_path(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper['BPHopConstraint'], reward_hyper['BPDRConstraint'], scene_info)
@@ -337,6 +340,7 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
     epsilon = eps
 
     for episode in range(episodes):
+        print(episode)
         next_possible_states = generate_adjacent_states(state)
         states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper)
 
@@ -347,7 +351,7 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
             max_reward = next_state_score[0]
             best_resilience_score = next_state_score[1]
 
-            print("New topology with highest reward is found, new reward is: "+str(max_reward)) if print_prog else None
+            print("New topology with highest reward is found, new reward is: "+str(max_reward)+", at state: "+str(best_state)) if print_prog else None
 
         reward_track.append(next_state_score[0])
         RS_track.append(next_state_score[1])
@@ -367,5 +371,5 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
         print(f"Max reward: {max_reward}")
 
     # set connections for UAVs and BSs
-    get_backhaul_connection(best_state, UAV_nodes, BS_nodes, scene_info)
+    set_connected_edges(best_state, UAV_nodes, BS_nodes)
     return best_state, max_reward, best_RS,  reward_track, RS_track

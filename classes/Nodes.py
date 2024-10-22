@@ -15,6 +15,7 @@ class Nodes:
         self.type = node_type
         self.data_rate = data_rate
         self.connected_nodes = []
+        self.connected_BSs = []
         self.node_number = node_number
 
     def __str__(self):
@@ -55,6 +56,20 @@ class Nodes:
             info.append(''.join(connected_info).rstrip(', '))
         else:
             info.append("None")
+        
+        if self.connected_BSs:
+            # if (self.type == 0):
+            #     connected_info = [f"UAV Node {node}, " for node in self.connected_nodes]
+            # elif (self.type == 1):
+            #     connected_info = [f"UAV Node {node}, " for node in self.connected_nodes]
+            # elif (self.type == 2):
+            #     connected_info = [f"UAV Node {node}, " for node in self.connected_nodes]
+            # else:
+            #     TypeError
+            connected_info = [f"BS Node {node}, " for node in self.connected_nodes]
+            info.append(''.join(connected_info).rstrip(', '))
+        else:
+            info.append("None")
 
         return '\n'.join(info)
 
@@ -67,6 +82,9 @@ class Nodes:
         else:
             print("Error: Please enter a valid position in the format (x, y, z).")
     
+    def reset_connection(self):
+        self.connected_nodes = []
+
     def set_connection(self, cell_data):
         """
         Set the connected nodes based on the input.
@@ -98,6 +116,32 @@ class Nodes:
             for item in new_connection:
                 if isinstance(item, int) and item >= 0:
                     self.connected_nodes.append(item)
+                else:
+                    print(f"Illegal value: {item}. Index must be a non-negative integer.")
+        else:
+            print("Illegal input: Input must be an integer or a list of integers.")
+
+    def reset_bs_connection(self):
+        self.connected_BSs = []
+
+    def set_bs_connection(self, cell_data):
+        if isinstance(cell_data, int) and cell_data >= 0:
+            self.connected_BSs = [cell_data]
+        elif isinstance(cell_data, list) and all(isinstance(item, int) and item >= 0 for item in cell_data):
+            self.connected_BSs = cell_data
+        else:
+            raise ValueError("Input must be a non-negative integer or a list of non-negative integers.")
+
+    def add_bs_connection(self, new_connection):
+        if isinstance(new_connection, int):
+            if new_connection >= 0:
+                self.connected_BSs.append(new_connection)
+            else:
+                print("Illegal node index: Index must be non-negative.")
+        elif isinstance(new_connection, list):
+            for item in new_connection:
+                if isinstance(item, int) and item >= 0:
+                    self.connected_BSs.append(item)
                 else:
                     print(f"Illegal value: {item}. Index must be a non-negative integer.")
         else:
