@@ -84,7 +84,7 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
         robustness_factor = (min_reward_score_with_one_bs_removed / resilience_score if resilience_score > 0 else 0)
         reward_score *= robustness_factor  # Adjust the original RS
 
-    return reward_score, resilience_score
+    return reward_score, resilience_score, backhaul_connection
 
 from BackhaulPaths import BackhaulPaths
 def get_backhaul_connection(state, UAV_nodes, BS_nodes, scene_info = None):
@@ -210,6 +210,8 @@ def quantify_backup_path(ground_users, UAV_nodes, backhaul_connection, hop_const
                             total_score += gu_to_bs_bottleneck /best_path_DR
                         else:
                             total_score += (gu_to_bs_bottleneck / best_path_DR) / hop_difference
+                else:
+                    total_score -= 1
                 
 
         # for p in backhaul_connection.allPaths[gu.connected_nodes[0]]:
@@ -325,13 +327,14 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
     RS_track = []
     max_reward = 0
     best_RS = 0
+    best_backhaul_connection = None
 
     best_reward_track = []
     best_RS_track = []
 
     num_nodes = len(BS_nodes) + len(UAV_nodes)
-    state = '0' * int((num_nodes * (num_nodes - 1) / 2))
-    # state = '1' * int((num_nodes * (num_nodes - 1) / 2))
+    # state = '0' * int((num_nodes * (num_nodes - 1) / 2))
+    state = '1' * int((num_nodes * (num_nodes - 1) / 2))
     
     start_time = time.time()
 
@@ -340,7 +343,12 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
     epsilon = eps
 
     for episode in range(episodes):
-        print(episode)
+        # print("Episode: "+str(episode))
+        print("At episode "+str(episode)+", Q tables has explore: "+str(len(q_table))+" states.") if print_prog else None
+
+        # if episode > 0:
+        #     state = generate_random_binary_string(state)
+
         next_possible_states = generate_adjacent_states(state)
         states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper)
 
@@ -350,6 +358,8 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
             best_state = next_state
             max_reward = next_state_score[0]
             best_resilience_score = next_state_score[1]
+
+            best_backhaul_connection = next_state_score[2]
 
             print("New topology with highest reward is found, new reward is: "+str(max_reward)+", at state: "+str(best_state)) if print_prog else None
 
@@ -361,7 +371,8 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
 
         if not end_flag:
             state = generate_random_binary_string(state)
-            continue
+        else:
+            state = next_state
 
     if print_prog:
         end_time = time.time()
@@ -372,4 +383,4 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
 
     # set connections for UAVs and BSs
     set_connected_edges(best_state, UAV_nodes, BS_nodes)
-    return best_state, max_reward, best_RS,  reward_track, RS_track
+    return best_state, max_reward, best_RS, reward_track, RS_track, best_backhaul_connection

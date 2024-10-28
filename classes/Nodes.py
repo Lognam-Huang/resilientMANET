@@ -13,7 +13,7 @@ class Nodes:
         """
         self.position = position
         self.type = node_type
-        self.data_rate = data_rate
+        self.data_rate = [data_rate]
         self.connected_nodes = []
         self.connected_BSs = []
         self.node_number = node_number

@@ -207,6 +207,74 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
 
     plt.show()
 
+def visualize_all_gu_capacity(gu_capacity_TD):
+    """
+    Visualizes the data rate of each ground user (GU) over time.
+    
+    Parameters:
+    gu_capacity_TD (list of lists): A list where each inner list contains data rates of GUs at a specific time step.
+    
+    Returns:
+    None
+    """
+    plt.figure(figsize=(10, 6))
+    
+    # Plot each ground user's capacity over time
+    for gu_index in range(len(gu_capacity_TD[0])):  # assuming all time steps have the same number of GUs
+        gu_data = [time_step[gu_index] for time_step in gu_capacity_TD]
+        plt.plot(gu_data, label=f'GU {gu_index + 1}')
+    
+    plt.xlabel("Time Step")
+    plt.ylabel("Data Rate (bps)")
+    plt.title("Ground User Capacity Over Time")
+    plt.legend(loc="upper right")
+    plt.grid(True)
+    plt.show()
+
+
+def visualize_all_min_gu_capacity(min_gu_capacity_TD):
+    plt.figure(figsize=(10, 6))
+    
+    gu_indices = list(range(1, len(min_gu_capacity_TD) + 1))  
+    plt.plot(gu_indices, min_gu_capacity_TD, marker='o') 
+    
+    plt.xlabel("Time Step")
+    plt.ylabel("Data Rate (bps)")
+    plt.title("Minimum Ground User Capacity Over Time")
+    plt.legend(loc="upper right")
+    plt.grid(True)
+    plt.show()
+   
+
+def visualize_metrics(max_reward_TD, max_RS_TD, max_OL_TD=None):
+
+    """
+    可视化 max_reward_TD, max_RS_TD 和 max_OL_TD 在同一张图中
+    :param max_reward_TD: List of max reward over time
+    :param max_RS_TD: List of max resilience score over time
+    :param max_OL_TD: List of max overload score over time
+    """
+    # 假设每个列表的数据长度相同，并且每个索引对应同一个时间点
+    time_points = list(range(len(max_reward_TD)))
+
+    # 创建图表
+    plt.figure(figsize=(10, 6))
+
+    # 绘制每条曲线
+    plt.plot(time_points, max_reward_TD, label='Max Reward TD', marker='o')
+    plt.plot(time_points, max_RS_TD, label='Max RS TD', marker='s')
+    # plt.plot(time_points, max_OL_TD, label='Max OL TD', marker='^')
+
+    # 添加标签和标题
+    plt.xlabel('Time Points')
+    plt.ylabel('Scores')
+    plt.title('Max Reward TD, Max RS TD Over Time')
+    plt.legend()
+    plt.grid(True)
+
+    # 显示图表
+    plt.show()
+
 def get_position_by_index(index, ground_users, UAV_nodes, air_base_station):
     all_nodes = (ground_users or []) + (UAV_nodes or []) + (air_base_station or [])
     if 0 <= index < len(all_nodes):

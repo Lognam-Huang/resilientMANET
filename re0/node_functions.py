@@ -129,7 +129,7 @@ def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, 
 from functions.path_is_blocked import path_is_blocked
 from functions.calculate_data_rate import calculate_data_rate
 
-def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks):
+def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection):
     gu_to_uav = {}
 
     for gu_index, user in enumerate(ground_users):
@@ -145,12 +145,33 @@ def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks):
 
         ground_users[gu_index].set_connection(best_uav)
         ground_users[gu_index].set_DR(max_dr)
+    
+    if backhaul_connection:
+        for uav_index, uav in enumerate(UAV_nodes):
+            if uav_index in backhaul_connection.allPaths:
+                max_backhaul_dr = -1
+                best_backhaul_path = None
+                for connection in backhaul_connection.allPaths[uav_index]:
+                    path = connection['path']
+                    dr = connection['DR']
+
+                    if dr > max_backhaul_dr:
+                        max_backhaul_dr = dr
+                        best_backhaul_path = path[1]
+                    
+                    for relay_node in path:
+                        if relay_node == uav_index: continue
+                        if relay_node < len(UAV_nodes) and not relay_node in UAV_nodes[uav_index].connected_nodes:
+                            UAV_nodes[uav_index].add_connection(relay_node)
+                
+                if best_backhaul_path is not None:
+                    UAV_nodes[uav_index].set_DR(max_backhaul_dr)
 
     return gu_to_uav
 
-def move_gu_and_update_connections(ground_users, blocks, x_length, y_length, max_movement_distance, UAV_nodes, UAVInfo):
+def move_gu_and_update_connections(ground_users, blocks, x_length, y_length, max_movement_distance, UAV_nodes, UAVInfo, backhaul_connection):
     move_ground_users(ground_users, blocks, x_length, y_length, max_movement_distance)
 
-    gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
+    gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
     
     return gu_to_uav_connections
