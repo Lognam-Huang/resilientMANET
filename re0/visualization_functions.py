@@ -342,19 +342,11 @@ def visualize_heatmap_slice(heatmap, target_height):
     plt.tight_layout()
     plt.show()
 
-def visualize_heatmap_slices(heatmap, target_heights):
-    """
-    可视化两个不同高度的二维热图切片，包括 connection_score 和 gu_bottleneck。
-    
-    参数：
-    - heatmap: 字典格式的热图数据，键为 (x, y, z)，值为 (connection_score, gu_bottleneck)。
-    - target_heights: 想要可视化的高度列表。
-    """
-    fig, axes = plt.subplots(2, 2, figsize=(14, 12))  # 创建2x2网格
-    colormaps = ['hot', 'viridis']  # 分别为 connection_score 和 gu_bottleneck 选择颜色映射
+def visualize_heatmap_slices(heatmap, target_heights, normalize=False):
+    fig, axes = plt.subplots(2, 2, figsize=(14, 12)) 
+    colormaps = ['hot', 'viridis'] 
     
     for idx, target_height in enumerate(target_heights):
-        # 提取该高度的x, y以及相应的connection_score和gu_bottleneck
         x_vals, y_vals, connection_scores, gu_bottlenecks = [], [], [], []
         
         for (x, y, z), (connection_score, gu_bottleneck) in heatmap.items():
@@ -368,14 +360,21 @@ def visualize_heatmap_slices(heatmap, target_heights):
             print(f"No data available for height {target_height}.")
             continue
 
-        # 创建网格数据
+        # 如果需要归一化，使用min-max归一化
+        if normalize:
+            max_conn = max(connection_scores)
+            min_conn = min(connection_scores)
+            max_bottle = max(gu_bottlenecks)
+            min_bottle = min(gu_bottlenecks)
+            connection_scores = [(cs - min_conn) / (max_conn - min_conn) if max_conn != min_conn else 0 for cs in connection_scores]
+            gu_bottlenecks = [(gb - min_bottle) / (max_bottle - min_bottle) if max_bottle != min_bottle else 0 for gb in gu_bottlenecks]
+
         x_vals = np.array(x_vals)
         y_vals = np.array(y_vals)
         x_unique = np.unique(x_vals)
         y_unique = np.unique(y_vals)
         x_grid, y_grid = np.meshgrid(x_unique, y_unique)
 
-        # 重塑连接分数和瓶颈值为网格格式
         connection_score_grid = np.full(x_grid.shape, np.nan)
         gu_bottleneck_grid = np.full(x_grid.shape, np.nan)
 
@@ -385,15 +384,14 @@ def visualize_heatmap_slices(heatmap, target_heights):
             connection_score_grid[y_index, x_index] = connection_scores[i]
             gu_bottleneck_grid[y_index, x_index] = gu_bottlenecks[i]
 
-        # 可视化 connection_score 和 gu_bottleneck
         c1 = axes[idx, 0].pcolormesh(x_grid, y_grid, connection_score_grid, cmap=colormaps[0], shading='auto')
-        fig.colorbar(c1, ax=axes[idx, 0], label='Connection Score')
+        fig.colorbar(c1, ax=axes[idx, 0], label='Connection Score' + (' (Normalized)' if normalize else ''))
         axes[idx, 0].set_title(f'Connection Score at Height {target_height}')
         axes[idx, 0].set_xlabel("X Axis")
         axes[idx, 0].set_ylabel("Y Axis")
         
         c2 = axes[idx, 1].pcolormesh(x_grid, y_grid, gu_bottleneck_grid, cmap=colormaps[1], shading='auto')
-        fig.colorbar(c2, ax=axes[idx, 1], label='GU Bottleneck')
+        fig.colorbar(c2, ax=axes[idx, 1], label='GU Bottleneck' + (' (Normalized)' if normalize else ''))
         axes[idx, 1].set_title(f'GU Bottleneck at Height {target_height}')
         axes[idx, 1].set_xlabel("X Axis")
         axes[idx, 1].set_ylabel("Y Axis")
@@ -401,96 +399,10 @@ def visualize_heatmap_slices(heatmap, target_heights):
     plt.tight_layout()
     plt.show()
 
+
 import matplotlib.patches as patches
 
-# def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, scene):
-#     """
-#     可视化层次聚类的GU分类。
-    
-#     参数：
-#     - ground_users: 所有GU节点的列表，包含其位置属性 (x, y)。
-#     - clusters_records: 每次聚类的结果记录列表 [{0: [0, 1], 1: [2, 3, 4]}]。
-#     - blocks: 障碍物位置列表，每个元素是一个包含 "bottomCorner" 和 "size" 的字典。
-#     - scene: 场景信息，包含边界信息，用于设置绘图范围。
-#     """
-#     # 设置颜色映射，最多支持10次聚类记录
-#     colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown', 'pink', 'gray', 'olive', 'cyan']
-#     fig, ax = plt.subplots(figsize=(10, 10))
-    
-#     # 绘制障碍物
-#     for block in blocks:
-#         x, y, _ = block["bottomCorner"]
-#         width, height = block["size"]
-#         block_patch = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='black', facecolor='gray', alpha=0.5)
-#         ax.add_patch(block_patch)
-    
-#     # 遍历每次聚类记录
-#     for record_idx, clusters in enumerate(clusters_records):
-#         if not isinstance(clusters, dict):
-#             print(f"Error: Expected clusters to be a dictionary, got {type(clusters)}")
-#             continue
-        
-#         # 对每个簇使用不同颜色
-#         cluster_colors = [colors[i % len(colors)] for i in range(len(clusters))]
-        
-#         # 绘制每个簇中的GU
-#         for cluster_idx, (cluster_label, gu_indices) in enumerate(clusters.items()):
-#             cluster_positions = [ground_users[index].position[:2] for index in gu_indices]  # 只取 x, y 坐标
-#             x_vals, y_vals = zip(*cluster_positions)  # 解包 x 和 y 坐标
-#             ax.scatter(x_vals, y_vals, color=cluster_colors[cluster_idx], label=f"Cluster {record_idx}-{cluster_label}", s=100, alpha=0.6, edgecolor='k')
-    
-#     # 设置图形边界
-#     ax.set_xlim(0, scene["xLength"])
-#     ax.set_ylim(0, scene["yLength"])
-#     ax.set_xlabel("X Axis")
-#     ax.set_ylabel("Y Axis")
-#     ax.set_title("Hierarchical Clustering of Ground Users")
-#     ax.legend()
-#     plt.grid(True)
-#     plt.show()
-
 from collections import defaultdict
-
-# def merge_clusters(clusters_records):
-#     """
-#     根据多次聚类记录合并同类地面用户（GUs）。
-
-#     参数：
-#     - clusters_records: 每次聚类的结果记录列表 [{0: [1, 2, 3], 1: [0, 4, 5]}, {0: [2, 3], 1: [1]}].
-
-#     返回:
-#     - merged_clusters: 最终的GU分组，每组中的GU在多次聚类中有共同归属关系。
-#     """
-#     # 用于跟踪每个 GU 的连接关系
-#     group_connections = defaultdict(set)
-
-#     # 构建 GU 连接关系
-#     for clusters in clusters_records:
-#         for gu_indices in clusters.values():
-#             for gu in gu_indices:
-#                 group_connections[gu].update(gu_indices)  # 将同组的 GU 都加入到连接关系中
-
-#     # 基于连接关系合并成最终分组
-#     visited = set()
-#     final_groups = []
-
-#     def dfs(gu, current_group):
-#         """ 深度优先搜索合并所有连接的 GUs """
-#         visited.add(gu)
-#         current_group.append(gu)
-#         for neighbor in group_connections[gu]:
-#             if neighbor not in visited:
-#                 dfs(neighbor, current_group)
-
-#     for gu in group_connections:
-#         if gu not in visited:
-#             current_group = []
-#             dfs(gu, current_group)
-#             final_groups.append(sorted(current_group))
-
-#     # 转换为字典格式输出
-#     merged_clusters = {i: group for i, group in enumerate(final_groups)}
-#     return merged_clusters
 
 def merge_clusters(clusters_records):
     """
@@ -526,6 +438,11 @@ def merge_clusters(clusters_records):
 
     return classes
 
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import numpy as np
+from itertools import cycle
+
 def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, scene):
     """
     可视化层次聚类的最终GU分类。
@@ -540,7 +457,6 @@ def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, sc
     merged_clusters = merge_clusters(clusters_records)
 
     other_gu_idx = []
-
     for gu_idx in range(len(ground_users)):
         found = False
         for clustered_gu_idxes in merged_clusters:
@@ -549,12 +465,17 @@ def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, sc
                 break
         if not found:
             other_gu_idx.append(gu_idx)
-    
     merged_clusters.append(other_gu_idx) if len(other_gu_idx) > 0 else None
 
-    # 设置更多颜色区分的颜色映射
-    cmap = plt.cm.get_cmap('tab20', len(merged_clusters))  # 使用tab20增加颜色种类
-    colors = cmap(np.arange(len(merged_clusters)))
+    # 手动定义一组高度对比的颜色
+    high_contrast_colors = [
+        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+        '#a55194', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5',
+        '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5'
+    ]
+    color_cycle = cycle(high_contrast_colors)
+    colors = [next(color_cycle) for _ in range(len(merged_clusters))]
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
@@ -580,45 +501,56 @@ def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, sc
     ax.legend()
     plt.grid(True)
     plt.show()
-    
-def visualize_capacity_and_load(gu_capacities_records, uav_load_records):
-    # 在一开始的时间点t=0，所有GU的capacity都为0
-    initial_capacity = {gu_index: 0 for gu_index in gu_capacities_records[0].keys()}
-    gu_capacities_records.insert(0, initial_capacity)  # 插入初始容量记录
-    uav_load_records.insert(0, {uav_id: 0 for uav_id in uav_load_records[0].keys()})  # 插入初始负载记录
 
-    # 准备时间点（找到新UAV的时刻）
+
+    
+def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normalize=False):
+    # 初始化初始容量记录
+    initial_capacity = {gu_index: 0 for gu_index in gu_capacities_records[0].keys()}
+    gu_capacities_records.insert(0, initial_capacity)
+    uav_load_records.insert(0, {uav_id: 0 for uav_id in uav_load_records[0].keys()}) 
+
+    # 计算时间点
     time_points = list(range(len(gu_capacities_records)))
 
-    # 计算每个时间点的 min、max、mean capacity
+    # 归一化 GU Capacity
+    if normalize:
+        all_capacities = [capacity for record in gu_capacities_records for capacity in record.values()]
+        min_val, max_val = min(all_capacities), max(all_capacities)
+        gu_capacities_records = [
+            {gu_index: (capacity - min_val) / (max_val - min_val) if max_val != min_val else 0 
+             for gu_index, capacity in record.items()} 
+            for record in gu_capacities_records
+        ]
+
+    # 计算最小、最大和平均容量
     min_capacities = [min(capacities.values()) for capacities in gu_capacities_records]
     max_capacities = [max(capacities.values()) for capacities in gu_capacities_records]
     mean_capacities = [np.mean(list(capacities.values())) for capacities in gu_capacities_records]
 
-    # 准备 UAV 负载数据
+    # 获取 UAV IDs 和每个 UAV 的负载随时间的变化
     uav_ids = sorted(set(uav_id for record in uav_load_records for uav_id in record.keys()))
     uav_loads_over_time = {uav_id: [record.get(uav_id, 0) for record in uav_load_records] for uav_id in uav_ids}
 
-    # 创建可视化
+    # 绘制 GU Capacity 图
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    # 左侧折线图：GU capacity变化
     ax1.plot(time_points, min_capacities, label='Min Capacity', marker='o', color='blue')
     ax1.plot(time_points, max_capacities, label='Max Capacity', marker='o', color='red')
     ax1.plot(time_points, mean_capacities, label='Mean Capacity', marker='o', color='green')
     ax1.set_xlabel('Time (New UAV Found)')
-    ax1.set_ylabel('Capacity')
+    ax1.set_ylabel('Capacity' + (' (Normalized)' if normalize else ''))
     ax1.set_title('GU Capacity Over Time')
     ax1.legend()
     ax1.grid(True)
 
-    # 右侧柱状图：每个时间点的UAV负载情况
+    # 绘制 UAV Load Distribution 图
     bar_width = 0.35
     bottom = np.zeros(len(time_points))
-    colors = plt.cm.Paired(np.linspace(0, 1, len(uav_ids)))  # 为每个UAV分配不同颜色
+    colors = plt.cm.Paired(np.linspace(0, 1, len(uav_ids))) 
     for i, uav_id in enumerate(uav_ids):
         ax2.bar(time_points, uav_loads_over_time[uav_id], bottom=bottom, label=f'UAV {uav_id}', color=colors[i])
-        bottom += np.array(uav_loads_over_time[uav_id])  # 累积底部
+        bottom += np.array(uav_loads_over_time[uav_id]) 
 
     ax2.set_xlabel('Time (New UAV Found)')
     ax2.set_ylabel('Number of GUs')
@@ -627,4 +559,49 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records):
     ax2.grid(True, axis='y')
 
     plt.tight_layout()
+    plt.show()
+
+
+
+def visualize_scores(reward_track, RS_track, best_reward_track, best_RS_track):
+    # 确定episode数
+    episodes = np.arange(len(reward_track))
+    
+    fig, ax = plt.subplots(figsize=(14, 7))
+
+    # 折线图：reward_track 和 RS_track
+    ax.plot(episodes, reward_track, label='Reward Track', color='blue', linestyle='-', marker='o')
+    ax.plot(episodes, RS_track, label='RS Track', color='green', linestyle='-', marker='o')
+
+    # 柱状图：best_reward_track 和 best_RS_track
+    width = 0.4  # 定义柱状图的宽度
+    ax.bar(episodes - width/2, best_reward_track, width=width, color='blue', alpha=0.5, label='Best Reward Track')
+    ax.bar(episodes + width/2, best_RS_track, width=width, color='green', alpha=0.5, label='Best RS Track')
+
+    # 添加图例和标签
+    ax.set_xlabel('Episode')
+    ax.set_ylabel('Score')
+    ax.set_title('Reward and RS Tracks with Best Scores')
+    ax.legend()
+
+    plt.grid(True)
+    plt.show()
+
+def visualize_best_scores(best_reward_track, best_RS_track):
+    # 确定 episode 数
+    episodes = np.arange(len(best_reward_track))
+
+    fig, ax = plt.subplots(figsize=(14, 7))
+
+    # 使用折线图绘制 best_reward_track 和 best_RS_track
+    ax.plot(episodes, best_reward_track, label='Best Reward Track', color='blue', linestyle='-', marker='o')
+    ax.plot(episodes, best_RS_track, label='Best RS Track', color='green', linestyle='-', marker='o')
+
+    # 添加图例和标签
+    ax.set_xlabel('Episode')
+    ax.set_ylabel('Best Score')
+    ax.set_title('Best Reward and RS Tracks Over Episodes')
+    ax.legend()
+
+    plt.grid(True)
     plt.show()

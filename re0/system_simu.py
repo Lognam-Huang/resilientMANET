@@ -5,9 +5,9 @@ import json
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-with open('scene_data_mid.json', 'r') as file:
+# with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -37,7 +37,7 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 1  # Controls the density of the heatmap
+    'sparsity_parameter': 5  # Controls the density of the heatmap
     ,
     "eps" : 8,
     "min_samples" : 2
@@ -94,7 +94,7 @@ print(move_gu_and_update_connections(ground_users, blocks, scene['xLength'], sce
 
 from position_finding import find_optimal_uav_positions, generate_3D_heatmap
 from connectivity_finding import find_best_backhaul_topology, reward, set_connected_edges
-from visualization_functions import scene_visualization, visualize_all_gu_capacity, visualize_metrics, visualize_all_min_gu_capacity, visualize_heatmap_slices, visualize_hierarchical_clustering, visualize_capacity_and_load
+from visualization_functions import scene_visualization, visualize_all_gu_capacity, visualize_metrics, visualize_all_min_gu_capacity, visualize_heatmap_slices, visualize_hierarchical_clustering, visualize_capacity_and_load, visualize_scores, visualize_best_scores
 
 # print_node(UAV_nodes, -1, True)
 
@@ -104,9 +104,9 @@ from visualization_functions import scene_visualization, visualize_all_gu_capaci
 heatmap_for_visualization, best_position_for_visualization, max_connection_score_for_visualization, min_gu_bottleneck_for_visualization = generate_3D_heatmap(ground_users, scene_data, position_params['weights'], position_params['sparsity_parameter'])
 # print(heatmap_for_visualization)
 
-# selected_heights = [11, 13]
-selected_heights = [50, 55]
-visualize_heatmap_slices(heatmap_for_visualization, selected_heights)
+selected_heights = [10, 15]
+# selected_heights = [50, 55]
+visualize_heatmap_slices(heatmap_for_visualization, selected_heights, True)
 
 # try to visualize GU, and hierarchichal clustering
 found_UAV_positions, hierachical_clustering_GU_records, gu_capacities_records, uav_load_records= find_optimal_uav_positions(
@@ -118,20 +118,39 @@ found_UAV_positions, hierachical_clustering_GU_records, gu_capacities_records, u
             # print_para=True,
             print_prog=False
         )
-print(found_UAV_positions)
-print(hierachical_clustering_GU_records)
+# print(found_UAV_positions)
+# print(hierachical_clustering_GU_records)
 # print(hierachical_clustering_GU_records[0])
 
 # visualize_hierarchical_clustering(ground_users, hierachical_clustering_GU_records[0], blocks ,scene)
 visualize_hierarchical_clustering(ground_users, hierachical_clustering_GU_records, blocks ,scene)
 
-print(gu_capacities_records)
-print(uav_load_records)
+# print(gu_capacities_records)
+# print(uav_load_records)
 
-visualize_capacity_and_load(gu_capacities_records, uav_load_records)
+visualize_capacity_and_load(gu_capacities_records, uav_load_records, True)
 
 #visualize topology finding
 # in each 
+# print_node(UAV_nodes)
+best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
+    ground_users, 
+    UAV_nodes, 
+    BS_nodes, 
+    epsilon, 
+    episodes=training_episodes, 
+    scene_info = scene_data, 
+    reward_hyper=reward_hyper,
+    print_prog=False
+)
+
+# print(reward_track)
+# print(RS_track)
+# print(best_reward_track)
+# print(best_RS_track)
+
+visualize_scores(reward_track, RS_track, best_reward_track, best_RS_track)
+visualize_best_scores(best_reward_track, best_RS_track)
 
 # ----
 

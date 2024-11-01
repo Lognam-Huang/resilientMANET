@@ -326,15 +326,15 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
     reward_track = []
     RS_track = []
     max_reward = 0
-    best_RS = 0
+    best_resilience_score = 0
     best_backhaul_connection = None
 
     best_reward_track = []
     best_RS_track = []
 
     num_nodes = len(BS_nodes) + len(UAV_nodes)
-    # state = '0' * int((num_nodes * (num_nodes - 1) / 2))
-    state = '1' * int((num_nodes * (num_nodes - 1) / 2))
+    state = '0' * int((num_nodes * (num_nodes - 1) / 2))
+    # state = '1' * int((num_nodes * (num_nodes - 1) / 2))
     
     start_time = time.time()
 
@@ -367,7 +367,7 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
         RS_track.append(next_state_score[1])
 
         best_reward_track.append(max_reward)
-        best_RS_track.append(best_RS)
+        best_RS_track.append(best_resilience_score)
 
         if not end_flag:
             state = generate_random_binary_string(state)
@@ -383,4 +383,4 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
 
     # set connections for UAVs and BSs
     set_connected_edges(best_state, UAV_nodes, BS_nodes)
-    return best_state, max_reward, best_RS, reward_track, RS_track, best_backhaul_connection
+    return best_state, max_reward, best_resilience_score, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection
