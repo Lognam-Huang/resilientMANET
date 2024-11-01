@@ -16,7 +16,7 @@ from classes.Nodes import Nodes
 from sklearn.cluster import DBSCAN
 from functions.calculate_data_rate import *
 
-def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1, target_user_indices=None, existing_uav_positions=None, optimized_uav_index=-1, print_prog=True):
+def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1, target_user_indices=None, existing_uav_positions=None, optimized_uav_index=-1, print_prog=False):
     """
     Generate a 3D heatmap of connection scores and GU bottlenecks for UAV positioning.
 
@@ -120,22 +120,17 @@ def generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter=1,
 
 from scipy.cluster.hierarchy import linkage, fcluster
 
-def find_two_clusters_hierarchical(gu_positions_for_max_uav):
-    """
-    Use hierarchical clustering to find exactly two clusters.
+def find_two_clusters_hierarchical(ground_users, gu_indices_for_max_uav):
+    
+    gu_positions_for_max_uav = [ground_users[index].position for index in gu_indices_for_max_uav]
 
-    Parameters:
-    gu_positions_for_max_uav: List of positions of GUs connected to the max load UAV.
-
-    Returns:
-    clusters: Dictionary with two keys, each containing a list of indices for GUs in each cluster.
-    """
     Z = linkage(gu_positions_for_max_uav, method='ward')  # 'ward' minimizes the variance of the clusters
     cluster_labels = fcluster(Z, 2, criterion='maxclust')  # Force exactly 2 clusters
 
     clusters = {0: [], 1: []}
     for i, label in enumerate(cluster_labels):
-        clusters[label-1].append(i)
+        # clusters[label-1].append(i)
+        clusters[label - 1].append(gu_indices_for_max_uav[i])
 
     # Check if any cluster is empty or has very few GUs
     if len(clusters[0]) == 0 or len(clusters[1]) == 0:
@@ -152,6 +147,13 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
     uncovered_gu_indices = list(range(len(ground_users)))
     uav_positions = []
     available_uav_indices = list(range(len(uavs)))  # Track available UAVs by their indices
+
+    # this is just for visualization load balancing step by step
+    clustered_gu_indices_for_max_uav_records = []
+
+    # record data: GU capacity, and UAV load each time for visualization
+    gu_capacities_records = []
+    uav_load_records = []
 
     while available_uav_indices:
         print("Available UAVs: " + str(available_uav_indices)) if print_prog else None
@@ -190,14 +192,23 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
                     gu_to_uav_map[best_uav].append(gu_index)
 
             # Step 2: Find the UAV with the maximum load (most GUs connected)
+            # print("NN")
+            # print(gu_to_uav_map)
             max_load_uav = max(gu_to_uav_map, key=lambda k: len(gu_to_uav_map[k]))
             gu_indices_for_max_uav = gu_to_uav_map[max_load_uav]
 
             print("Optimized UAV is: " + str(max_load_uav) + ", with covered GUs: " + str(gu_indices_for_max_uav)) if print_prog else None
 
             # Step 3: Apply Hierarchical Clustering to split GUs into two clusters
-            gu_positions_for_max_uav = [ground_users[index].position for index in gu_indices_for_max_uav]
-            clusters = find_two_clusters_hierarchical(gu_positions_for_max_uav)
+            # gu_positions_for_max_uav = [ground_users[index].position for index in gu_indices_for_max_uav]
+            # clusters = find_two_clusters_hierarchical(gu_positions_for_max_uav)
+
+            clusters = find_two_clusters_hierarchical(ground_users, gu_indices_for_max_uav)
+
+            # print(gu_indices_for_max_uav)
+            # print(clusters)
+
+            clustered_gu_indices_for_max_uav_records.append(clusters)
 
             print("Hierarchical clustering is applied, and we find 2 clusters.") if print_prog else None
 
@@ -213,7 +224,8 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
                         scene_data, 
                         weights, 
                         sparsity_parameter, 
-                        target_user_indices=[gu_indices_for_max_uav[i] for i in cluster],
+                        # target_user_indices=[gu_indices_for_max_uav[i] for i in cluster],
+                        target_user_indices=[each_cluster for each_cluster in cluster],
                         existing_uav_positions=uav_positions, 
                         optimized_uav_index=max_load_uav,  # Skip the UAV that is currently being optimized
                         print_prog = print_prog
@@ -234,9 +246,31 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
                 print("Error: Clustering resulted in an empty cluster. Skipping this optimization.") if print_prog else None
                 break  # Exit the loop if optimization fails due to empty clusters
 
+        gu_capacity_snapshot = {}
+        uav_load_snapshot = {uav_index: 0 for uav_index in range(len(uav_positions))}
+
+        for gu_index, gu in enumerate(ground_users):
+            best_uav = None
+            max_capacity = -float('inf')
+            for uav_index, uav_position in enumerate(uav_positions):
+                capacity = calculate_data_rate(
+                    scene_data['UAV'], uav_position, gu.position,
+                    path_is_blocked(scene_data['blocks'], Nodes(uav_position), gu)
+                )
+                if capacity > max_capacity:
+                    max_capacity = capacity
+                    best_uav = uav_index
+            gu_capacity_snapshot[gu_index] = max_capacity  # 记录GU的最大capacity
+            uav_load_snapshot[best_uav] += 1
+        gu_capacities_records.append(gu_capacity_snapshot)
+        uav_load_records.append(uav_load_snapshot)
+
+        # print(gu_capacities_records)
+        # print(uav_load_records)
+        
             
         for uav_index, uav_position in enumerate(uav_positions):
             uavs[uav_index].set_position(uav_position)
 
-    return uav_positions
+    return uav_positions, clustered_gu_indices_for_max_uav_records, gu_capacities_records, uav_load_records
 

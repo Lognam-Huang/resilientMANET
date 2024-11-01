@@ -5,9 +5,9 @@ import json
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-# with open('scene_data_mid.json', 'r') as file:
+with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -37,7 +37,7 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 10  # Controls the density of the heatmap
+    'sparsity_parameter': 1  # Controls the density of the heatmap
     ,
     "eps" : 8,
     "min_samples" : 2
@@ -64,10 +64,10 @@ epsilon = 0.4
 training_episodes= 50
 
 # Lognam: set simulation time
-sim_time = 25
+sim_time = 0
 
 # Lognam: try to switch scenes
-max_movement_distance = 50
+max_movement_distance = 200
 
 constraint_hyper = {
     'rewardConstraint': 0.8,
@@ -92,11 +92,48 @@ from node_functions import move_ground_users, get_gu_to_uav_connections, move_gu
 print(move_gu_and_update_connections(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, UAV_nodes, UAVInfo, None))
 # move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
 
-from position_finding import find_optimal_uav_positions
+from position_finding import find_optimal_uav_positions, generate_3D_heatmap
 from connectivity_finding import find_best_backhaul_topology, reward, set_connected_edges
-from visualization_functions import scene_visualization, visualize_all_gu_capacity, visualize_metrics, visualize_all_min_gu_capacity
+from visualization_functions import scene_visualization, visualize_all_gu_capacity, visualize_metrics, visualize_all_min_gu_capacity, visualize_heatmap_slices, visualize_hierarchical_clustering, visualize_capacity_and_load
 
 # print_node(UAV_nodes, -1, True)
+
+# ----
+# try to visualize for paper, section VII-B, C, D
+
+heatmap_for_visualization, best_position_for_visualization, max_connection_score_for_visualization, min_gu_bottleneck_for_visualization = generate_3D_heatmap(ground_users, scene_data, position_params['weights'], position_params['sparsity_parameter'])
+# print(heatmap_for_visualization)
+
+# selected_heights = [11, 13]
+selected_heights = [50, 55]
+visualize_heatmap_slices(heatmap_for_visualization, selected_heights)
+
+# try to visualize GU, and hierarchichal clustering
+found_UAV_positions, hierachical_clustering_GU_records, gu_capacities_records, uav_load_records= find_optimal_uav_positions(
+            ground_users=ground_users, 
+            uavs=UAV_nodes, 
+            scene_data=scene_data,
+            weights=position_params['weights'],  # Use weights from the dictionary
+            sparsity_parameter=position_params['sparsity_parameter'],  # Use sparsity_parameter from the dictionary
+            # print_para=True,
+            print_prog=False
+        )
+print(found_UAV_positions)
+print(hierachical_clustering_GU_records)
+# print(hierachical_clustering_GU_records[0])
+
+# visualize_hierarchical_clustering(ground_users, hierachical_clustering_GU_records[0], blocks ,scene)
+visualize_hierarchical_clustering(ground_users, hierachical_clustering_GU_records, blocks ,scene)
+
+print(gu_capacities_records)
+print(uav_load_records)
+
+visualize_capacity_and_load(gu_capacities_records, uav_load_records)
+
+#visualize topology finding
+# in each 
+
+# ----
 
 for cur_time_frame in range(sim_time):  
     # add_or_remove_GU(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, 2, add=True, print_info=True)

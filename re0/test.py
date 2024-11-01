@@ -76,13 +76,13 @@ gs = get_edges_from_state("000101")
 
 from connectivity_finding import set_connected_edges
 # print_node(UAV_nodes)
-print_node(BS_nodes)
+# print_node(BS_nodes)
 
 set_connected_edges("101101", UAV_nodes, BS_nodes)
 # UAV_nodes[0].add_connection(2)
 
 # print_node(UAV_nodes)
-print_node(BS_nodes)
+# print_node(BS_nodes)
 
 gu = generate_nodes(2, 0)
 # print_node(gu)
@@ -98,7 +98,7 @@ nodeNumber = scene_data['nodeNumber']
 
 # print_node(gu)
 
-move_gu_and_update_connections(gu, blocks, scene['xLength'], scene['yLength'], 5, UAV_nodes, UAVInfo)
+# move_gu_and_update_connections(gu, blocks, scene['xLength'], scene['yLength'], 5, UAV_nodes, UAVInfo)
 # print(gu[0].data_rate)
 # print(gu[0].data_rate[0])
 # print(gu[0].connected_nodes[0])
@@ -151,3 +151,6 @@ import math
 
 from visualization_functions import scene_visualization
 # scene_visualization(gu, UAV_nodes, BS_nodes, scene_data)
+
+for i in range(0,10,5):
+    print(i)
