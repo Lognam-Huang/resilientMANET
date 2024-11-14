@@ -453,8 +453,11 @@ def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, sc
     - blocks: 障碍物位置列表，每个元素是一个包含 "bottomCorner" 和 "size" 的字典。
     - scene: 场景信息，包含边界信息，用于设置绘图范围。
     """
-    # 合并聚类结果
+    # # 合并聚类结果
     merged_clusters = merge_clusters(clusters_records)
+    
+    # 删除空聚类
+    merged_clusters = [cluster for cluster in merged_clusters if cluster]
 
     other_gu_idx = []
     for gu_idx in range(len(ground_users)):
@@ -467,6 +470,8 @@ def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, sc
             other_gu_idx.append(gu_idx)
     merged_clusters.append(other_gu_idx) if len(other_gu_idx) > 0 else None
 
+    print(merged_clusters)
+    
     # 手动定义一组高度对比的颜色
     high_contrast_colors = [
         '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
@@ -502,18 +507,60 @@ def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, sc
     plt.grid(True)
     plt.show()
 
-
+def visualize_gu_by_connection(ground_users, blocks, scene):
+    """
+    可视化GU，每个GU的颜色根据其 .connected_nodes 的值确定，图例显示为“UAV 0, UAV 1...”格式。
     
-def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normalize=False):
-    # 初始化初始容量记录
-    initial_capacity = {gu_index: 0 for gu_index in gu_capacities_records[0].keys()}
-    gu_capacities_records.insert(0, initial_capacity)
-    uav_load_records.insert(0, {uav_id: 0 for uav_id in uav_load_records[0].keys()}) 
+    参数：
+    - ground_users: GU节点列表，每个节点包含 position 属性 (x, y) 和 connected_nodes 列表。
+    - blocks: 障碍物位置列表，每个元素是一个包含 "bottomCorner" 和 "size" 的字典。
+    - scene: 场景信息，包含边界信息，用于设置绘图范围。
+    """
+    # 定义一组颜色用于表示不同连接类型
+    connection_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                         '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+    color_cycle = cycle(connection_colors)
+    
+    # 获取每种连接类型的颜色映射，按照连接类型从小到大排序
+    unique_connections = sorted({gu.connected_nodes[0] for gu in ground_users})
+    connection_types = {connection: next(color_cycle) for connection in unique_connections}
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # 绘制障碍物
+    for block in blocks:
+        x, y, _ = block["bottomCorner"]
+        width, height = block["size"]
+        block_patch = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='black', facecolor='gray', alpha=0.5)
+        ax.add_patch(block_patch)
 
-    # 计算时间点
+    # 绘制每个GU，根据其.connected_nodes的值设置颜色
+    for gu in ground_users:
+        gu_position = gu.position[:2]  # 只获取 (x, y) 坐标
+        connection_type = gu.connected_nodes[0]  # 获取连接类型
+        color = connection_types[connection_type]  # 根据连接类型分配颜色
+        ax.scatter(*gu_position, color=color, label=f"UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
+
+    # 设置图形边界和标题
+    ax.set_xlim(0, scene["xLength"])
+    ax.set_ylim(0, scene["yLength"])
+    ax.set_xlabel("X Axis")
+    ax.set_ylabel("Y Axis")
+    ax.set_title("GU Visualization by Connection Type")
+    
+    # 仅绘制一次图例条目，且按连接类型从小到大排序
+    handles, labels = ax.get_legend_handles_labels()
+    unique_labels = dict(sorted(zip(labels, handles), key=lambda x: int(x[0].split()[-1])))
+    ax.legend(unique_labels.values(), unique_labels.keys())
+    
+    plt.grid(True)
+    plt.show()
+
+def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normalize=False): 
+    # Calculate time points
     time_points = list(range(len(gu_capacities_records)))
 
-    # 归一化 GU Capacity
+    # Normalize GU Capacity if specified
     if normalize:
         all_capacities = [capacity for record in gu_capacities_records for capacity in record.values()]
         min_val, max_val = min(all_capacities), max(all_capacities)
@@ -523,16 +570,16 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normali
             for record in gu_capacities_records
         ]
 
-    # 计算最小、最大和平均容量
+    # Calculate min, max, and mean capacities
     min_capacities = [min(capacities.values()) for capacities in gu_capacities_records]
     max_capacities = [max(capacities.values()) for capacities in gu_capacities_records]
     mean_capacities = [np.mean(list(capacities.values())) for capacities in gu_capacities_records]
 
-    # 获取 UAV IDs 和每个 UAV 的负载随时间的变化
+    # Get UAV IDs and track their load over time
     uav_ids = sorted(set(uav_id for record in uav_load_records for uav_id in record.keys()))
     uav_loads_over_time = {uav_id: [record.get(uav_id, 0) for record in uav_load_records] for uav_id in uav_ids}
 
-    # 绘制 GU Capacity 图
+    # Plot GU Capacity
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
     ax1.plot(time_points, min_capacities, label='Min Capacity', marker='o', color='blue')
@@ -543,8 +590,9 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normali
     ax1.set_title('GU Capacity Over Time')
     ax1.legend()
     ax1.grid(True)
+    ax1.set_xticks(time_points)  # Set x-axis to display only integer time points
 
-    # 绘制 UAV Load Distribution 图
+    # Plot UAV Load Distribution
     bar_width = 0.35
     bottom = np.zeros(len(time_points))
     colors = plt.cm.Paired(np.linspace(0, 1, len(uav_ids))) 
@@ -557,6 +605,7 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normali
     ax2.set_title('UAV Load Distribution Over Time')
     ax2.legend(title="UAV ID")
     ax2.grid(True, axis='y')
+    ax2.set_xticks(time_points)  # Set x-axis to display only integer time points
 
     plt.tight_layout()
     plt.show()
@@ -604,4 +653,120 @@ def visualize_best_scores(best_reward_track, best_RS_track):
     ax.legend()
 
     plt.grid(True)
+    plt.show()
+
+def visualize_simulation(uav_connections_TD, gu_capacity_TD, num_uavs):
+    # 初始化存储每个时间步的最小和平均容量
+    min_capacity_over_time = []
+    avg_capacity_over_time = []
+    uav_connections_over_time = []
+
+    # 遍历每个时间步的数据
+    for step, (gu_to_uav_connections, gu_to_bs_capacity) in enumerate(zip(uav_connections_TD, gu_capacity_TD)):
+        # 确保gu_to_bs_capacity是数值列表
+        if isinstance(gu_to_bs_capacity, dict):
+            capacities = list(gu_to_bs_capacity.values())
+        else:
+            capacities = gu_to_bs_capacity  # 如果已经是列表，则直接使用
+
+        # 计算当前时间步的最小和平均容量
+        min_capacity = np.min(capacities)
+        avg_capacity = np.mean(capacities)
+        min_capacity_over_time.append(min_capacity)
+        avg_capacity_over_time.append(avg_capacity)
+
+        # 将gu_to_uav_connections转换为整数值的列表
+        gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
+
+        # 统计每个UAV的GU连接数量
+        uav_connection_counts = [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        uav_connections_over_time.append(uav_connection_counts)
+
+    # 转置数据以便绘制堆叠柱形图
+    uav_connections_over_time = np.array(uav_connections_over_time).T
+
+    # 可视化
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+
+    # 绘制GU到BS的capacity的最小值和平均值折线图
+    time_steps = np.arange(len(uav_connections_TD))
+    ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity")
+    ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity")
+    ax1.set_title("GU to BS Capacity Over Time")
+    ax1.set_xlabel("Time Steps")
+    ax1.set_ylabel("Capacity")
+    ax1.legend()
+    ax1.set_xticks(time_steps)  # 设置x轴刻度为整数
+
+    # 绘制堆叠柱形图表示每个时间步的UAV连接数量
+    bottom = np.zeros(len(uav_connections_TD))  # 初始化底部位置为0
+    for i in range(num_uavs):
+        ax2.bar(time_steps, uav_connections_over_time[i], bottom=bottom, label=f"UAV {i}")
+        bottom += uav_connections_over_time[i]  # 更新底部位置，堆叠下一个UAV的值
+
+    ax2.set_title("Number of GUs Connected to Each UAV Over Time")
+    ax2.set_xlabel("Time Steps")
+    ax2.set_ylabel("Total Number of GUs Connected")
+    ax2.legend(loc="upper left")
+    ax2.set_xticks(time_steps)  # 设置x轴刻度为整数
+
+    plt.tight_layout()
+    plt.show()
+
+def visualize_simulation_together(uav_connections_TD, gu_capacity_TD, num_uavs):
+    # 初始化存储每个时间步的最小和平均容量
+    min_capacity_over_time = []
+    avg_capacity_over_time = []
+    uav_connections_over_time = []
+
+    # 遍历每个时间步的数据
+    for step, (gu_to_uav_connections, gu_to_bs_capacity) in enumerate(zip(uav_connections_TD, gu_capacity_TD)):
+        # 确保gu_to_bs_capacity是数值列表
+        if isinstance(gu_to_bs_capacity, dict):
+            capacities = list(gu_to_bs_capacity.values())
+        else:
+            capacities = gu_to_bs_capacity  # 如果已经是列表，则直接使用
+
+        # 计算当前时间步的最小和平均容量
+        min_capacity = np.min(capacities)
+        avg_capacity = np.mean(capacities)
+        min_capacity_over_time.append(min_capacity)
+        avg_capacity_over_time.append(avg_capacity)
+
+        # 将gu_to_uav_connections转换为整数值的列表
+        gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
+
+        # 统计每个UAV的GU连接数量
+        uav_connection_counts = [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        uav_connections_over_time.append(uav_connection_counts)
+
+    # 转置数据以便绘制堆叠柱形图
+    uav_connections_over_time = np.array(uav_connections_over_time).T
+
+    # 可视化
+    fig, ax1 = plt.subplots(figsize=(12, 8))
+
+    # 绘制GU到BS的capacity的最小值和平均值折线图
+    time_steps = np.arange(len(uav_connections_TD))
+    ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity", color="blue", marker="o")
+    ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity", color="green", marker="x")
+    ax1.set_xlabel("Time Steps")
+    ax1.set_ylabel("Capacity", color="black")
+    ax1.legend(loc="upper left")
+    ax1.set_xticks(time_steps)  # 设置x轴刻度为整数
+
+    # 使用相同的x轴，增加堆叠柱状图
+    ax2 = ax1.twinx()
+    ax2.set_ylabel("Total Number of GUs Connected")
+    bottom = np.zeros(len(uav_connections_TD))
+
+    for i in range(num_uavs):
+        ax2.bar(time_steps, uav_connections_over_time[i], bottom=bottom, label=f"UAV {i}", alpha=0.6)
+        bottom += uav_connections_over_time[i]
+
+    ax2.legend(loc="upper right")
+    ax2.set_xticks(time_steps)  # 设置x轴刻度为整数
+
+    plt.title("GU to BS Capacity and UAV Connections Over Time")
+    plt.tight_layout()
     plt.show()

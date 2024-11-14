@@ -192,29 +192,21 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
                     gu_to_uav_map[best_uav].append(gu_index)
 
             # Step 2: Find the UAV with the maximum load (most GUs connected)
-            # print("NN")
-            # print(gu_to_uav_map)
             max_load_uav = max(gu_to_uav_map, key=lambda k: len(gu_to_uav_map[k]))
             gu_indices_for_max_uav = gu_to_uav_map[max_load_uav]
 
             print("Optimized UAV is: " + str(max_load_uav) + ", with covered GUs: " + str(gu_indices_for_max_uav)) if print_prog else None
 
             # Step 3: Apply Hierarchical Clustering to split GUs into two clusters
-            # gu_positions_for_max_uav = [ground_users[index].position for index in gu_indices_for_max_uav]
-            # clusters = find_two_clusters_hierarchical(gu_positions_for_max_uav)
-
             clusters = find_two_clusters_hierarchical(ground_users, gu_indices_for_max_uav)
 
-            # print(gu_indices_for_max_uav)
-            # print(clusters)
-
             clustered_gu_indices_for_max_uav_records.append(clusters)
+            # print(clusters)
 
             print("Hierarchical clustering is applied, and we find 2 clusters.") if print_prog else None
 
             # Step 4: Find new positions for the UAVs based on the clusters
             new_positions = []
-            uav_positions.pop(max_load_uav)
             for cluster in clusters.values():
                 if cluster:  # Only generate a new position if the cluster is not empty
                     print("Current found UAVs are: "+str(uav_positions)) if print_prog else None
@@ -224,7 +216,6 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
                         scene_data, 
                         weights, 
                         sparsity_parameter, 
-                        # target_user_indices=[gu_indices_for_max_uav[i] for i in cluster],
                         target_user_indices=[each_cluster for each_cluster in cluster],
                         existing_uav_positions=uav_positions, 
                         optimized_uav_index=max_load_uav,  # Skip the UAV that is currently being optimized
@@ -236,11 +227,8 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
 
             if len(new_positions) == 2:
                 print("Optimization done, found UAV is updated from " + str(uav_positions[max_load_uav]) + " to " + str(new_positions[0]) + ". Meanwhile the new UAV will locate at: " + str(new_positions[1])) if print_prog else None
-                # Update the position of the overloaded UAV
-                # uav_positions[max_load_uav] = new_positions[0]
-
-                # Add a new UAV position for the second cluster
-                # uav_positions.append(new_positions[1])
+                
+                uav_positions.pop(max_load_uav)
                 available_uav_indices.pop(0)
             else:
                 print("Error: Clustering resulted in an empty cluster. Skipping this optimization.") if print_prog else None
@@ -269,8 +257,8 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
         # print(uav_load_records)
         
             
-        for uav_index, uav_position in enumerate(uav_positions):
-            uavs[uav_index].set_position(uav_position)
+    for uav_index, uav_position in enumerate(uav_positions):
+        uavs[uav_index].set_position(uav_position)
 
     return uav_positions, clustered_gu_indices_for_max_uav_records, gu_capacities_records, uav_load_records
 

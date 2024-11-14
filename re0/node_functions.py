@@ -50,7 +50,8 @@ import random
 import math
 import numpy as np
 
-def move_ground_users(ground_users, blocks, xLength, yLength, max_movement_distance):
+def move_ground_users(ground_users, blocks, xLength, yLength, max_movement_distance, soft_margin=-1):
+    if soft_margin == -1: soft_margin = min(xLength, yLength)/100
     for gu in ground_users:
         moved = False
         while not moved:
@@ -68,7 +69,9 @@ def move_ground_users(ground_users, blocks, xLength, yLength, max_movement_dista
                 for block in blocks:
                     bx, by, _ = block['bottomCorner']
                     bw, bh = block['size']
-                    if bx <= new_x <= bx + bw and by <= new_y <= by + bh:
+                    if (bx - soft_margin <= new_x <= bx + bw + soft_margin and 
+                        by - soft_margin <= new_y <= by + bh + soft_margin):
+                       
                         collision = True
                         break
                 
@@ -129,8 +132,28 @@ def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, 
 from functions.path_is_blocked import path_is_blocked
 from functions.calculate_data_rate import calculate_data_rate
 
-def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection):
+def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection = None):
     gu_to_uav = {}
+    gu_to_bs_capacity = {}
+
+    if backhaul_connection:
+        for uav_index, uav in enumerate(UAV_nodes):
+            if uav_index in backhaul_connection.allPaths:
+                max_backhaul_dr = -1
+                for connection in backhaul_connection.allPaths[uav_index]:
+                    path = connection['path']
+                    dr = connection['DR']
+
+                    if dr > max_backhaul_dr:
+                        max_backhaul_dr = dr
+                    
+                    for relay_node in path:
+                        if relay_node == uav_index: continue
+                        if relay_node < len(UAV_nodes) and not relay_node in UAV_nodes[uav_index].connected_nodes:
+                            UAV_nodes[uav_index].add_connection(relay_node)
+                
+                if max_backhaul_dr > 0:
+                    UAV_nodes[uav_index].set_DR(max_backhaul_dr)
 
     for gu_index, user in enumerate(ground_users):
         max_dr = -1
@@ -145,33 +168,56 @@ def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul
 
         ground_users[gu_index].set_connection(best_uav)
         ground_users[gu_index].set_DR(max_dr)
+
+        gu_to_bs_capacity[gu_index] = min(max_dr, UAV_nodes[user.connected_nodes[0]].data_rate[0])
     
-    if backhaul_connection:
-        for uav_index, uav in enumerate(UAV_nodes):
-            if uav_index in backhaul_connection.allPaths:
-                max_backhaul_dr = -1
-                best_backhaul_path = None
-                for connection in backhaul_connection.allPaths[uav_index]:
-                    path = connection['path']
-                    dr = connection['DR']
-
-                    if dr > max_backhaul_dr:
-                        max_backhaul_dr = dr
-                        best_backhaul_path = path[1]
-                    
-                    for relay_node in path:
-                        if relay_node == uav_index: continue
-                        if relay_node < len(UAV_nodes) and not relay_node in UAV_nodes[uav_index].connected_nodes:
-                            UAV_nodes[uav_index].add_connection(relay_node)
-                
-                if best_backhaul_path is not None:
-                    UAV_nodes[uav_index].set_DR(max_backhaul_dr)
-
-    return gu_to_uav
+    return gu_to_uav, gu_to_bs_capacity
 
 def move_gu_and_update_connections(ground_users, blocks, x_length, y_length, max_movement_distance, UAV_nodes, UAVInfo, backhaul_connection):
     move_ground_users(ground_users, blocks, x_length, y_length, max_movement_distance)
 
-    gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
+    gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
     
-    return gu_to_uav_connections
+    return gu_to_uav_connections, gu_to_bs_capacity
+
+def add_gu_to_simulation(ground_user, number_of_added_gu):
+    for i in range(number_of_added_gu):
+        ground_user.append(Nodes((0,0,0), "GU", 0, len(ground_user)))
+    return ground_user
+
+def add_or_remove_gu(ground_user):
+    while True:
+        # Randomly select an operation: 2 means add 2 GUs, 1 means add 1 GU, 0 means no change,
+        # -1 means remove 1 GU, and -2 means remove 2 GUs
+        operation = random.choice([2, 1, 0, -1, -2])
+        
+        # Print the selected operation and perform the corresponding addition or removal
+        if operation > 0:
+            print(f"Selected to add {operation} GU(s)")
+            for _ in range(operation):  # Add the specified number of GUs
+                ground_user.append(Nodes((0,0,0), "GU", 0, len(ground_user)))
+            break  # Operation is valid, exit the loop
+        elif operation == 0:
+            print("Selected to make no changes")
+            break  # Operation is valid, exit the loop
+        elif operation < 0:
+            # Check if there are enough GUs to remove
+            if len(ground_user) >= abs(operation):
+                print(f"Selected to remove {abs(operation)} GU(s)")
+                for _ in range(abs(operation)):  # Remove the specified number of GUs
+                    ground_user.pop()
+                break  # Operation is valid, exit the loop
+            else:
+                print("Not enough GUs to remove; reselecting operation.")
+                # Continue the loop to select a new operation
+    
+    return ground_user
+
+def set_baseline_backhaul_for_mid_scene(baseline_UAV_nodes, baseline_UAV_positions, baseline_UAV_connections, baseline_BS_nodes, baseStation, baseline_BS_connections):
+    for uav_index, uav_nodes in enumerate(baseline_UAV_nodes):
+        uav_nodes.set_position(baseline_UAV_positions[uav_index]) if baseline_UAV_positions and baseline_UAV_positions[uav_index] else None
+        uav_nodes.set_connection(baseline_UAV_connections[uav_index]) if baseline_UAV_connections and baseline_UAV_connections[uav_index] else None
+    
+    for i in range(len(baseline_BS_nodes)):
+        baseline_BS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
+        baseline_BS_nodes[i].set_connection(baseline_BS_connections[i])
