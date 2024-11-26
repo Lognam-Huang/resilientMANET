@@ -1,6 +1,12 @@
 import numpy as np
 
 def path_is_blocked(blocks, nodeA, nodeB):
+    # print("Node A:")
+    # print(nodeA.position)
+
+    # print("Node B:")
+    # print(nodeB.position)
+
     for cube in blocks:  # 遍历所有的 blocks
         bottom_corner = cube['bottomCorner']
         width, length = cube['size']  # 假设 size 包含了宽度、长度

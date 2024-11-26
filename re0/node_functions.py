@@ -147,11 +147,10 @@ def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul
                     if dr > max_backhaul_dr:
                         max_backhaul_dr = dr
                     
-                    for relay_node in path:
-                        if relay_node == uav_index: continue
-                        if relay_node < len(UAV_nodes) and not relay_node in UAV_nodes[uav_index].connected_nodes:
-                            UAV_nodes[uav_index].add_connection(relay_node)
-                
+                    # for relay_node in path:
+                    #     if relay_node == uav_index: continue
+                    #     if relay_node < len(UAV_nodes) and not relay_node in UAV_nodes[uav_index].connected_nodes:
+                    #         UAV_nodes[uav_index].add_connection(relay_node)
                 if max_backhaul_dr > 0:
                     UAV_nodes[uav_index].set_DR(max_backhaul_dr)
 
@@ -170,7 +169,7 @@ def get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul
         ground_users[gu_index].set_DR(max_dr)
 
         gu_to_bs_capacity[gu_index] = min(max_dr, UAV_nodes[user.connected_nodes[0]].data_rate[0])
-    
+ 
     return gu_to_uav, gu_to_bs_capacity
 
 def move_gu_and_update_connections(ground_users, blocks, x_length, y_length, max_movement_distance, UAV_nodes, UAVInfo, backhaul_connection):
@@ -213,7 +212,7 @@ def add_or_remove_gu(ground_user):
     
     return ground_user
 
-def set_baseline_backhaul_for_mid_scene(baseline_UAV_nodes, baseline_UAV_positions, baseline_UAV_connections, baseline_BS_nodes, baseStation, baseline_BS_connections):
+def set_baseline_backhaul(baseline_UAV_nodes, baseline_UAV_positions, baseline_UAV_connections, baseline_BS_nodes, baseStation, baseline_BS_connections):
     for uav_index, uav_nodes in enumerate(baseline_UAV_nodes):
         uav_nodes.set_position(baseline_UAV_positions[uav_index]) if baseline_UAV_positions and baseline_UAV_positions[uav_index] else None
         uav_nodes.set_connection(baseline_UAV_connections[uav_index]) if baseline_UAV_connections and baseline_UAV_connections[uav_index] else None

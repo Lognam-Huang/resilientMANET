@@ -320,21 +320,26 @@ def edge_index_in_state(node1, node2, num_nodes):
     return int(node1 * (2 * num_nodes - node1 - 1) / 2 + (node2 - node1 - 1))
 
 import time
-def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper, episodes, scene_info = None, print_prog = False):
+def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper, episodes, scene_info = None, print_prog = False, initialize_as_all_0 = False):
     best_state = ""
     q_table = {}
     reward_track = []
     RS_track = []
     max_reward = 0
-    best_resilience_score = 0
+    best_resilience_score = -math.inf
     best_backhaul_connection = None
 
     best_reward_track = []
     best_RS_track = []
 
     num_nodes = len(BS_nodes) + len(UAV_nodes)
-    state = '0' * int((num_nodes * (num_nodes - 1) / 2))
-    # state = '1' * int((num_nodes * (num_nodes - 1) / 2))
+
+    if initialize_as_all_0:
+        state = '0' * int((num_nodes * (num_nodes - 1) / 2))
+    else:
+        state = '1' * int((num_nodes * (num_nodes - 1) / 2))
+
+    # print("state is: "+str(state))
     
     start_time = time.time()
 
