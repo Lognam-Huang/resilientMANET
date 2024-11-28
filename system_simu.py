@@ -1,13 +1,10 @@
 import json
-from functions.print_nodes import print_nodes
-
-from gu_movement import move_ground_users, simulate_and_visualize_movements
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-# with open('scene_data_mid.json', 'r') as file:
+with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -20,32 +17,16 @@ num_GU = nodeNumber['GU']
 num_UAV = nodeNumber['UAV']
 num_BS = len(scene_data['baseStation'])
 
-from functions.generate_users import generate_users, add_or_remove_GU
-ground_users = generate_users(num_GU, blocks, scene['xLength'], scene['yLength'])
+# ---------
+from node_functions import generate_nodes, print_node
+# 0-GU, 1-UAV, 2-BS
+ground_users = generate_nodes(num_GU, 0)
+UAV_nodes = generate_nodes(num_UAV, 1)
+BS_nodes = generate_nodes(num_BS, 2)
 
-
-from functions.generate_UAVs import generate_UAVs
-defaultHeightUAV = 200
-UAV_nodes = generate_UAVs(num_UAV, blocks, scene['xLength'], scene['yLength'], defaultHeightUAV, 10, 'basic UAV')
-
-defaultHeightABS = 500
-ABS_nodes = generate_UAVs(num_BS, blocks, scene['xLength'], scene['yLength'], defaultHeightABS, 10, 'Air Base Station')
 for i in range(num_BS):
-    ABS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
+    BS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
 
-# Define parameters for 3D heatmap generation and UAV positioning
-min_height = UAVInfo['min_height']
-max_height = UAVInfo['max_height']
-
-from functions.scene_visualization import scene_visualization
-# scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=True)
-
-# Lognam: find UAV positions
-from key_functions.uav_coverage_optimization import *
-# plot_gu_capacities(max_capacities_tracks)
-# plot_combined_gu_capacity_and_uav_load(max_capacities_tracks)
-
-from key_functions.uav_position_finding import *
 position_params = {
     'weights': {
         'GU': 8,  # Weight for ground user connections
@@ -53,14 +34,10 @@ position_params = {
         'BS': 1   # Weight for base station connections
     },
     'sparsity_parameter': 1  # Controls the density of the heatmap
-    ,
-    "eps" : 8,
-    "min_samples" : 2
 }
 
 
 # Lognam: find UAV connection
-from find_topo import *
 reward_hyper = {
     'DRPenalty': 0.5,
     'BPHopConstraint': 4,
@@ -75,14 +52,27 @@ reward_hyper = {
 }
 
 # Q-learning hyperparameters
-epsilon = 0.4
-training_episodes= 450
+q_hyper = {
+    'epsilon': 0.4,
+    # 'training_episodes': 200
+    'training_episodes': 20
+}
 
-# Lognam: try to have TD
+# training_episodes= 200
+# training_episodes= 20
+
+# Lognam: set simulation time
 sim_time = 10
 
 # Lognam: try to switch scenes
-max_movement_distance = 50
+max_movement_distance = 200
+
+constraint_hyper = {
+    'rewardConstraint': 0.8,
+    'GUConstraint': 100000000,
+    'max_uav_load_rate': 0.5
+}
+
 
 reward_TD = []
 RS_TD = []
@@ -91,67 +81,93 @@ gu_capacity_TD = []
 UAV_capacity_TD = []
 UAV_overload_TD = []
 
+uav_connections_TD = []
+min_gu_capacity_TD = []
 
-# from classes.UAVMap import *
+# for storing information
+GU_position_TD = []
+UAV_position_TD = []
+state_TD = []
 
-from simu_functions import *
+from node_functions import get_gu_to_uav_connections, move_gu_and_update_connections, get_nodes_position
+from position_finding import find_optimal_uav_positions
+from connectivity_finding import find_best_backhaul_topology, reward
+from visualization_functions import scene_visualization, visualize_metrics
+from node_functions import add_or_remove_gu, set_baseline_backhaul, get_gu_info_and_update_connections
 
-constraint_hyper = {
-    'rewardConstraint': 0.8,
-    'RSConstraint': 0.8,
-    'OLConstraint': 0.8,
-    'GUConstraint': 100000000
-}
+best_backhaul_connection = None
 
-rewardScore = 0
-OverloadScore = 0
+# create a baseline backhaul for comparison
+baseline_UAV_nodes = generate_nodes(num_UAV, 1)
+baseline_BS_nodes = generate_nodes(num_BS, 2)
 
-# scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
+baseline_BS_connections_for_mid_scene = [
+    [0,1,4],
+    [0,1,2,4]
+]
 
-# Lognam's testbed
-# ground_users[0].set_position((13,5,0))
-# ground_users[0].set_position((5,20,0))
-# UAV_nodes[0].set_position((18,25,5))
-# UAV_nodes[1].set_position((15,5,20))
-# print(path_is_blocked(blocks, UAV_nodes[0], ground_users[0]))
-# scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, line_alpha=0.5, show_axes_labels=False)
-# best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(ground_users, UAV_nodes, ABS_nodes, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
-#     ,print_prog=True
-# )
-# print(cur_UAVMap)
+# for mid scene:
+baseline_UAV_positions_for_mid_scene = [(185, 100, 50), (126, 180, 50), (36, 147, 50), (36, 52, 50), (126, 19, 50)]
 
-# print("Connections are found, finding connection details")
+baseline_UAV_connections_for_mid_scene = [
+    [2,4],
+    [2,4],
+    [0,1,3,4],
+    [2],
+    [0,1,2]
+]
 
-# gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
-# uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
+baseline_BS_connections_for_simple_scene = [
+    [0,1]
+]
 
-# print("Connections details are found, evaluating topo")
+baseline_UAV_positions_for_simple_scene = [(3,3,10), (25,3,10), (2,25,10)]
 
-# rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
-#     ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
-# )
+baseline_UAV_connections_for_simple_scene = [
+    [1,2],
+    [1],
+    [0],
+]
 
-# scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+# set_baseline_backhaul(baseline_UAV_nodes, baseline_UAV_positions_for_simple_scene, baseline_UAV_connections_for_simple_scene, baseline_BS_nodes, baseStation, baseline_BS_connections_for_simple_scene)
+set_baseline_backhaul(baseline_UAV_nodes, baseline_UAV_positions_for_mid_scene, baseline_UAV_connections_for_mid_scene, baseline_BS_nodes, baseStation, baseline_BS_connections_for_mid_scene)
 
+# scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
 
-for cur_time_frame in range(sim_time):
-    # add_or_remove_GU(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, 2, add=True, print_info=True)
-    if cur_time_frame > 0:
-        gu_to_uav_connections = move_gu_and_update_connections(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, UAV_nodes, UAVInfo)
+from connectivity_finding import get_backhaul_connection
+# baseline_state = "010111 010111 111101 001000 111011"
+# baseline_state = "010111 10111 1101 000 11 0"
+baseline_state_for_mid_scene = "010111101111101000110"
+baseline_state_for_simple_scene = "111010"
 
-        rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
-            ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
-        )
+baseline_backhaul_connection = get_backhaul_connection(baseline_state_for_mid_scene, baseline_UAV_nodes, baseline_BS_nodes, scene_data)
+# baseline_backhaul_connection = get_backhaul_connection(baseline_state_for_simple_scene, baseline_UAV_nodes, baseline_BS_nodes, scene_data)
+baseline_gu_capacity_TD = []
+baseline_uav_connections_TD = []
 
-    if rewardScore < constraint_hyper['rewardConstraint'] or OverloadScore < constraint_hyper['OLConstraint'] or min(gu_to_bs_capacity) < constraint_hyper['GUConstraint']:
+import pandas as pd
 
+ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
+ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
+
+for cur_time_frame in range(sim_time):  
+    
+    # this function is used before we make use of pre-defined GU data (positions and number)
+    # gu_to_uav_connections, gu_to_bs_capacity = move_gu_and_update_connections(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, UAV_nodes, UAVInfo, best_backhaul_connection)
+
+    #this functino is used after we make user of pre-defined GU data
+    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+
+    # print_node(ground_users, -1, True)
+    max_uav_load_number = max_count = max([item for sublist in gu_to_uav_connections.values() for item in sublist].count(x) for x in set([item for sublist in gu_to_uav_connections.values() for item in sublist]))
+
+    if max_uav_load_number >= num_BS * float(constraint_hyper['max_uav_load_rate']) or min(gu_to_bs_capacity) < float(constraint_hyper['GUConstraint']):
         print("Finding positions")
         
-        max_capacities_tracks = find_optimal_uav_positions(
+        found_UAV_positions, hierachical_clustering_GU_records, gu_capacities_records, uav_load_records= find_optimal_uav_positions(
             ground_users=ground_users, 
             uavs=UAV_nodes, 
-            clustering_epsilon=position_params['eps'], 
-            min_cluster_size=position_params['min_samples'], 
             scene_data=scene_data,
             weights=position_params['weights'],  # Use weights from the dictionary
             sparsity_parameter=position_params['sparsity_parameter'],  # Use sparsity_parameter from the dictionary
@@ -161,46 +177,72 @@ for cur_time_frame in range(sim_time):
 
         print("Positions are found, finding connections")
         
-        best_state, max_reward, best_RS, best_OL, reward_track, RS_track, OL_track, cur_UAVMap = find_best_topology(ground_users, UAV_nodes, ABS_nodes, epsilon, episodes=training_episodes, visualize=False, scene_info = scene_data, reward_hyper=reward_hyper
-          ,print_prog=True
-        )
-        
-        print("Connections are found, finding connection details")
-
-        gu_to_uav_connections = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks)
-        uav_to_bs_connections = find_best_paths_to_bs(cur_UAVMap)
-
+        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
+            ground_users, 
+            UAV_nodes, 
+            BS_nodes, 
+            q_hyper['epsilon'], 
+            episodes=q_hyper['training_episodes'], 
+            # 0.4,
+            # episodes=5,
+            scene_info = scene_data, 
+            reward_hyper=reward_hyper,
+            print_prog=False
+        )        
         print("Connections details are found, evaluating topo")
-
-        rewardScore, ResilienceScore, OverloadScore, gu_to_bs_capacity, uav_to_bs_capacity, uav_overload = calculate_current_topology_metrics(
-            ground_users, gu_to_uav_connections, uav_to_bs_connections, UAVInfo, cur_UAVMap, UAV_nodes, reward_hyper, scene_data, print_metrics=True
-        )
     else:
         print("Current topology is good enough, no topology refreshed is needed")
+        max_reward, best_RS, current_backhaul_connection = reward(best_state, scene_data, ground_users, UAV_nodes, BS_nodes, reward_hyper)
     
-    scene_visualization(ground_users=ground_users, UAV_nodes=UAV_nodes, air_base_station=ABS_nodes, blocks=blocks, scene_info=scene, connection_GU_UAV=gu_to_uav_connections, connection_UAV_BS=uav_to_bs_connections, line_alpha=0.5, show_axes_labels=False)
+    
+    gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
-    reward_TD.append(rewardScore)
-    RS_TD.append(ResilienceScore)
-    OL_TD.append(OverloadScore)
-    gu_capacity_TD.append(gu_to_bs_capacity)
-    UAV_capacity_TD.append(uav_to_bs_capacity)
-    UAV_overload_TD.append(uav_overload)
+    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+
+    baseline_gu_to_uav_connections, baseline_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_UAV_nodes, UAVInfo, blocks, baseline_backhaul_connection)
+
+    baseline_uav_connections_TD.append(baseline_gu_to_uav_connections)
+    baseline_gu_capacity_TD.append(baseline_gu_to_bs_capacity)  
+
+
+    scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
 
     
-        
+    reward_TD.append(max_reward)
+    RS_TD.append(best_RS)
+    uav_connections_TD.append(gu_to_uav_connections)
+    gu_capacity_TD.append(gu_to_bs_capacity)   
+
+    GU_position_TD.append(get_nodes_position(ground_users))
+    UAV_position_TD.append(get_nodes_position(UAV_nodes))
+    state_TD.append(best_state)
+
+# record data
+recorded_data = {
+    "GU Position": [tuple(pos) for pos in GU_position_TD], 
+    "UAV Position": [tuple(pos) for pos in UAV_position_TD],
+    "State": state_TD,
+    "UAV Connections": uav_connections_TD,
+    "GU Capacity": gu_capacity_TD,
+}
+
+recorded_df = pd.DataFrame(recorded_data)
+
+recorded_df.to_csv("experiment_result_mid.csv", index=False)
+
+from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline
 if sim_time > 0:
 
-    visualize_all_gu_capacity(all_gu_capacity=gu_capacity_TD)
-    visualize_uav_capacity(all_uav_capacity=UAV_capacity_TD)
-    visualize_all_UAV_overload(all_UAV_overload=UAV_overload_TD)
+    # print(uav_connections_TD)
+    # print(gu_capacity_TD)
+    # # print(baseline_uav_connections_TD)
+    # # print(baseline_gu_capacity_TD)
+    # print(GU_position_TD)
 
-    visualize_metrics(reward_TD, RS_TD, OL_TD)
+    # visualize_simulation(uav_connections_TD, gu_capacity_TD, num_UAV)
+    # visualize_simulation(baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
+    visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
+    # visualize_simulation_together(uav_connections_TD, gu_capacity_TD, num_UAV)
+    # visualize_metrics(reward_TD, RS_TD)
 
-    print(gu_capacity_TD)
-    print(UAV_capacity_TD)
-    print(UAV_overload_TD)
-
-    print(reward_TD)
-    print(RS_TD)
-    print(OL_TD)    
+        

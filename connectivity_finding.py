@@ -86,7 +86,7 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
 
     return reward_score, resilience_score, backhaul_connection
 
-from BackhaulPaths import BackhaulPaths
+from classes.BackhaulPaths import BackhaulPaths
 def get_backhaul_connection(state, UAV_nodes, BS_nodes, scene_info = None):
     blocks = scene_info['blocks']
     UAVInfo = scene_info['UAV']

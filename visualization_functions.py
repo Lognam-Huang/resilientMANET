@@ -772,10 +772,12 @@ def visualize_simulation_together(uav_connections_TD, gu_capacity_TD, num_uavs):
     plt.tight_layout()
     plt.show()
 
+
 def visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_uavs):
     import numpy as np
     import matplotlib.pyplot as plt
 
+    # 初始化存储每个时间步的最小和平均容量
     min_capacity_over_time = []
     avg_capacity_over_time = []
     baseline_min_capacity_over_time = []
@@ -783,36 +785,56 @@ def visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, basel
     uav_connections_over_time = []
     baseline_uav_connections_over_time = []
 
+    # 遍历每个时间步的数据
     for step, (gu_to_uav_connections, gu_to_bs_capacity, baseline_gu_to_bs_capacity, baseline_gu_to_uav_connections) in enumerate(
             zip(uav_connections_TD, gu_capacity_TD, baseline_gu_capacity_TD, baseline_uav_connections_TD)):
         
-        capacities = list(gu_to_bs_capacity.values()) if isinstance(gu_to_bs_capacity, dict) else gu_to_bs_capacity or []
-        baseline_capacities = list(baseline_gu_to_bs_capacity.values()) if isinstance(baseline_gu_to_bs_capacity, dict) else baseline_gu_to_bs_capacity or []
+        # 处理gu_capacity_TD和baseline_gu_capacity_TD
+        if isinstance(gu_to_bs_capacity, dict):
+            capacities = list(gu_to_bs_capacity.values())
+        else:
+            capacities = gu_to_bs_capacity
+        if isinstance(baseline_gu_to_bs_capacity, dict):
+            baseline_capacities = list(baseline_gu_to_bs_capacity.values())
+        else:
+            baseline_capacities = baseline_gu_to_bs_capacity
 
-        min_capacity = np.min(capacities) if capacities else 0
-        avg_capacity = np.mean(capacities) if capacities else 0
-        baseline_min_capacity = np.min(baseline_capacities) if baseline_capacities else 0
-        baseline_avg_capacity = np.mean(baseline_capacities) if baseline_capacities else 0
+        # 计算当前时间步的最小和平均容量
+        min_capacity = np.min(capacities)
+        avg_capacity = np.mean(capacities)
+        baseline_min_capacity = np.min(baseline_capacities)
+        baseline_avg_capacity = np.mean(baseline_capacities)
 
         min_capacity_over_time.append(min_capacity)
         avg_capacity_over_time.append(avg_capacity)
         baseline_min_capacity_over_time.append(baseline_min_capacity)
         baseline_avg_capacity_over_time.append(baseline_avg_capacity)
 
-        gu_to_uav_connections = {k: (v[0] if isinstance(v, list) else v) for k, v in gu_to_uav_connections.items() if v is not None}
-        baseline_gu_to_uav_connections = {k: (v[0] if isinstance(v, list) else v) for k, v in baseline_gu_to_uav_connections.items() if v is not None}
+        # 处理gu_to_uav_connections和baseline_gu_to_uav_connections
+        gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
+        baseline_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline_gu_to_uav_connections.items()}
 
+        # 统计每个UAV的GU连接数量
         uav_connection_counts = [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
         baseline_uav_connection_counts = [sum(1 for uav in baseline_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
 
         uav_connections_over_time.append(uav_connection_counts)
         baseline_uav_connections_over_time.append(baseline_uav_connection_counts)
 
+        # print("uav_connection_counts"+str(uav_connection_counts))
+        # print("baseline_uav_connection_counts"+str(baseline_uav_connection_counts))
+
+    # 转置数据以便绘制堆叠柱形图
     uav_connections_over_time = np.array(uav_connections_over_time).T
     baseline_uav_connections_over_time = np.array(baseline_uav_connections_over_time).T
 
+    # print("uav_connections_over_time: "+str(uav_connections_over_time))
+    # print("baseline_uav_connections_over_time"+str(baseline_uav_connections_over_time))
+
+    # 可视化
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
+    # 绘制GU到BS的capacity的最小值和平均值折线图
     time_steps = np.arange(len(uav_connections_TD))
     ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity")
     ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity")
@@ -822,104 +844,30 @@ def visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, basel
     ax1.set_xlabel("Time Steps")
     ax1.set_ylabel("Capacity")
     ax1.legend()
-    ax1.set_xticks(time_steps)
+    ax1.set_xticks(time_steps)  # 设置x轴刻度为整数
 
+    # 绘制堆叠柱形图表示每个时间步的UAV连接数量，以及baseline的柱形图
+    bottom = np.zeros(len(uav_connections_TD))  # 初始化底部位置为0
+    baseline_bottom = np.zeros(len(baseline_uav_connections_TD))  # 初始化底部位置为0
     for i in range(num_uavs):
-        ax2.bar(time_steps - 0.2, baseline_uav_connections_over_time[i], width=0.3, label=f"Baseline UAV {i}", alpha=0.6)
-        ax2.bar(time_steps + 0.2, uav_connections_over_time[i], width=0.3, label=f"UAV {i}")
+        # 绘制baseline的柱形图
+        ax2.bar(time_steps - 0.2, baseline_uav_connections_over_time[i], width=0.4, bottom=baseline_bottom, label=f"Baseline UAV {i}", alpha=0.5)
+        
+        # 更新底部位置
+        baseline_bottom += baseline_uav_connections_over_time[i]
+    
+    for i in range(num_uavs):
+        # 绘制uav_connections的柱形图
+        ax2.bar(time_steps + 0.2, uav_connections_over_time[i], width=0.4, bottom=bottom, label=f"UAV {i}")
+
+        # 更新底部位置
+        bottom += uav_connections_over_time[i]
 
     ax2.set_title("Number of GUs Connected to Each UAV Over Time (Baseline vs Current)")
     ax2.set_xlabel("Time Steps")
     ax2.set_ylabel("Total Number of GUs Connected")
     ax2.legend(loc="upper left")
-    ax2.set_xticks(time_steps)
+    ax2.set_xticks(time_steps)  # 设置x轴刻度为整数
 
     plt.tight_layout()
     plt.show()
-
-# def visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_uavs):
-#     import numpy as np
-#     import matplotlib.pyplot as plt
-
-#     # 初始化存储每个时间步的最小和平均容量
-#     min_capacity_over_time = []
-#     avg_capacity_over_time = []
-#     baseline_min_capacity_over_time = []
-#     baseline_avg_capacity_over_time = []
-#     uav_connections_over_time = []
-#     baseline_uav_connections_over_time = []
-
-#     # 遍历每个时间步的数据
-#     for step, (gu_to_uav_connections, gu_to_bs_capacity, baseline_gu_to_bs_capacity, baseline_gu_to_uav_connections) in enumerate(
-#             zip(uav_connections_TD, gu_capacity_TD, baseline_gu_capacity_TD, baseline_uav_connections_TD)):
-        
-#         # 处理gu_capacity_TD和baseline_gu_capacity_TD
-#         if isinstance(gu_to_bs_capacity, dict):
-#             capacities = list(gu_to_bs_capacity.values())
-#         else:
-#             capacities = gu_to_bs_capacity
-#         if isinstance(baseline_gu_to_bs_capacity, dict):
-#             baseline_capacities = list(baseline_gu_to_bs_capacity.values())
-#         else:
-#             baseline_capacities = baseline_gu_to_bs_capacity
-
-#         # 计算当前时间步的最小和平均容量
-#         min_capacity = np.min(capacities)
-#         avg_capacity = np.mean(capacities)
-#         baseline_min_capacity = np.min(baseline_capacities)
-#         baseline_avg_capacity = np.mean(baseline_capacities)
-
-#         min_capacity_over_time.append(min_capacity)
-#         avg_capacity_over_time.append(avg_capacity)
-#         baseline_min_capacity_over_time.append(baseline_min_capacity)
-#         baseline_avg_capacity_over_time.append(baseline_avg_capacity)
-
-#         # 处理gu_to_uav_connections和baseline_gu_to_uav_connections
-#         gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
-#         baseline_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline_gu_to_uav_connections.items()}
-
-#         # 统计每个UAV的GU连接数量
-#         uav_connection_counts = [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
-#         baseline_uav_connection_counts = [sum(1 for uav in baseline_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
-
-#         uav_connections_over_time.append(uav_connection_counts)
-#         baseline_uav_connections_over_time.append(baseline_uav_connection_counts)
-
-#     # 转置数据以便绘制堆叠柱形图
-#     uav_connections_over_time = np.array(uav_connections_over_time).T
-#     baseline_uav_connections_over_time = np.array(baseline_uav_connections_over_time).T
-
-#     # 可视化
-#     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
-
-#     # 绘制GU到BS的capacity的最小值和平均值折线图
-#     time_steps = np.arange(len(uav_connections_TD))
-#     ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity")
-#     ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity")
-#     ax1.plot(time_steps, baseline_min_capacity_over_time, label="Baseline Min Capacity", linestyle="--")
-#     ax1.plot(time_steps, baseline_avg_capacity_over_time, label="Baseline Avg Capacity", linestyle="--")
-#     ax1.set_title("GU to BS Capacity Over Time")
-#     ax1.set_xlabel("Time Steps")
-#     ax1.set_ylabel("Capacity")
-#     ax1.legend()
-#     ax1.set_xticks(time_steps)  # 设置x轴刻度为整数
-
-#     # 绘制堆叠柱形图表示每个时间步的UAV连接数量，以及baseline的柱形图
-#     bottom = np.zeros(len(uav_connections_TD))  # 初始化底部位置为0
-#     for i in range(num_uavs):
-#         # 绘制baseline的柱形图
-#         ax2.bar(time_steps - 0.2, baseline_uav_connections_over_time[i], width=0.4, bottom=bottom, label=f"Baseline UAV {i}", alpha=0.5)
-#         # 绘制uav_connections的柱形图
-#         ax2.bar(time_steps + 0.2, uav_connections_over_time[i], width=0.4, bottom=bottom, label=f"UAV {i}")
-
-#         # 更新底部位置
-#         bottom += uav_connections_over_time[i]
-
-#     ax2.set_title("Number of GUs Connected to Each UAV Over Time (Baseline vs Current)")
-#     ax2.set_xlabel("Time Steps")
-#     ax2.set_ylabel("Total Number of GUs Connected")
-#     ax2.legend(loc="upper left")
-#     ax2.set_xticks(time_steps)  # 设置x轴刻度为整数
-
-#     plt.tight_layout()
-#     plt.show()

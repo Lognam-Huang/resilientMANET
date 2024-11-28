@@ -161,4 +161,89 @@ baseline_uav_connections_TD = [{0: [2], 1: [0], 2: [1], 3: [1], 4: [1], 5: [0]},
 baseline_gu_capacity_TD = [{0: 8552788612.873585, 1: 10552778402.113384, 2: 8801594152.365793, 3: 8801594152.365793, 4: 4838.560833189523, 5: 9924952408.586994}, {0: 8552788612.873585, 1: 10569916963.236704, 2: 8801594152.365793, 3: 9743004098.004894, 4: 2667.3516552783913, 5: 9839726263.85189}, {0: 8552788612.873585, 1: 10555435273.166752, 2: 8801594152.365793, 3: 8801594152.365793, 4: 8932937177.418556, 5: 8801594152.365793}, {0: 8500646263.939202, 1: 8552788612.873585, 2: 8552788612.873585, 3: 8801594152.365793, 4: 8882364598.31595, 5: 10468798979.11942}, {0: 1268.4415033818452, 1: 8801594152.365793, 2: 3685.686296015282, 3: 9871763865.212156, 4: 10518332136.943672, 5: 2445.38693751066}, {0: 8801594152.365793, 1: 9029633188.910185, 2: 10692018236.401808, 3: 9562344118.355179, 4: 8552788612.873585, 5: 2340.603686116188}, {0: 8801594152.365793, 1: 8801594152.365793, 2: 10743300190.328861, 3: 8552788612.873585, 4: 8552788612.873585, 5: 5622.721985983665}, {0: 3091.849168298404, 1: 1201.0340659156604, 2: 1866.4547716858413, 3: 2578.641193992535, 4: 8552788612.873585, 5: 6193.7355274492165}, {0: 2768.242032710947, 1: 10128967778.467146, 2: 1874.0625560422698, 3: 8552788612.873585, 4: 3090.8301153428083, 5: 8552788612.873585}, {0: 10258597080.021305, 1: 8801594152.365793, 2: 10642292105.562862, 3: 2088.0483672801597, 4: 10758260513.443367, 5: 8552788612.873585}]
 num_UAV = 3
 
-visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
+# gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
+# baseline_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline_gu_to_uav_connections.items()}
+
+
+# visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
+
+import json
+
+# Load scene data from JSON file
+# with open('scene_data_system_overview.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data.json', 'r') as file:
+with open('scene_data_mid.json', 'r') as file:
+    scene_data = json.load(file)
+
+blocks = scene_data['blocks']
+scene = scene_data['scenario']
+UAVInfo = scene_data['UAV']
+baseStation = scene_data['baseStation']
+nodeNumber = scene_data['nodeNumber']
+
+num_GU = nodeNumber['GU']
+num_UAV = nodeNumber['UAV']
+num_BS = len(scene_data['baseStation'])
+
+# ---------
+from node_functions import generate_nodes, print_node, move_ground_users, get_nodes_position
+# 0-GU, 1-UAV, 2-BS
+ground_users = generate_nodes(num_GU, 0)
+
+# print_node(ground_users)
+from node_functions import add_or_remove_gu
+# add_or_remove_gu(ground_users)
+
+GU_position_TD = []
+max_movement_distance = 30
+
+for i in range(1):
+    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 200)
+
+for i in range(50):
+    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+    # print(get_nodes_position(ground_users))
+
+    GU_position_TD.append(get_nodes_position(ground_users))
+
+# print(GU_position_TD)
+import pandas as pd
+# df = pd.DataFrame(GU_position_TD)
+# # df.to_csv("ground_user_positions_for_simple_scene_50_stable.csv", index=False)
+# df.to_csv("ground_user_positions_for_mid_scene_50_stable.csv", index=False)
+
+# ground_users_positions_simple = pd.read_csv("ground_user_positions_for_simple_scene_50.csv")
+
+# print(ground_users_positions_simple.iloc[0])
+# print(len(ground_users_positions_simple.iloc[0]))
+# print(ground_users_positions_simple.iloc[0,0])
+
+# def get_ground_user_positions_for_a_time(gu_position_information, current_time):
+#     ground_users_count = len(gu_position_information.iloc[current_time])
+#     ground_users = generate_nodes(ground_users_count, 0)
+
+#     for i in range(ground_users_count):
+#         value = gu_position_information.iloc[current_time, i]
+#         try:
+#             position = tuple(map(float, value.strip("()").split(',')))
+#             ground_users[i].set_position(position)
+#         except ValueError:
+#             print(f"Error: Invalid position string {value}")
+    
+#     return ground_users
+
+# gu_test = get_ground_user_positions_for_a_time(ground_users_positions_simple, 0)
+# print_node(gu_test, -1, True)
+
+import ast
+read_result_test= pd.read_csv("experiment_result_test.csv")
+# print(read_result_test.head())
+read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
+
+read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
+
+print(read_uav_connections_TD)
+print(read_uav_gu_capacity_TD)
+
+visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD, read_uav_connections_TD, read_uav_gu_capacity_TD, 3)

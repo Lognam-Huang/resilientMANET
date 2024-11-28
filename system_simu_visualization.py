@@ -27,7 +27,6 @@ BS_nodes = generate_nodes(num_BS, 2)
 for i in range(num_BS):
     BS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
 
-# from key_functions.uav_position_finding import *
 position_params = {
     'weights': {
         'GU': 8,  # Weight for ground user connections
