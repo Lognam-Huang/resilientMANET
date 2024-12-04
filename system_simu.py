@@ -33,7 +33,7 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 1  # Controls the density of the heatmap
+    'sparsity_parameter': 5  # Controls the density of the heatmap
 }
 
 
@@ -55,17 +55,18 @@ reward_hyper = {
 q_hyper = {
     'epsilon': 0.4,
     # 'training_episodes': 200
-    'training_episodes': 20
+    'training_episodes': 400
 }
 
 # training_episodes= 200
 # training_episodes= 20
 
 # Lognam: set simulation time
-sim_time = 10
+sim_time = 30
 
 # Lognam: try to switch scenes
-max_movement_distance = 200
+max_movement_distance = 40
+
 
 constraint_hyper = {
     'rewardConstraint': 0.8,
@@ -197,7 +198,7 @@ for cur_time_frame in range(sim_time):
     
     gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
-    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
 
     baseline_gu_to_uav_connections, baseline_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_UAV_nodes, UAVInfo, blocks, baseline_backhaul_connection)
 
@@ -205,7 +206,7 @@ for cur_time_frame in range(sim_time):
     baseline_gu_capacity_TD.append(baseline_gu_to_bs_capacity)  
 
 
-    scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
+    # scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
 
     
     reward_TD.append(max_reward)

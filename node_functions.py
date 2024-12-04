@@ -221,19 +221,73 @@ def set_baseline_backhaul(baseline_UAV_nodes, baseline_UAV_positions, baseline_U
         baseline_BS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
         baseline_BS_nodes[i].set_connection(baseline_BS_connections[i])
 
+# def get_ground_user_positions_for_a_time(gu_position_information, current_time):
+#     ground_users_count = len(gu_position_information.iloc[current_time])
+#     ground_users = generate_nodes(ground_users_count, 0)
+
+#     for i in range(ground_users_count):
+#         value = gu_position_information.iloc[current_time, i]
+#         try:
+#             position = tuple(map(float, value.strip("()").split(',')))
+#             ground_users[i].set_position(position)
+#         except ValueError:
+#             print(f"Error: Invalid position string {value}")
+    
+#     return ground_users
+
+# def get_ground_user_positions_for_a_time(gu_position_information, current_time):
+#     ground_users_count = len(gu_position_information.iloc[current_time])
+#     ground_users = generate_nodes(ground_users_count, 0)
+
+#     print(ground_users_count)
+
+#     for i in range(ground_users_count):
+#         value = gu_position_information.iloc[current_time, i]
+#         if value is None or (isinstance(value, float) and math.isnan(value)):
+#             # 如果是 NaN 或 None，设置默认位置
+#             position = (0.0, 0.0, 0.0)
+#             print(f"Warning: NaN or None value encountered at index {i}, setting default position {position}")
+#         else:
+#             try:
+#                 # 处理正常字符串形式的值
+#                 position = tuple(map(float, value.strip("()").split(',')))
+#             except (ValueError, AttributeError) as e:
+#                 # 捕获无法解析的情况
+#                 print(f"Error: Invalid position string {value} at index {i}. Setting default position.")
+#                 position = (0.0, 0.0, 0.0)
+        
+#         ground_users[i].set_position(position)
+
+#     return ground_users
+
+import math
+
 def get_ground_user_positions_for_a_time(gu_position_information, current_time):
-    ground_users_count = len(gu_position_information.iloc[current_time])
+    # 获取当前行中非 NaN 的有效值数
+    ground_users_count = gu_position_information.iloc[current_time].dropna().shape[0]
     ground_users = generate_nodes(ground_users_count, 0)
 
-    for i in range(ground_users_count):
-        value = gu_position_information.iloc[current_time, i]
-        try:
-            position = tuple(map(float, value.strip("()").split(',')))
-            ground_users[i].set_position(position)
-        except ValueError:
-            print(f"Error: Invalid position string {value}")
-    
+    valid_positions = gu_position_information.iloc[current_time].dropna()
+
+    for i, value in enumerate(valid_positions):
+        if value is None or (isinstance(value, float) and math.isnan(value)):
+            # 如果是 NaN 或 None，设置默认位置
+            position = (0.0, 0.0, 0.0)
+            print(f"Warning: NaN or None value encountered at index {i}, setting default position {position}")
+        else:
+            try:
+                # 处理正常字符串形式的值
+                position = tuple(map(float, value.strip("()").split(',')))
+            except (ValueError, AttributeError) as e:
+                # 捕获无法解析的情况
+                print(f"Error: Invalid position string {value} at index {i}. Setting default position.")
+                position = (0.0, 0.0, 0.0)
+        
+        ground_users[i].set_position(position)
+
     return ground_users
+
+
 
 def get_gu_info_and_update_connections(gu_position_information, current_time, blocks, UAV_nodes, UAVInfo, backhaul_connection):
     ground_users = get_ground_user_positions_for_a_time(gu_position_information, current_time)
