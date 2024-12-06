@@ -90,8 +90,8 @@ import pandas as pd
 # ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
 # ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
 
-ground_users_positions_simple_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
-# ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
+# ground_users_positions_simple_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
+ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
 
 # set first baseline
 baseline_1_UAV_nodes = generate_nodes(num_UAV, 1)
@@ -155,7 +155,8 @@ baseline_2_uav_connections_TD = []
 
 for cur_time_frame in range(sim_time):  
     
-    ground_users, gu_to_uav_connections_1, gu_to_bs_capacity_1 = get_gu_info_and_update_connections(ground_users_positions_simple_dynamic, cur_time_frame, blocks, UAV_nodes, UAVInfo, None)
+    # ground_users, gu_to_uav_connections_1, gu_to_bs_capacity_1 = get_gu_info_and_update_connections(ground_users_positions_simple_dynamic, cur_time_frame, blocks, UAV_nodes, UAVInfo, None)
+    ground_users, gu_to_uav_connections_1, gu_to_bs_capacity_1 = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, None)
 
     baseline_1_gu_to_uav_connections, baseline_1_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_1_UAV_nodes, UAVInfo, blocks, baseline_1_backhaul_connection)
 
@@ -199,7 +200,7 @@ recorded_data = {
 
 recorded_df = pd.DataFrame(recorded_data)
 
-recorded_df.to_csv("experiment_result_mid_baseline_1.csv", index=False)
+recorded_df.to_csv("experiment_result_mid_baseline_1_stable.csv", index=False)
 
 recorded_data_2 = {
     # "GU Position": [tuple(pos) for pos in GU_position_TD], 
@@ -211,7 +212,7 @@ recorded_data_2 = {
 
 recorded_df_2 = pd.DataFrame(recorded_data_2)
 
-recorded_df_2.to_csv("experiment_result_mid_baseline_2.csv", index=False)
+recorded_df_2.to_csv("experiment_result_mid_baseline_2_stable.csv", index=False)
 
 from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline
 if sim_time > 0:

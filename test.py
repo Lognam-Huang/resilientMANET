@@ -199,24 +199,24 @@ GU_position_TD = []
 # max_movement_distance = 5
 max_movement_distance = 30
 
-for i in range(1):
-    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 200)
+# for i in range(1):
+#     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 200)
 
-for i in range(50):
-    add_or_remove_gu(ground_users)
-    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
-    # print(get_nodes_position(ground_users))
+# for i in range(50):
+#     add_or_remove_gu(ground_users)
+#     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+#     # print(get_nodes_position(ground_users))
 
-    GU_position_TD.append(get_nodes_position(ground_users))
+#     GU_position_TD.append(get_nodes_position(ground_users))
 
 # print(GU_position_TD)
 import pandas as pd
-df = pd.DataFrame(GU_position_TD)
+# df = pd.DataFrame(GU_position_TD)
 # # df.to_csv("ground_user_positions_for_simple_scene_50_stable.csv", index=False)
 # df.to_csv("ground_user_positions_for_mid_scene_50_stable.csv", index=False)
 
 # df.to_csv("ground_user_positions_for_simple_scene_50_dynamic.csv", index=False)
-df.to_csv("ground_user_positions_for_mid_scene_50_dynamic.csv", index=False)
+# df.to_csv("ground_user_positions_for_mid_scene_50_dynamic.csv", index=False)
 
 # ground_users_positions_simple = pd.read_csv("ground_user_positions_for_simple_scene_50_dynamic.csv")
 # ground_users_positions_simple = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
@@ -242,14 +242,27 @@ df.to_csv("ground_user_positions_for_mid_scene_50_dynamic.csv", index=False)
 # gu_test = get_ground_user_positions_for_a_time(ground_users_positions_simple, 0)
 # print_node(gu_test, -1, True)
 
-# import ast
-# read_result_test= pd.read_csv("experiment_result_test.csv")
-# # print(read_result_test.head())
-# read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
-
-# read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
+import ast
+read_result_test= pd.read_csv("experiment_result_mid.csv")
+# print(read_result_test.head())
+read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
+read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
 
 # print(read_uav_connections_TD)
 # print(read_uav_gu_capacity_TD)
 
-# visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD, read_uav_connections_TD, read_uav_gu_capacity_TD, 3)
+read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_stable.csv")
+# print(read_result_test.head())
+read_baseline_1_uav_connections_TD = read_baseline_1_result["UAV Connections"].apply(ast.literal_eval).tolist()
+read_baseline_1_uav_gu_capacity_TD = read_baseline_1_result["GU Capacity"].apply(ast.literal_eval).tolist()
+
+read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_stable.csv")
+# print(read_result_test.head())
+read_baseline_2_uav_connections_TD = read_baseline_2_result["UAV Connections"].apply(ast.literal_eval).tolist()
+read_baseline_2_uav_gu_capacity_TD = read_baseline_2_result["GU Capacity"].apply(ast.literal_eval).tolist()
+
+visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, 5)
+visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
+from visualization_functions import visualize_simulation_with_multiple_baselines
+
+visualize_simulation_with_multiple_baselines(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
