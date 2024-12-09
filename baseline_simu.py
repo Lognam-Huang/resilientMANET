@@ -90,8 +90,8 @@ import pandas as pd
 # ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
 # ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
 
-# ground_users_positions_simple_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
-ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
+ground_users_positions_simple_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
+# ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
 
 # set first baseline
 baseline_1_UAV_nodes = generate_nodes(num_UAV, 1)
@@ -156,7 +156,7 @@ baseline_2_uav_connections_TD = []
 for cur_time_frame in range(sim_time):  
     
     # ground_users, gu_to_uav_connections_1, gu_to_bs_capacity_1 = get_gu_info_and_update_connections(ground_users_positions_simple_dynamic, cur_time_frame, blocks, UAV_nodes, UAVInfo, None)
-    ground_users, gu_to_uav_connections_1, gu_to_bs_capacity_1 = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, None)
+    # ground_users, gu_to_uav_connections_1, gu_to_bs_capacity_1 = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, None)
 
     baseline_1_gu_to_uav_connections, baseline_1_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_1_UAV_nodes, UAVInfo, blocks, baseline_1_backhaul_connection)
 

@@ -884,59 +884,72 @@ def visualize_simulation_with_multiple_baselines(
     import numpy as np
     import matplotlib.pyplot as plt
 
-    # 初始化存储每个时间步的最小和平均容量
     min_capacity_over_time = []
     avg_capacity_over_time = []
     baseline1_min_capacity_over_time = []
     baseline1_avg_capacity_over_time = []
     baseline2_min_capacity_over_time = []
     baseline2_avg_capacity_over_time = []
+
     uav_connections_over_time = []
     baseline1_uav_connections_over_time = []
     baseline2_uav_connections_over_time = []
 
-    # 遍历每个时间步的数据
     for step, (gu_to_uav_connections, gu_to_bs_capacity, 
                baseline1_gu_to_bs_capacity, baseline1_gu_to_uav_connections,
                baseline2_gu_to_bs_capacity, baseline2_gu_to_uav_connections) in enumerate(
             zip(uav_connections_TD, gu_capacity_TD, 
                 baseline1_gu_capacity_TD, baseline1_uav_connections_TD,
                 baseline2_gu_capacity_TD, baseline2_uav_connections_TD)):
+        
+        if isinstance(gu_to_bs_capacity, dict):
+            capacities = list(gu_to_bs_capacity.values())
+        else:
+            capacities = gu_to_bs_capacity
+        if isinstance(baseline1_gu_to_bs_capacity, dict):
+            baseline1_capacities = list(baseline1_gu_to_bs_capacity.values())
+        else:
+            baseline1_capacities = baseline1_gu_to_bs_capacity
+        
+        if isinstance(baseline2_gu_to_bs_capacity, dict):
+            baseline2_capacities = list(baseline2_gu_to_bs_capacity.values())
+        else:
+            baseline2_capacities = baseline2_gu_to_bs_capacity
 
-        # 处理gu_capacity_TD和baseline的容量
-        def process_capacity(gu_capacity):
-            return list(gu_capacity.values()) if isinstance(gu_capacity, dict) else gu_capacity
+        min_capacity = np.min(capacities)
+        avg_capacity = np.mean(capacities)
+        baseline1_min_capacity = np.min(baseline1_capacities)
+        baseline1_avg_capacity = np.mean(baseline1_capacities)
+        baseline2_min_capacity = np.min(baseline2_capacities)
+        baseline2_avg_capacity = np.mean(baseline2_capacities)
 
-        capacities = process_capacity(gu_to_bs_capacity)
-        baseline1_capacities = process_capacity(baseline1_gu_to_bs_capacity)
-        baseline2_capacities = process_capacity(baseline2_gu_to_bs_capacity)
+        min_capacity_over_time.append(min_capacity)
+        avg_capacity_over_time.append(avg_capacity)
+        baseline1_min_capacity_over_time.append(baseline1_min_capacity)
+        baseline1_avg_capacity_over_time.append(baseline1_avg_capacity)
+        baseline2_min_capacity_over_time.append(baseline2_min_capacity)
+        baseline2_avg_capacity_over_time.append(baseline2_avg_capacity)
 
-        # 计算当前时间步的最小和平均容量
-        min_capacity_over_time.append(np.min(capacities))
-        avg_capacity_over_time.append(np.mean(capacities))
-        baseline1_min_capacity_over_time.append(np.min(baseline1_capacities))
-        baseline1_avg_capacity_over_time.append(np.mean(baseline1_capacities))
-        baseline2_min_capacity_over_time.append(np.min(baseline2_capacities))
-        baseline2_avg_capacity_over_time.append(np.mean(baseline2_capacities))
+        gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
+        baseline1_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline1_gu_to_uav_connections.items()}
+        baseline2_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline2_gu_to_uav_connections.items()}
 
-        # 统计每个UAV的GU连接数量
-        def process_uav_connections(gu_to_uav_connections):
-            gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
-            return [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
 
-        uav_connections_over_time.append(process_uav_connections(gu_to_uav_connections))
-        baseline1_uav_connections_over_time.append(process_uav_connections(baseline1_gu_to_uav_connections))
-        baseline2_uav_connections_over_time.append(process_uav_connections(baseline2_gu_to_uav_connections))
+        uav_connection_counts = [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        baseline1_uav_connection_counts = [sum(1 for uav in baseline1_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        baseline2_uav_connection_counts = [sum(1 for uav in baseline2_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
 
-    # 转置数据以便绘制堆叠柱形图
+        uav_connections_over_time.append(uav_connection_counts)
+        baseline1_uav_connections_over_time.append(baseline1_uav_connection_counts)
+        baseline2_uav_connections_over_time.append(baseline2_uav_connection_counts)
+
+
     uav_connections_over_time = np.array(uav_connections_over_time).T
     baseline1_uav_connections_over_time = np.array(baseline1_uav_connections_over_time).T
     baseline2_uav_connections_over_time = np.array(baseline2_uav_connections_over_time).T
 
-    # 可视化
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
-    # 绘制GU到BS的capacity的最小值和平均值折线图
     time_steps = np.arange(len(uav_connections_TD))
     ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity")
     ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity")
@@ -948,40 +961,141 @@ def visualize_simulation_with_multiple_baselines(
     ax1.set_xlabel("Time Steps")
     ax1.set_ylabel("Capacity")
     ax1.legend()
-    ax1.set_xticks(time_steps)  # 设置x轴刻度为整数
+    ax1.set_xticks(time_steps)  
 
-    # 绘制堆叠柱形图表示每个时间步的UAV连接数量，以及baseline的柱形图
-    width = 0.2  # 每组柱的宽度
-    bottom = np.zeros(len(uav_connections_TD))  # 初始化底部位置为0
-    baseline1_bottom = np.zeros(len(baseline1_uav_connections_TD))  # 初始化底部位置为0
-    baseline2_bottom = np.zeros(len(baseline2_uav_connections_TD))  # 初始化底部位置为0
+    bottom = np.zeros(len(uav_connections_TD))
+    baseline1_bottom = np.zeros(len(baseline1_uav_connections_TD)) 
+    baseline2_bottom = np.zeros(len(baseline2_uav_connections_TD))  
     for i in range(num_uavs):
-        ax2.bar(time_steps - width, baseline1_uav_connections_over_time[i], width=width, label=f"Baseline 1 UAV {i}", alpha=0.6)
-        ax2.bar(time_steps, baseline2_uav_connections_over_time[i], width=width, label=f"Baseline 2 UAV {i}", alpha=0.6)
-        ax2.bar(time_steps + width, uav_connections_over_time[i], width=width, label=f"UAV {i}")
-    
-    for i in range(num_uavs):
-        ax2.bar(time_steps - width, baseline1_uav_connections_over_time[i], width=width, bottom=baseline1_bottom, label=f"Baseline 1 UAV {i}", alpha=0.6)
-        baseline1_bottom += baseline1_uav_connections_TD[i]
+        ax2.bar(time_steps - 0.2, baseline1_uav_connections_over_time[i], width=0.2, bottom=baseline1_bottom, label=f"Baseline 1 UAV {i}", alpha=0.5)
+        baseline1_bottom += baseline1_uav_connections_over_time[i]
 
-        ax2.bar(time_steps, baseline2_uav_connections_over_time[i], width=width, bottom=baseline2_bottom, label=f"Baseline 2 UAV {i}", alpha=0.6)
-        baseline2_bottom += baseline2_uav_connections_TD[i]
+        ax2.bar(time_steps, baseline2_uav_connections_over_time[i], width=0.2, bottom=baseline2_bottom, label=f"Baseline 2 UAV {i}", alpha=0.5)
+        baseline2_bottom += baseline2_uav_connections_over_time[i]
 
-        # 绘制uav_connections的柱形图
-        ax2.bar(time_steps + width, uav_connections_over_time[i], width=0.4, bottom=bottom, label=f"UAV {i}")
-        # 更新底部位置
+        ax2.bar(time_steps + 0.2, uav_connections_over_time[i], width=0.2, bottom=bottom, label=f"UAV {i}")
+
         bottom += uav_connections_over_time[i]
+    
 
-        
-        
-
-        
-
-    ax2.set_title("Number of GUs Connected to Each UAV Over Time")
+    ax2.set_title("Number of GUs Connected to Each UAV Over Time (Baseline vs Current)")
     ax2.set_xlabel("Time Steps")
     ax2.set_ylabel("Total Number of GUs Connected")
-    ax2.legend(loc="upper left", ncol=2)
-    ax2.set_xticks(time_steps)  # 设置x轴刻度为整数
+    ax2.legend(loc="upper left")
+    ax2.set_xticks(time_steps)  
+
+    plt.tight_layout()
+    plt.show()
+
+def visualize_simulation_with_multiple_baselines_styled(
+    uav_connections_TD, gu_capacity_TD, 
+    baseline1_uav_connections_TD, baseline1_gu_capacity_TD, 
+    baseline2_uav_connections_TD, baseline2_gu_capacity_TD, 
+    num_uavs,
+    time_gap=1
+):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    min_capacity_over_time = []
+    avg_capacity_over_time = []
+    baseline1_min_capacity_over_time = []
+    baseline1_avg_capacity_over_time = []
+    baseline2_min_capacity_over_time = []
+    baseline2_avg_capacity_over_time = []
+
+    uav_connections_over_time = []
+    baseline1_uav_connections_over_time = []
+    baseline2_uav_connections_over_time = []
+
+    for step, (gu_to_uav_connections, gu_to_bs_capacity, 
+               baseline1_gu_to_bs_capacity, baseline1_gu_to_uav_connections,
+               baseline2_gu_to_bs_capacity, baseline2_gu_to_uav_connections) in enumerate(
+            zip(uav_connections_TD, gu_capacity_TD, 
+                baseline1_gu_capacity_TD, baseline1_uav_connections_TD,
+                baseline2_gu_capacity_TD, baseline2_uav_connections_TD)):
+        
+        # Process capacities
+        capacities = list(gu_to_bs_capacity.values()) if isinstance(gu_to_bs_capacity, dict) else gu_to_bs_capacity
+        baseline1_capacities = list(baseline1_gu_to_bs_capacity.values()) if isinstance(baseline1_gu_to_bs_capacity, dict) else baseline1_gu_to_bs_capacity
+        baseline2_capacities = list(baseline2_gu_to_bs_capacity.values()) if isinstance(baseline2_gu_to_bs_capacity, dict) else baseline2_gu_to_bs_capacity
+
+        min_capacity_over_time.append(np.min(capacities))
+        avg_capacity_over_time.append(np.mean(capacities))
+        baseline1_min_capacity_over_time.append(np.min(baseline1_capacities))
+        baseline1_avg_capacity_over_time.append(np.mean(baseline1_capacities))
+        baseline2_min_capacity_over_time.append(np.min(baseline2_capacities))
+        baseline2_avg_capacity_over_time.append(np.mean(baseline2_capacities))
+
+        # Process connections
+        gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
+        baseline1_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline1_gu_to_uav_connections.items()}
+        baseline2_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline2_gu_to_uav_connections.items()}
+
+        uav_connection_counts = [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        baseline1_uav_connection_counts = [sum(1 for uav in baseline1_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        baseline2_uav_connection_counts = [sum(1 for uav in baseline2_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+
+        uav_connections_over_time.append(uav_connection_counts)
+        baseline1_uav_connections_over_time.append(baseline1_uav_connection_counts)
+        baseline2_uav_connections_over_time.append(baseline2_uav_connection_counts)
+
+    # Convert to NumPy arrays
+    uav_connections_over_time = np.array(uav_connections_over_time).T
+    baseline1_uav_connections_over_time = np.array(baseline1_uav_connections_over_time).T
+    baseline2_uav_connections_over_time = np.array(baseline2_uav_connections_over_time).T
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    time_steps = np.arange(len(uav_connections_TD))
+
+    selected_time_steps = time_steps[::time_gap]
+    uav_connections_over_time = uav_connections_over_time[:, selected_time_steps]
+    baseline1_uav_connections_over_time = baseline1_uav_connections_over_time[:, selected_time_steps]
+    baseline2_uav_connections_over_time = baseline2_uav_connections_over_time[:, selected_time_steps]
+
+    # First plot: Capacity over time
+    ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity")
+    ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity")
+    ax1.plot(time_steps, baseline1_min_capacity_over_time, label="Baseline 1 Min Capacity", linestyle="--")
+    ax1.plot(time_steps, baseline1_avg_capacity_over_time, label="Baseline 1 Avg Capacity", linestyle="--")
+    ax1.plot(time_steps, baseline2_min_capacity_over_time, label="Baseline 2 Min Capacity", linestyle=":")
+    ax1.plot(time_steps, baseline2_avg_capacity_over_time, label="Baseline 2 Avg Capacity", linestyle=":")
+    ax1.set_title("GU to BS Capacity Over Time")
+    ax1.set_xlabel("Time Steps")
+    ax1.set_ylabel("Capacity")
+    ax1.legend()
+    ax1.set_xticks(time_steps)
+
+    # Second plot: Connections with patterns
+    bottom = np.zeros(int(len(uav_connections_TD) / int(time_gap)))
+    baseline1_bottom = np.zeros(int(len(uav_connections_TD) / int(time_gap)))
+    baseline2_bottom = np.zeros(int(len(uav_connections_TD) / int(time_gap)))
+
+    # Assign hatching styles to baselines
+    baseline1_hatch = '/'  # Baseline 1 uses slashes
+    baseline2_hatch = '\\'  # Baseline 2 uses crosshatch
+
+    responsible_width = 0.2 * time_gap
+
+
+    for i in range(num_uavs):
+        # ax2.bar(time_steps - 0.2, baseline1_uav_connections_over_time[i], width=0.2, bottom=baseline1_bottom, label=f"Baseline 1 UAV {i}", alpha=0.5, hatch=baseline1_hatch)
+        ax2.bar(selected_time_steps - responsible_width, baseline1_uav_connections_over_time[i], width=responsible_width, bottom=baseline1_bottom, label=f"Baseline 1 UAV {i}", alpha=0.5, hatch=baseline1_hatch)
+        baseline1_bottom += baseline1_uav_connections_over_time[i]
+
+        # ax2.bar(time_steps, baseline2_uav_connections_over_time[i], width=0.2, bottom=baseline2_bottom, label=f"Baseline 2 UAV {i}", alpha=0.5, hatch=baseline2_hatch)
+        ax2.bar(selected_time_steps, baseline2_uav_connections_over_time[i], width=responsible_width, bottom=baseline2_bottom, label=f"Baseline 2 UAV {i}", alpha=0.5, hatch=baseline2_hatch)
+        baseline2_bottom += baseline2_uav_connections_over_time[i]
+
+        # ax2.bar(time_steps + 0.2, uav_connections_over_time[i], width=0.2, bottom=bottom, label=f"UAV {i}")
+        ax2.bar(selected_time_steps + responsible_width, uav_connections_over_time[i], width=responsible_width, bottom=bottom, label=f"UAV {i}")
+        bottom += uav_connections_over_time[i]
+
+    ax2.set_title("Number of GUs Connected to Each UAV Over Time (With Patterns)")
+    ax2.set_xlabel("Time Steps")
+    ax2.set_ylabel("Total Number of GUs Connected")
+    ax2.legend(loc="upper left")
+    ax2.set_xticks(selected_time_steps)
 
     plt.tight_layout()
     plt.show()

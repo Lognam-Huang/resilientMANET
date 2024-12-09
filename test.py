@@ -243,26 +243,30 @@ import pandas as pd
 # print_node(gu_test, -1, True)
 
 import ast
-read_result_test= pd.read_csv("experiment_result_mid.csv")
-# print(read_result_test.head())
+# read_result_test= pd.read_csv("experiment_result_mid.csv")
+read_result_test= pd.read_csv("experiment_result_mid_dynamic.csv")
+
 read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
 read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
 
-# print(read_uav_connections_TD)
-# print(read_uav_gu_capacity_TD)
 
-read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_stable.csv")
-# print(read_result_test.head())
+# read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_stable.csv")
+read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_dynamic.csv")
+
 read_baseline_1_uav_connections_TD = read_baseline_1_result["UAV Connections"].apply(ast.literal_eval).tolist()
 read_baseline_1_uav_gu_capacity_TD = read_baseline_1_result["GU Capacity"].apply(ast.literal_eval).tolist()
 
-read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_stable.csv")
-# print(read_result_test.head())
+# read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_stable.csv")
+read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_dynamic.csv")
+
 read_baseline_2_uav_connections_TD = read_baseline_2_result["UAV Connections"].apply(ast.literal_eval).tolist()
 read_baseline_2_uav_gu_capacity_TD = read_baseline_2_result["GU Capacity"].apply(ast.literal_eval).tolist()
 
-visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, 5)
-visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
-from visualization_functions import visualize_simulation_with_multiple_baselines
+# visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, 5)
+# visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
+from visualization_functions import visualize_simulation_with_multiple_baselines, visualize_simulation_with_multiple_baselines_styled
 
 visualize_simulation_with_multiple_baselines(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
+visualize_simulation_with_multiple_baselines_styled(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 1)
+visualize_simulation_with_multiple_baselines_styled(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 3)
+visualize_simulation_with_multiple_baselines_styled(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 5)
