@@ -3,11 +3,25 @@
         "xLength": 1500,
         "yLength": 1500
     },
-    "baseStation": {
-        "bottomCorner": [100, 1450, 0],
-        "size": [50, 50],
-        "height": [400]
-    },
+    "baseStation": [
+        {
+            "bottomCorner": [100, 1450, 0],
+            "size": [50, 50],
+            "height": [450]
+        },
+
+        {
+            "bottomCorner": [900, 900, 0],
+            "size": [50, 50],
+            "height": [200]
+        },
+
+        {
+            "bottomCorner": [1350, 350, 0],
+            "size": [50, 50],
+            "height": [50]
+        }
+    ],
     "blocks": [
         {
             "bottomCorner": [50, 1400, 0],

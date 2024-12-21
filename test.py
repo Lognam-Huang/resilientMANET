@@ -191,6 +191,11 @@ from node_functions import generate_nodes, print_node, move_ground_users, get_no
 # 0-GU, 1-UAV, 2-BS
 ground_users = generate_nodes(num_GU, 0)
 
+BS_nodes = generate_nodes(num_BS, 2)
+
+for i in range(num_BS):
+    BS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
+
 # print_node(ground_users)
 from node_functions import add_or_remove_gu
 # add_or_remove_gu(ground_users)
@@ -204,7 +209,7 @@ max_movement_distance = 30
 # print(scene_data["blocks"])
 
 
-# scene_visualization(ground_users, UAV_nodes=None, air_base_station=None, scene_info=scene_data)
+scene_visualization(ground_users, UAV_nodes=None, air_base_station=BS_nodes, scene_info=scene_data)
 
 for i in range(10):
     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 2000)
@@ -227,7 +232,7 @@ df = pd.DataFrame(GU_position_TD)
 # df.to_csv("ground_user_positions_for_simple_scene_50_dynamic.csv", index=False)
 # df.to_csv("ground_user_positions_for_mid_scene_50_dynamic.csv", index=False)
 # df.to_csv("ground_user_positions_for_hard_scene_50_stable.csv", index=False)
-df.to_csv("ground_user_positions_for_hard_scene_50_dynamic.csv", index=False)
+# df.to_csv("ground_user_positions_for_hard_scene_50_dynamic.csv", index=False)
 
 # ground_users_positions_simple = pd.read_csv("ground_user_positions_for_simple_scene_50_dynamic.csv")
 # ground_users_positions_simple = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")

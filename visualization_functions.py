@@ -21,6 +21,7 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
     max_abs_height = max((ABS.position[2] for ABS in air_base_station), default=0) if air_base_station else 0
     
     max_height = max(max_block_height, max_uav_height, max_abs_height) * 1.2  # 取最大值并乘以120%
+    # max_height = max(scene_info['scenario']['xLength'], scene_info['scenario']['yLength']) * 1.2  # 取最大值并乘以120%
     ax.set_zlim([0, max_height])
     
     
