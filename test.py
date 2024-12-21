@@ -170,7 +170,7 @@ num_UAV = 3
 import json
 
 # Load scene data from JSON file
-with open('scene_data_system_hard.json', 'r') as file:
+with open('scene_data_hard.json', 'r') as file:
 # with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
 # with open('scene_data_mid.json', 'r') as file:
