@@ -1,0 +1,102 @@
+{
+    "scenario": {
+        "xLength": 1500,
+        "yLength": 1500
+    },
+    "baseStation": {
+        "bottomCorner": [100, 1450, 0],
+        "size": [50, 50],
+        "height": [400]
+    },
+    "blocks": [
+        {
+            "bottomCorner": [50, 1400, 0],
+            "size": [100, 100],
+            "height": 400
+        },
+        {
+            "bottomCorner": [100, 100, 0],
+            "size": [150, 200],
+            "height": 50
+        },
+        {
+            "bottomCorner": [100, 1100, 0],
+            "size": [200, 150],
+            "height": 250
+        },
+        {
+            "bottomCorner": [300, 900, 0],
+            "size": [200, 200],
+            "height": 20
+        },
+        {
+            "bottomCorner": [400, 400, 0],
+            "size": [150, 150],
+            "height": 30
+        },
+        {
+            "bottomCorner": [400, 1300, 0],
+            "size": [200, 150],
+            "height": 25
+        },
+        {
+            "bottomCorner": [500, 300, 0],
+            "size": [200, 150],
+            "height": 250
+        },
+        {
+            "bottomCorner": [600, 50, 0],
+            "size": [150, 100],
+            "height": 20
+        },
+        {
+            "bottomCorner": [700, 1100, 0],
+            "size": [300, 100],
+            "height": 500
+        },
+        {
+            "bottomCorner": [800, 800, 0],
+            "size": [200, 200],
+            "height": 150
+        },
+        {
+            "bottomCorner": [900, 200, 0],
+            "size": [100, 300],
+            "height": 30
+        },
+        {
+            "bottomCorner": [1100, 1200, 0],
+            "size": [100, 100],
+            "height": 150
+        },
+        {
+            "bottomCorner": [1200, 500, 0],
+            "size": [150, 150],
+            "height": 250
+        },
+        {
+            "bottomCorner": [1300, 200, 0],
+            "size": [150, 150],
+            "height": 30
+        },
+        {
+            "bottomCorner": [1300, 1000, 0],
+            "size": [150, 200],
+            "height": 35
+        }
+    ],
+    "UAV": {        
+        "bandwidth": 1000000000,
+        "Power": 10,
+        "TransmittingAntennaGain": 10,
+        "ReceievingAntennaGain": 10,
+        "CarrierFrequency": 28000000000,
+        "UAVSpeed": 15,
+        "min_height": 190,
+        "max_height": 210            
+    },
+    "nodeNumber":{
+        "GU": 20 ,
+        "UAV": 7
+    }
+}

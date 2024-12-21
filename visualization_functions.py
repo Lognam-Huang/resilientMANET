@@ -136,28 +136,32 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
     from node_functions import print_node
     # print_node(UAV_nodes)
     
-    for gu in ground_users:
-        gu_x, gu_y, gu_z = gu.position[0], gu.position[1], gu.position[2]
-        uav_index =  gu.connected_nodes[0]
-        uav_x, uav_y, uav_z = UAV_nodes[uav_index].position[0], UAV_nodes[uav_index].position[1], UAV_nodes[uav_index].position[2]
+    if ground_users:
+        for gu in ground_users:
+            gu_x, gu_y, gu_z = gu.position[0], gu.position[1], gu.position[2]
+            if gu.connected_nodes:
+                uav_index =  gu.connected_nodes[0]
+                uav_x, uav_y, uav_z = UAV_nodes[uav_index].position[0], UAV_nodes[uav_index].position[1], UAV_nodes[uav_index].position[2]
 
-        ax.plot([gu_x, uav_x], [gu_y, uav_y], [gu_z, uav_z], color=(0.5,0,0), alpha=line_alpha)
+                ax.plot([gu_x, uav_x], [gu_y, uav_y], [gu_z, uav_z], color=(0.5,0,0), alpha=line_alpha)
     
-    for uav in UAV_nodes:
-        start_uav_x, start_uav_y, start_uav_z = uav.position[0], uav.position[1], uav.position[2]
-        for target_uav_index in uav.connected_nodes:
-            if target_uav_index >= len(UAV_nodes): continue
-            # print(target_uav_index)
-            target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
+    if UAV_nodes:
+        for uav in UAV_nodes:
+            start_uav_x, start_uav_y, start_uav_z = uav.position[0], uav.position[1], uav.position[2]
+            for target_uav_index in uav.connected_nodes:
+                if target_uav_index >= len(UAV_nodes): continue
+                # print(target_uav_index)
+                target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
 
-            ax.plot([start_uav_x, target_uav_x], [start_uav_y, target_uav_y], [start_uav_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
+                ax.plot([start_uav_x, target_uav_x], [start_uav_y, target_uav_y], [start_uav_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
     
-    for bs in air_base_station:
-        bs_x, bs_y, bs_z = bs.position[0], bs.position[1], bs.position[2]
-        for target_uav_index in bs.connected_nodes:
-            target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
+    if air_base_station:
+        for bs in air_base_station:
+            bs_x, bs_y, bs_z = bs.position[0], bs.position[1], bs.position[2]
+            for target_uav_index in bs.connected_nodes:
+                target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
 
-            ax.plot([bs_x, target_uav_x], [bs_y, target_uav_y], [bs_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
+                ax.plot([bs_x, target_uav_x], [bs_y, target_uav_y], [bs_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
         
     # GU-UAV连接线
     # if ground_users and UAV_nodes:

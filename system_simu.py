@@ -2,9 +2,9 @@ import json
 
 # Load scene data from JSON file
 # with open('scene_data_system_overview.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-with open('scene_data_mid.json', 'r') as file:
+# with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -160,8 +160,8 @@ baseline_uav_connections_TD = []
 
 import pandas as pd
 
-# ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
-ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
+ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
+# ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
 # ground_users_positions_mid_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
 
 for cur_time_frame in range(sim_time):  
@@ -170,8 +170,8 @@ for cur_time_frame in range(sim_time):
     # gu_to_uav_connections, gu_to_bs_capacity = move_gu_and_update_connections(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance, UAV_nodes, UAVInfo, best_backhaul_connection)
 
     #this functino is used after we make user of pre-defined GU data
-    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
-    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
     # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_dynamic, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
 
     # print_node(ground_users, -1, True)
@@ -214,15 +214,15 @@ for cur_time_frame in range(sim_time):
     
     gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
-    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
 
-    baseline_gu_to_uav_connections, baseline_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_UAV_nodes, UAVInfo, blocks, baseline_backhaul_connection)
+    # baseline_gu_to_uav_connections, baseline_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_UAV_nodes, UAVInfo, blocks, baseline_backhaul_connection)
 
-    baseline_uav_connections_TD.append(baseline_gu_to_uav_connections)
-    baseline_gu_capacity_TD.append(baseline_gu_to_bs_capacity)  
+    # baseline_uav_connections_TD.append(baseline_gu_to_uav_connections)
+    # baseline_gu_capacity_TD.append(baseline_gu_to_bs_capacity)  
 
 
-    # scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
+    # # scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
 
     
     reward_TD.append(max_reward)
@@ -258,8 +258,8 @@ if sim_time > 0:
     # print(GU_position_TD)
 
     # visualize_simulation(uav_connections_TD, gu_capacity_TD, num_UAV)
-    # visualize_simulation(baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
-    visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
+    visualize_simulation(baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
+    # visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
     # visualize_simulation_together(uav_connections_TD, gu_capacity_TD, num_UAV)
     # visualize_metrics(reward_TD, RS_TD)
 

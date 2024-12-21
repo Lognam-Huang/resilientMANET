@@ -170,10 +170,10 @@ num_UAV = 3
 import json
 
 # Load scene data from JSON file
-# with open('scene_data_system_overview.json', 'r') as file:
+with open('scene_data_system_hard.json', 'r') as file:
 # with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-with open('scene_data_mid.json', 'r') as file:
+# with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -199,24 +199,35 @@ GU_position_TD = []
 # max_movement_distance = 5
 max_movement_distance = 30
 
-# for i in range(1):
-#     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 200)
+# print(scene_data)
+# print("--")
+# print(scene_data["blocks"])
 
-# for i in range(50):
-#     add_or_remove_gu(ground_users)
-#     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
-#     # print(get_nodes_position(ground_users))
 
-#     GU_position_TD.append(get_nodes_position(ground_users))
+# scene_visualization(ground_users, UAV_nodes=None, air_base_station=None, scene_info=scene_data)
+
+for i in range(10):
+    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 2000)
+
+for i in range(50):
+    add_or_remove_gu(ground_users)
+    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+    # print(get_nodes_position(ground_users))
+
+    GU_position_TD.append(get_nodes_position(ground_users))
+
+    # scene_visualization(ground_users, UAV_nodes=None, air_base_station=None, scene_info=scene_data)
 
 # print(GU_position_TD)
 import pandas as pd
-# df = pd.DataFrame(GU_position_TD)
+df = pd.DataFrame(GU_position_TD)
 # # df.to_csv("ground_user_positions_for_simple_scene_50_stable.csv", index=False)
 # df.to_csv("ground_user_positions_for_mid_scene_50_stable.csv", index=False)
 
 # df.to_csv("ground_user_positions_for_simple_scene_50_dynamic.csv", index=False)
 # df.to_csv("ground_user_positions_for_mid_scene_50_dynamic.csv", index=False)
+# df.to_csv("ground_user_positions_for_hard_scene_50_stable.csv", index=False)
+df.to_csv("ground_user_positions_for_hard_scene_50_dynamic.csv", index=False)
 
 # ground_users_positions_simple = pd.read_csv("ground_user_positions_for_simple_scene_50_dynamic.csv")
 # ground_users_positions_simple = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
