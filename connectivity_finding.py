@@ -56,9 +56,19 @@ def take_action(state_scores, epsilon):
 
 # Get reward of a state, including resilience score and optimization score
 def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
+    print("Current target state: "+str(state))
+
+    time_counter = time.time()
+
     backhaul_connection = get_backhaul_connection(state=state, UAV_nodes= UAV_nodes, BS_nodes=BS_nodes, scene_info=scene_info)
 
+    print(f"It takes {time.time()-time_counter} seconds to calculate backhaul connection.")
+    time_counter = time.time()
+
     resilience_score = get_RS(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper, scene_info)
+
+    print(f"It takes {time.time()-time_counter} seconds to calculate RS.")
+    time_counter = time.time()
 
     reward_score = resilience_score
 
@@ -67,7 +77,9 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
         if not paths:
             reward_score *= 0.5
 
-    
+    print(f"It takes {time.time()-time_counter} seconds to calculate constraint 1.")
+    time_counter = time.time()
+
     min_reward_score_with_one_bs_removed = reward_score
 
     # If there are multiple BS, proceed to test each one being "nullified"
@@ -83,6 +95,9 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
 
         robustness_factor = (min_reward_score_with_one_bs_removed / resilience_score if resilience_score > 0 else 0)
         reward_score *= robustness_factor  # Adjust the original RS
+
+    print(f"It takes {time.time()-time_counter} seconds to calculate constraint 2.")
+    time_counter = time.time()
 
     return reward_score, resilience_score, backhaul_connection
 
@@ -358,6 +373,9 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
         states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper)
 
         next_state, next_state_score = take_action(states_scores, epsilon)
+
+        if print_prog:
+            print("Next state is: "+str(next_state))
 
         if next_state_score[0] > max_reward:
             best_state = next_state

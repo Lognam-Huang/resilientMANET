@@ -2,9 +2,9 @@ import json
 
 # Load scene data from JSON file
 # with open('scene_data_hard.json', 'r') as file:
-with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
-# with open('scene_data_mid.json', 'r') as file:
+with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -33,7 +33,10 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 1  # Controls the density of the heatmap
+    # 'sparsity_parameter': 1  # Controls the density of the heatmap
+
+    # just for simple test, and now for quicker calculation for hard scene
+    'sparsity_parameter': 50  # Controls the density of the heatmap
 }
 
 
@@ -46,19 +49,19 @@ reward_hyper = {
     'ratioDR': 0.6,
     'ratioBP': 0.4,
     
-    # 'weightDR': 0.3,
-    # 'weightBP': 0.4,
-    # 'weightNP': 0.3,
+    'weightDR': 0.3,
+    'weightBP': 0.4,
+    'weightNP': 0.3,
 
     # # hyperset 2
     # 'weightDR': 0.7,
     # 'weightBP': 0.15,
     # 'weightNP': 0.15,
 
-    # hyperset 3
-    'weightDR': 0.2,
-    'weightBP': 0.4,
-    'weightNP': 0.4,
+    # # hyperset 3
+    # 'weightDR': 0.2,
+    # 'weightBP': 0.4,
+    # 'weightNP': 0.4,
 
     'overloadConstraint': 10000
 }
@@ -66,7 +69,10 @@ reward_hyper = {
 # Q-learning hyperparameters
 q_hyper = {
     'epsilon': 0.4,
+    
+    # just for simple test, now also for hard scene simulation
     'training_episodes': 30
+
     # 'training_episodes': 200
     # 'training_episodes': 400
 }
@@ -75,7 +81,9 @@ q_hyper = {
 # training_episodes= 20
 
 # Lognam: set simulation time
-sim_time = 30
+# sim_time = 30
+# update for hard scene calculation
+sim_time = 10
 
 
 constraint_hyper = {
@@ -158,17 +166,18 @@ best_backhaul_connection = None
 
 import pandas as pd
 
-ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
-# ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
+# ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
+ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
 # ground_users_positions_mid_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
 # ground_users_positions_hard_stable = pd.read_csv("ground_user_positions_for_hard_scene_50_stable.csv")
 
 for cur_time_frame in range(sim_time):  
     #this functino is used after we make user of pre-defined GU data
-    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
-    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
     # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_dynamic, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
-    # round_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_hard_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    
+    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_hard_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
 
     # print_node(ground_users, -1, True)
     max_uav_load_number = max_count = max([item for sublist in gu_to_uav_connections.values() for item in sublist].count(x) for x in set([item for sublist in gu_to_uav_connections.values() for item in sublist]))
@@ -203,17 +212,18 @@ for cur_time_frame in range(sim_time):
             reward_hyper=reward_hyper,
             # print_prog=False
             print_prog=True,
-            initialize_as_all_0=True
+            initialize_as_all_0=False
         )        
         print("Connections details are found, evaluating topo")
     else:
         print("Current topology is good enough, no topology refreshed is needed")
         max_reward, best_RS, current_backhaul_connection = reward(best_state, scene_data, ground_users, UAV_nodes, BS_nodes, reward_hyper)
     
-    
+    print_node(BS_nodes)
+
     gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
-    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
     # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
 
     # baseline_gu_to_uav_connections, baseline_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_UAV_nodes, UAVInfo, blocks, baseline_backhaul_connection)
