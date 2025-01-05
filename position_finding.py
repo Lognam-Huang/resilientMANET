@@ -159,7 +159,12 @@ def find_optimal_uav_positions(ground_users, uavs, scene_data, weights, sparsity
         print("Available UAVs: " + str(available_uav_indices)) if print_prog else None
         if uncovered_gu_indices:
             print("Covering GUs...") if print_prog else None
+
             heatmap, best_position, max_connection_score, min_gu_bottleneck = generate_3D_heatmap(ground_users, scene_data, weights, sparsity_parameter, target_user_indices=uncovered_gu_indices, existing_uav_positions=uav_positions, optimized_uav_index=-1, print_prog=print_prog)
+
+            # from visualization_functions import visualize_heatmap_slices
+            # print(heatmap)
+            # visualize_heatmap_slices(heatmap=heatmap, target_heights=[10])
 
             uav_positions.append(best_position)
 

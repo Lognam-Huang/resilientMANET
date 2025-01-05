@@ -40,9 +40,11 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
         # ax.set_ylabel('')
         # ax.set_zlabel('')
 
-        ax.set_xlabel('X Axis')
-        ax.set_ylabel('Y Axis')
-        ax.set_zlabel('Z Axis')
+        
+        # ax.set_xlabel('X Axis')
+        # ax.set_ylabel('Y Axis')
+        # ax.set_zlabel('Z Axis')
+        ax.grid(False)
         ax.set_xticklabels([])
         ax.set_yticklabels([])
         ax.set_zticklabels([])
@@ -142,9 +144,10 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
             gu_x, gu_y, gu_z = gu.position[0], gu.position[1], gu.position[2]
             if gu.connected_nodes:
                 uav_index =  gu.connected_nodes[0]
-                uav_x, uav_y, uav_z = UAV_nodes[uav_index].position[0], UAV_nodes[uav_index].position[1], UAV_nodes[uav_index].position[2]
+                if(UAV_nodes):
+                    uav_x, uav_y, uav_z = UAV_nodes[uav_index].position[0], UAV_nodes[uav_index].position[1], UAV_nodes[uav_index].position[2]
 
-                ax.plot([gu_x, uav_x], [gu_y, uav_y], [gu_z, uav_z], color=(0.5,0,0), alpha=line_alpha)
+                    ax.plot([gu_x, uav_x], [gu_y, uav_y], [gu_z, uav_z], color=(0.5,0,0), alpha=line_alpha)
     
     if UAV_nodes:
         for uav in UAV_nodes:
@@ -159,10 +162,11 @@ def scene_visualization(ground_users = None, UAV_nodes = None, air_base_station 
     if air_base_station:
         for bs in air_base_station:
             bs_x, bs_y, bs_z = bs.position[0], bs.position[1], bs.position[2]
-            for target_uav_index in bs.connected_nodes:
-                target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
+            if UAV_nodes:
+                for target_uav_index in bs.connected_nodes:
+                    target_uav_x, target_uav_y, target_uav_z = UAV_nodes[target_uav_index].position[0], UAV_nodes[target_uav_index].position[1], UAV_nodes[target_uav_index].position[2]
 
-                ax.plot([bs_x, target_uav_x], [bs_y, target_uav_y], [bs_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
+                    ax.plot([bs_x, target_uav_x], [bs_y, target_uav_y], [bs_z, target_uav_z], color=(0.5,0,0), alpha=line_alpha)
         
     # GU-UAV连接线
     # if ground_users and UAV_nodes:
@@ -1103,4 +1107,54 @@ def visualize_simulation_with_multiple_baselines_styled(
     ax2.set_xticks(selected_time_steps)
 
     plt.tight_layout()
+    plt.show()
+
+from node_functions import move_ground_users
+
+def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, max_movement_distance):
+    # Create a color map with a unique color for each time step
+    colors = plt.cm.viridis(np.linspace(0, 1, n))
+    
+    # Initialize the plot
+    fig, ax = plt.subplots()
+    ax.set_xlim(0, xLength)
+    ax.set_ylim(0, yLength)
+    
+    # Draw the blocks on the plot
+    for block in blocks:
+        bx, by, _ = block['bottomCorner']
+        bw, bh = block['size']
+        block_rect = patches.Rectangle((bx, by), bw, bh, linewidth=1, edgecolor='r', facecolor='none')
+        ax.add_patch(block_rect)
+
+    # For each time step, draw the movement of all users
+    for time_step in range(n):
+        # Initialize the starting positions for the first time step
+        if time_step == 0:
+            for gu in ground_users:
+                gu.start_pos = gu.position
+                
+        # Move the users
+        move_ground_users(ground_users, blocks, xLength, yLength, max_movement_distance)
+        
+        # Draw the movement paths
+        for gu in ground_users:
+            # Update the start position for subsequent time steps
+            if time_step != 0:
+                gu.start_pos = gu.end_pos
+
+            # Record the new position
+            gu.end_pos = gu.position
+            
+            # Draw an arrow from the start to the new position
+            ax.arrow(gu.start_pos[0], gu.start_pos[1], gu.end_pos[0] - gu.start_pos[0], gu.end_pos[1] - gu.start_pos[1],
+                     head_width=0.5, head_length=1, fc=colors[time_step], ec=colors[time_step])
+
+        # Add a legend entry for this time step
+        ax.plot([], [], color=colors[time_step], label=f'Time Step: {time_step + 1}')
+    
+    # Add the legend to the plot
+    ax.legend(loc='upper left')
+    
+    # Display the final visualization
     plt.show()

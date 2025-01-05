@@ -1,8 +1,8 @@
 import json
 
 # Load scene data from JSON file
-with open('scene_data_hard.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_hard.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
 # with open('scene_data_mid.json', 'r') as file:
     scene_data = json.load(file)
@@ -33,7 +33,7 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 5  # Controls the density of the heatmap
+    'sparsity_parameter': 1  # Controls the density of the heatmap
 }
 
 
@@ -66,8 +66,9 @@ reward_hyper = {
 # Q-learning hyperparameters
 q_hyper = {
     'epsilon': 0.4,
+    'training_episodes': 30
     # 'training_episodes': 200
-    'training_episodes': 400
+    # 'training_episodes': 400
 }
 
 # training_episodes= 200
@@ -157,22 +158,22 @@ best_backhaul_connection = None
 
 import pandas as pd
 
-# ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
+ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
 # ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
 # ground_users_positions_mid_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
-ground_users_positions_hard_stable = pd.read_csv("ground_user_positions_for_hard_scene_50_stable.csv")
+# ground_users_positions_hard_stable = pd.read_csv("ground_user_positions_for_hard_scene_50_stable.csv")
 
 for cur_time_frame in range(sim_time):  
     #this functino is used after we make user of pre-defined GU data
-    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
     # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
     # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_dynamic, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
-    round_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_hard_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    # round_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_hard_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
 
     # print_node(ground_users, -1, True)
     max_uav_load_number = max_count = max([item for sublist in gu_to_uav_connections.values() for item in sublist].count(x) for x in set([item for sublist in gu_to_uav_connections.values() for item in sublist]))
 
-    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    # scene_visualization(ground_users, UAV_nodes=None, air_base_station=BS_nodes, scene_info=scene_data, line_alpha=0.3)
 
     if max_uav_load_number >= num_BS * float(constraint_hyper['max_uav_load_rate']) or min(gu_to_bs_capacity) < float(constraint_hyper['GUConstraint']):
         print("Finding positions")
@@ -201,7 +202,8 @@ for cur_time_frame in range(sim_time):
             scene_info = scene_data, 
             reward_hyper=reward_hyper,
             # print_prog=False
-            print_prog=True
+            print_prog=True,
+            initialize_as_all_0=True
         )        
         print("Connections details are found, evaluating topo")
     else:
@@ -212,6 +214,7 @@ for cur_time_frame in range(sim_time):
     gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
     # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
 
     # baseline_gu_to_uav_connections, baseline_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_UAV_nodes, UAVInfo, blocks, baseline_backhaul_connection)
 
@@ -245,9 +248,9 @@ recorded_df = pd.DataFrame(recorded_data)
 # recorded_df.to_csv("experiment_result_mid_hyper3.csv", index=False)
 # recorded_df.to_csv("experiment_result_mid_dynamic.csv", index=False)
 
-recorded_df.to_csv("experiment_result_hard_stable.csv", index=False)
+# recorded_df.to_csv("experiment_result_hard_stable.csv", index=False)
 
-from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline
+from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline, visualize_scores
 if sim_time > 0:
 
     # print(uav_connections_TD)
@@ -261,5 +264,7 @@ if sim_time > 0:
     # visualize_simulation_with_baseline(uav_connections_TD, gu_capacity_TD, baseline_uav_connections_TD, baseline_gu_capacity_TD, num_UAV)
     # visualize_simulation_together(uav_connections_TD, gu_capacity_TD, num_UAV)
     # visualize_metrics(reward_TD, RS_TD)
+
+    visualize_scores(reward_track, RS_track, best_reward_track, best_RS_track)
 
         

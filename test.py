@@ -209,17 +209,17 @@ max_movement_distance = 30
 # print(scene_data["blocks"])
 
 
-scene_visualization(ground_users, UAV_nodes=None, air_base_station=BS_nodes, scene_info=scene_data)
+scene_visualization(ground_users=None, UAV_nodes=None, air_base_station=None, scene_info=scene_data, show_axes_labels=False)
 
-for i in range(10):
-    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 2000)
+# for i in range(10):
+#     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 2000)
 
-for i in range(50):
-    add_or_remove_gu(ground_users)
-    move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
-    # print(get_nodes_position(ground_users))
+# for i in range(50):
+#     add_or_remove_gu(ground_users)
+#     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], max_movement_distance)
+#     # print(get_nodes_position(ground_users))
 
-    GU_position_TD.append(get_nodes_position(ground_users))
+#     GU_position_TD.append(get_nodes_position(ground_users))
 
     # scene_visualization(ground_users, UAV_nodes=None, air_base_station=None, scene_info=scene_data)
 
