@@ -2,8 +2,8 @@ from itertools import combinations
 
 # print(list(combinations(range(5), 2)))
 
-# for a in range(3):
-#     print(a)
+for a in range(0,10,2):
+    print(a)
 #     for b in range (5):
 #         print(b)
 #         if b == 2:
