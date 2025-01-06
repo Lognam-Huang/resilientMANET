@@ -36,8 +36,8 @@ position_params = {
     # 'sparsity_parameter': 1  # Controls the density of the heatmap
 
     # just for simple test, and now for quicker calculation for hard scene
-    # 'sparsity_parameter': 50  # for hard scene simulation
-    'sparsity_parameter': 500  # just for test
+    'sparsity_parameter': 50  # for hard scene simulation
+    # 'sparsity_parameter': 10  # just for test
 }
 
 
@@ -71,7 +71,7 @@ reward_hyper = {
 q_hyper = {
     # just for simple test, now also for hard scene simulation
     'epsilon': 0.3,
-    'training_episodes': 30
+    'training_episodes': 15
 
     # 'epsilon': 0.4,
     # 'training_episodes': 200
@@ -114,53 +114,20 @@ from node_functions import add_or_remove_gu, set_baseline_backhaul, get_gu_info_
 
 best_backhaul_connection = None
 
-# # create a baseline backhaul for comparison
-# baseline_UAV_nodes = generate_nodes(num_UAV, 1)
-# baseline_BS_nodes = generate_nodes(num_BS, 2)
+def append_and_save_csv(reward, rs, uav_connections, gu_capacity, gu_positions, uav_positions, state, file_path):
+    new_data = {
+        "GU Position": [gu_positions],
+        "UAV Position": [uav_positions],
+        "GU Capacity": [gu_capacity],
+        "UAV Connections": [uav_connections],
+        
+        "State": [state],
+        "Reward": [reward],
+        "RS": [rs],
+        
+    }
+    pd.DataFrame(new_data).to_csv(file_path, mode='a', header=False, index=False)
 
-# baseline_BS_connections_for_mid_scene = [
-#     [0,1,4],
-#     [0,1,2,4]
-# ]
-
-# # for mid scene:
-# baseline_UAV_positions_for_mid_scene = [(185, 100, 50), (126, 180, 50), (36, 147, 50), (36, 52, 50), (126, 19, 50)]
-
-# baseline_UAV_connections_for_mid_scene = [
-#     [2,4],
-#     [2,4],
-#     [0,1,3,4],
-#     [2],
-#     [0,1,2]
-# ]
-
-# baseline_BS_connections_for_simple_scene = [
-#     [0,1]
-# ]
-
-# baseline_UAV_positions_for_simple_scene = [(3,3,10), (25,3,10), (2,25,10)]
-
-# baseline_UAV_connections_for_simple_scene = [
-#     [1,2],
-#     [1],
-#     [0],
-# ]
-
-# # set_baseline_backhaul(baseline_UAV_nodes, baseline_UAV_positions_for_simple_scene, baseline_UAV_connections_for_simple_scene, baseline_BS_nodes, baseStation, baseline_BS_connections_for_simple_scene)
-# set_baseline_backhaul(baseline_UAV_nodes, baseline_UAV_positions_for_mid_scene, baseline_UAV_connections_for_mid_scene, baseline_BS_nodes, baseStation, baseline_BS_connections_for_mid_scene)
-
-# # scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
-
-# from connectivity_finding import get_backhaul_connection
-# # baseline_state = "010111 010111 111101 001000 111011"
-# # baseline_state = "010111 10111 1101 000 11 0"
-# baseline_state_for_mid_scene = "010111101111101000110"
-# baseline_state_for_simple_scene = "111010"
-
-# baseline_backhaul_connection = get_backhaul_connection(baseline_state_for_mid_scene, baseline_UAV_nodes, baseline_BS_nodes, scene_data)
-# # baseline_backhaul_connection = get_backhaul_connection(baseline_state_for_simple_scene, baseline_UAV_nodes, baseline_BS_nodes, scene_data)
-# baseline_gu_capacity_TD = []
-# baseline_uav_connections_TD = []
 
 import pandas as pd
 
@@ -172,7 +139,7 @@ ground_users_positions_hard_stable = pd.read_csv("ground_user_positions_for_hard
 
 # for cur_time_frame in range(sim_time): 
 # for hard scene simulation optimization
-for cur_time_frame in range(0, sim_time, 3): 
+for cur_time_frame in range(0, sim_time, 6): 
 
     # this functino is used after we make user of pre-defined GU data
     # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
@@ -196,8 +163,8 @@ for cur_time_frame in range(0, sim_time, 3):
             weights=position_params['weights'],  # Use weights from the dictionary
             sparsity_parameter=position_params['sparsity_parameter'],  # Use sparsity_parameter from the dictionary
             # print_para=True,
-            print_prog=False
-            # print_prog=True
+            # print_prog=False
+            print_prog=True
         )
 
         print("Positions are found, finding connections")
@@ -208,8 +175,6 @@ for cur_time_frame in range(0, sim_time, 3):
             BS_nodes, 
             q_hyper['epsilon'], 
             episodes=q_hyper['training_episodes'], 
-            # 0.4,
-            # episodes=5,
             scene_info = scene_data, 
             reward_hyper=reward_hyper,
             # print_prog=False
@@ -228,14 +193,6 @@ for cur_time_frame in range(0, sim_time, 3):
     # this is just for invisible-connection visualization
     # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
 
-    # baseline_gu_to_uav_connections, baseline_gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, baseline_UAV_nodes, UAVInfo, blocks, baseline_backhaul_connection)
-
-    # baseline_uav_connections_TD.append(baseline_gu_to_uav_connections)
-    # baseline_gu_capacity_TD.append(baseline_gu_to_bs_capacity)  
-
-
-    # # scene_visualization(ground_users, baseline_UAV_nodes, baseline_BS_nodes, scene_data, 0.3)
-
     
     reward_TD.append(max_reward)
     RS_TD.append(best_RS)
@@ -245,6 +202,17 @@ for cur_time_frame in range(0, sim_time, 3):
     GU_position_TD.append(get_nodes_position(ground_users))
     UAV_position_TD.append(get_nodes_position(UAV_nodes))
     state_TD.append(best_state)
+
+    # append_and_save_csv(
+    #     max_reward,
+    #     best_RS,
+    #     gu_to_uav_connections,
+    #     gu_to_bs_capacity,
+    #     GU_position_TD,
+    #     UAV_position_TD,
+    #     best_state,
+    #     "experiment_result_hard_stable.csv",
+    # )
 
 # record data
 recorded_data = {
@@ -260,7 +228,7 @@ recorded_df = pd.DataFrame(recorded_data)
 # recorded_df.to_csv("experiment_result_mid_hyper3.csv", index=False)
 # recorded_df.to_csv("experiment_result_mid_dynamic.csv", index=False)
 
-recorded_df.to_csv("experiment_result_hard_stable.csv", index=False)
+recorded_df.to_csv("experiment_result_hard_stable.csv", mode='a', header=False, index=False)
 
 recorded_hypers = {
     "reward_track": reward_track, 
@@ -271,7 +239,7 @@ recorded_hypers = {
 
 recorded_hyper_df = pd.DataFrame(recorded_hypers)
 
-recorded_hyper_df.to_csv("experiment_result_hard_stable_scores.csv", index=False)
+recorded_hyper_df.to_csv("experiment_result_hard_stable_scores.csv", mode='a', header=False, index=False)
 
 from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline, visualize_scores
 if sim_time > 0:
