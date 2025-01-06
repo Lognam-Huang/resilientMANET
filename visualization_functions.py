@@ -1310,7 +1310,7 @@ def visualize_simulation_with_multiple_baselines_styled_2(
     ax1.plot(time_steps, baseline1_avg_capacity_over_time, label="Baseline 1 Avg Throughput", linestyle="--")
     ax1.plot(time_steps, baseline2_min_capacity_over_time, label="Baseline 2 Min Throughput", linestyle=":")
     ax1.plot(time_steps, baseline2_avg_capacity_over_time, label="Baseline 2 Avg Throughput", linestyle=":")
-    ax1.set_title("GU to BS Throughput Over Time")
+    # ax1.set_title("GU to BS Throughput Over Time")
     ax1.set_xlabel("Time Steps")
     ax1.set_ylabel("User Throughput (bps)")
     ax1.legend(loc="upper right")
@@ -1360,7 +1360,7 @@ def visualize_simulation_with_multiple_baselines_styled_2(
     legend_elements.append(Patch(facecolor='white', edgecolor='black', hatch=baseline2_hatch, label="Baseline 2"))
 
     ax2.legend(handles=legend_elements, loc="upper right")
-    ax2.set_title("Number of GUs Connected to Each UAV Over Time")
+    # ax2.set_title("Number of GUs Connected to Each UAV Over Time")
     ax2.set_xlabel("Time Steps")
     ax2.set_ylabel("Total Number of GUs Connected")
     ax2.set_xticks(selected_time_steps)

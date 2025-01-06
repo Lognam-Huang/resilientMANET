@@ -192,39 +192,39 @@ from visualization_functions import scene_visualization, visualize_all_gu_capaci
 
 # redraw figure 5
 
-# gu_capacities_records = [
-#     {0: 0, 1: 95000000, 2: 8317824902.380847}, 
-#     {0: 180000000, 1: 950000000, 2: 9017824902}, 
-#     {0: 300000000, 1: 1050000000, 2: 10195053574.893757},
-#     {0: 6000000000, 1: 10500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
-#     {0: 6800000000, 1: 11500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
-#     {0: 6800000000, 1: 11500000000, 2: 11500000000, 3: 10500000000, 4:10500000000}
-#     ]
-# uav_load_records = [{0: 12}, {0: 8, 1: 4}, {0: 7, 1: 3, 2: 2},{0: 7, 1: 3, 2: 1, 3: 1},{0: 5, 1: 3, 2: 1, 3:3 },{0: 3, 1: 3, 2: 2, 3: 3, 4: 1}]
-# visualize_capacity_and_load(gu_capacities_records, uav_load_records, False)
+gu_capacities_records = [
+    {0: 0, 1: 0, 2: 0}, 
+    {0: 180000000, 1: 950000000, 2: 9017824902}, 
+    {0: 300000000, 1: 1050000000, 2: 10195053574.893757},
+    {0: 6000000000, 1: 10500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
+    {0: 6800000000, 1: 11500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
+    {0: 6800000000, 1: 11500000000, 2: 11500000000, 3: 10500000000, 4:10500000000}
+    ]
+uav_load_records = [{0: 12}, {0: 8, 1: 4}, {0: 7, 1: 3, 2: 2},{0: 7, 1: 3, 2: 1, 3: 1},{0: 5, 1: 3, 2: 1, 3:3 },{0: 3, 1: 3, 2: 2, 3: 3, 4: 1}]
+visualize_capacity_and_load(gu_capacities_records, uav_load_records, False)
 
 # redraw figure 7
 from visualization_functions import visualize_simulation_with_multiple_baselines, visualize_simulation_with_multiple_baselines_styled_2
 
 import pandas as pd
 import ast
-read_result_test= pd.read_csv("experiment_result_mid.csv")
+# read_result_test= pd.read_csv("experiment_result_mid.csv")
 
-read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
-read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
+# read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
+# read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
 
 
-read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_stable.csv")
+# read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_stable.csv")
 
-read_baseline_1_uav_connections_TD = read_baseline_1_result["UAV Connections"].apply(ast.literal_eval).tolist()
-read_baseline_1_uav_gu_capacity_TD = read_baseline_1_result["GU Capacity"].apply(ast.literal_eval).tolist()
+# read_baseline_1_uav_connections_TD = read_baseline_1_result["UAV Connections"].apply(ast.literal_eval).tolist()
+# read_baseline_1_uav_gu_capacity_TD = read_baseline_1_result["GU Capacity"].apply(ast.literal_eval).tolist()
 
-read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_stable.csv")
+# read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_stable.csv")
 
-read_baseline_2_uav_connections_TD = read_baseline_2_result["UAV Connections"].apply(ast.literal_eval).tolist()
-read_baseline_2_uav_gu_capacity_TD = read_baseline_2_result["GU Capacity"].apply(ast.literal_eval).tolist()
+# read_baseline_2_uav_connections_TD = read_baseline_2_result["UAV Connections"].apply(ast.literal_eval).tolist()
+# read_baseline_2_uav_gu_capacity_TD = read_baseline_2_result["GU Capacity"].apply(ast.literal_eval).tolist()
 
-visualize_simulation_with_multiple_baselines_styled_2(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 3)
+# visualize_simulation_with_multiple_baselines_styled_2(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 3)
 
 # redraw figure 8
 # read_result_test= pd.read_csv("experiment_result_mid_dynamic.csv")
