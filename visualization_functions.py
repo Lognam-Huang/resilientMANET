@@ -592,12 +592,12 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normali
     # Plot GU Capacity
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    ax1.plot(time_points, min_capacities, label='Min Capacity', marker='o', color='blue')
-    ax1.plot(time_points, max_capacities, label='Max Capacity', marker='o', color='red')
-    ax1.plot(time_points, mean_capacities, label='Mean Capacity', marker='o', color='green')
+    ax1.plot(time_points, min_capacities, label='Min Throughput', marker='o', color='blue')
+    ax1.plot(time_points, max_capacities, label='Max Throughput', marker='o', color='red')
+    ax1.plot(time_points, mean_capacities, label='Mean Throughput', marker='o', color='green')
     ax1.set_xlabel('Time (New UAV Found)')
-    ax1.set_ylabel('Capacity' + (' (Normalized)' if normalize else ''))
-    ax1.set_title('GU Capacity Over Time')
+    ax1.set_ylabel(' User Throughput (bps)' + (' (Normalized)' if normalize else ''))
+    # ax1.set_title('GU Capacity Over Time')
     ax1.legend()
     ax1.grid(True)
     ax1.set_xticks(time_points)  # Set x-axis to display only integer time points
@@ -612,7 +612,7 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normali
 
     ax2.set_xlabel('Time (New UAV Found)')
     ax2.set_ylabel('Number of GUs')
-    ax2.set_title('UAV Load Distribution Over Time')
+    # ax2.set_title('UAV Load Distribution Over Time')
     ax2.legend(title="UAV ID")
     ax2.grid(True, axis='y')
     ax2.set_xticks(time_points)  # Set x-axis to display only integer time points
@@ -960,15 +960,15 @@ def visualize_simulation_with_multiple_baselines(
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
     time_steps = np.arange(len(uav_connections_TD))
-    ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity")
-    ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity")
-    ax1.plot(time_steps, baseline1_min_capacity_over_time, label="Baseline 1 Min Capacity", linestyle="--")
-    ax1.plot(time_steps, baseline1_avg_capacity_over_time, label="Baseline 1 Avg Capacity", linestyle="--")
-    ax1.plot(time_steps, baseline2_min_capacity_over_time, label="Baseline 2 Min Capacity", linestyle=":")
-    ax1.plot(time_steps, baseline2_avg_capacity_over_time, label="Baseline 2 Avg Capacity", linestyle=":")
-    ax1.set_title("GU to BS Capacity Over Time")
+    ax1.plot(time_steps, min_capacity_over_time, label="Min Throughput")
+    ax1.plot(time_steps, avg_capacity_over_time, label="Avg Throughput")
+    ax1.plot(time_steps, baseline1_min_capacity_over_time, label="Baseline 1 Min Throughput", linestyle="--")
+    ax1.plot(time_steps, baseline1_avg_capacity_over_time, label="Baseline 1 Avg Throughput", linestyle="--")
+    ax1.plot(time_steps, baseline2_min_capacity_over_time, label="Baseline 2 Min Throughput", linestyle=":")
+    ax1.plot(time_steps, baseline2_avg_capacity_over_time, label="Baseline 2 Throughput", linestyle=":")
+    ax1.set_title("Ground Users to Base Station Throughput Over Time")
     ax1.set_xlabel("Time Steps")
-    ax1.set_ylabel("Capacity")
+    ax1.set_ylabel("Throughput")
     ax1.legend()
     ax1.set_xticks(time_steps)  
 
@@ -987,7 +987,7 @@ def visualize_simulation_with_multiple_baselines(
         bottom += uav_connections_over_time[i]
     
 
-    ax2.set_title("Number of GUs Connected to Each UAV Over Time (Baseline vs Current)")
+    ax2.set_title("Number of Ground Users Connected to Each UAV Over Time (Baseline vs Ours)")
     ax2.set_xlabel("Time Steps")
     ax2.set_ylabel("Total Number of GUs Connected")
     ax2.legend(loc="upper left")
@@ -1063,15 +1063,15 @@ def visualize_simulation_with_multiple_baselines_styled(
     baseline2_uav_connections_over_time = baseline2_uav_connections_over_time[:, selected_time_steps]
 
     # First plot: Capacity over time
-    ax1.plot(time_steps, min_capacity_over_time, label="Min Capacity")
-    ax1.plot(time_steps, avg_capacity_over_time, label="Avg Capacity")
-    ax1.plot(time_steps, baseline1_min_capacity_over_time, label="Baseline 1 Min Capacity", linestyle="--")
-    ax1.plot(time_steps, baseline1_avg_capacity_over_time, label="Baseline 1 Avg Capacity", linestyle="--")
-    ax1.plot(time_steps, baseline2_min_capacity_over_time, label="Baseline 2 Min Capacity", linestyle=":")
-    ax1.plot(time_steps, baseline2_avg_capacity_over_time, label="Baseline 2 Avg Capacity", linestyle=":")
-    ax1.set_title("GU to BS Capacity Over Time")
+    ax1.plot(time_steps, min_capacity_over_time, label="Min Throughput")
+    ax1.plot(time_steps, avg_capacity_over_time, label="Avg Throughput")
+    ax1.plot(time_steps, baseline1_min_capacity_over_time, label="Baseline 1 Min Throughput", linestyle="--")
+    ax1.plot(time_steps, baseline1_avg_capacity_over_time, label="Baseline 1 Avg Throughput", linestyle="--")
+    ax1.plot(time_steps, baseline2_min_capacity_over_time, label="Baseline 2 Min Throughput", linestyle=":")
+    ax1.plot(time_steps, baseline2_avg_capacity_over_time, label="Baseline 2 Avg Throughput", linestyle=":")
+    ax1.set_title("GU to BS Throughput Over Time")
     ax1.set_xlabel("Time Steps")
-    ax1.set_ylabel("Capacity")
+    ax1.set_ylabel("User Throughput (bps)")
     ax1.legend()
     ax1.set_xticks(time_steps)
 
@@ -1097,7 +1097,7 @@ def visualize_simulation_with_multiple_baselines_styled(
         baseline2_bottom += baseline2_uav_connections_over_time[i]
 
         # ax2.bar(time_steps + 0.2, uav_connections_over_time[i], width=0.2, bottom=bottom, label=f"UAV {i}")
-        ax2.bar(selected_time_steps + responsible_width, uav_connections_over_time[i], width=responsible_width, bottom=bottom, label=f"UAV {i}")
+        ax2.bar(selected_time_steps + responsible_width, uav_connections_over_time[i], width=responsible_width, bottom=bottom, label=f"Our UAV {i}")
         bottom += uav_connections_over_time[i]
 
     ax2.set_title("Number of GUs Connected to Each UAV Over Time (With Patterns)")
@@ -1108,6 +1108,7 @@ def visualize_simulation_with_multiple_baselines_styled(
 
     plt.tight_layout()
     plt.show()
+
 
 from node_functions import move_ground_users
 
@@ -1158,3 +1159,212 @@ def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, 
     
     # Display the final visualization
     plt.show()
+
+
+def visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, line_alpha=0.5):
+    """
+    Visualize the distribution of GUs and UAVs, and draw connections between GUs and UAVs.
+
+    Parameters:
+    - ground_users: List of GU nodes, each with a `position` attribute (x, y) and a `connected_nodes` list.
+    - UAV_nodes: List of UAV nodes, each with a `position` attribute (x, y, z).
+    - blocks: List of obstacles, each containing "bottomCorner" and "size" keys.
+    - scene: Scene information, including boundary information to set plot limits.
+    - line_alpha: Transparency of the lines connecting GUs and UAVs, default is 0.5.
+    """
+    # Define a set of colors for different UAV connections
+    connection_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+    color_cycle = cycle(connection_colors)
+    
+    # Map each UAV to a specific color
+    unique_uavs = sorted(range(len(UAV_nodes)))
+    connection_types = {uav_index: color for uav_index, color in zip(unique_uavs, connection_colors)}
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # Plot obstacles
+    for block in blocks:
+        x, y, _ = block["bottomCorner"]
+        width, height = block["size"]
+        block_patch = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='black', facecolor='gray', alpha=0.5)
+        ax.add_patch(block_patch)
+
+    # Plot each GU, with color corresponding to its connected UAV
+    for gu in ground_users:
+        gu_position = gu.position[:2]  # Get (x, y) position
+        connection_type = gu.connected_nodes[0]  # Get connected UAV index
+        color = connection_types[connection_type]  # Get color for the connected UAV
+        ax.scatter(*gu_position, color=color, label=f"GU covered by UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
+
+    # Plot UAV nodes with corresponding colors
+    for uav_index, uav in enumerate(UAV_nodes):
+        uav_position = uav.position[:2]  # Get (x, y) position
+        color = connection_types[uav_index]  # Get the color assigned to this UAV
+        ax.scatter(*uav_position, color=color, label=f"UAV {uav_index}", s=150, alpha=0.9, edgecolors='black', marker='^')
+
+    # Plot connections between GUs and UAVs
+    for gu in ground_users:
+        if gu.connected_nodes:
+            gu_position = gu.position[:2]  # Get (x, y) position of GU
+            uav_index = gu.connected_nodes[0]  # Get connected UAV index
+            if uav_index < len(UAV_nodes):
+                uav_position = UAV_nodes[uav_index].position[:2]  # Get (x, y) position of UAV
+                ax.plot(
+                    [gu_position[0], uav_position[0]],
+                    [gu_position[1], uav_position[1]],
+                    color=connection_types[uav_index],
+                    alpha=line_alpha
+                )
+
+    # Set plot limits and labels
+    ax.set_xlim(0, scene["xLength"]*1.2)
+    ax.set_ylim(0, scene["yLength"]*1.2)
+    ax.set_xlabel("X Axis")
+    ax.set_ylabel("Y Axis")
+    ax.set_title("Hierarchical Clustering Result Visualization")
+
+    # Customize legend
+    handles, labels = ax.get_legend_handles_labels()
+    unique_labels = dict(zip(labels, handles))
+    sorted_labels = sorted(unique_labels.keys(), key=lambda x: (int(x.split()[-1]) if "UAV" in x else 1000))
+    ax.legend(
+        [unique_labels[label] for label in sorted_labels],
+        sorted_labels,
+        loc="upper right"
+    )
+
+    plt.grid(True)
+    plt.show()
+
+def visualize_simulation_with_multiple_baselines_styled_2(
+    uav_connections_TD, gu_capacity_TD, 
+    baseline1_uav_connections_TD, baseline1_gu_capacity_TD, 
+    baseline2_uav_connections_TD, baseline2_gu_capacity_TD, 
+    num_uavs,
+    time_gap=1
+):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Patch
+
+    min_capacity_over_time = []
+    avg_capacity_over_time = []
+    baseline1_min_capacity_over_time = []
+    baseline1_avg_capacity_over_time = []
+    baseline2_min_capacity_over_time = []
+    baseline2_avg_capacity_over_time = []
+
+    uav_connections_over_time = []
+    baseline1_uav_connections_over_time = []
+    baseline2_uav_connections_over_time = []
+
+    for step, (gu_to_uav_connections, gu_to_bs_capacity, 
+               baseline1_gu_to_bs_capacity, baseline1_gu_to_uav_connections,
+               baseline2_gu_to_bs_capacity, baseline2_gu_to_uav_connections) in enumerate(
+            zip(uav_connections_TD, gu_capacity_TD, 
+                baseline1_gu_capacity_TD, baseline1_uav_connections_TD,
+                baseline2_gu_capacity_TD, baseline2_uav_connections_TD)):
+        
+        # Process capacities
+        capacities = list(gu_to_bs_capacity.values()) if isinstance(gu_to_bs_capacity, dict) else gu_to_bs_capacity
+        baseline1_capacities = list(baseline1_gu_to_bs_capacity.values()) if isinstance(baseline1_gu_to_bs_capacity, dict) else baseline1_gu_to_bs_capacity
+        baseline2_capacities = list(baseline2_gu_to_bs_capacity.values()) if isinstance(baseline2_gu_to_bs_capacity, dict) else baseline2_gu_to_bs_capacity
+
+        min_capacity_over_time.append(np.min(capacities))
+        avg_capacity_over_time.append(np.mean(capacities))
+        baseline1_min_capacity_over_time.append(np.min(baseline1_capacities))
+        baseline1_avg_capacity_over_time.append(np.mean(baseline1_capacities))
+        baseline2_min_capacity_over_time.append(np.min(baseline2_capacities))
+        baseline2_avg_capacity_over_time.append(np.mean(baseline2_capacities))
+
+        # Process connections
+        gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in gu_to_uav_connections.items()}
+        baseline1_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline1_gu_to_uav_connections.items()}
+        baseline2_gu_to_uav_connections = {k: v[0] if isinstance(v, list) else v for k, v in baseline2_gu_to_uav_connections.items()}
+
+        uav_connection_counts = [sum(1 for uav in gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        baseline1_uav_connection_counts = [sum(1 for uav in baseline1_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+        baseline2_uav_connection_counts = [sum(1 for uav in baseline2_gu_to_uav_connections.values() if uav == i) for i in range(num_uavs)]
+
+        uav_connections_over_time.append(uav_connection_counts)
+        baseline1_uav_connections_over_time.append(baseline1_uav_connection_counts)
+        baseline2_uav_connections_over_time.append(baseline2_uav_connection_counts)
+
+    # Convert to NumPy arrays
+    uav_connections_over_time = np.array(uav_connections_over_time).T
+    baseline1_uav_connections_over_time = np.array(baseline1_uav_connections_over_time).T
+    baseline2_uav_connections_over_time = np.array(baseline2_uav_connections_over_time).T
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    time_steps = np.arange(len(uav_connections_TD))
+
+    selected_time_steps = time_steps[::time_gap]
+    uav_connections_over_time = uav_connections_over_time[:, selected_time_steps]
+    baseline1_uav_connections_over_time = baseline1_uav_connections_over_time[:, selected_time_steps]
+    baseline2_uav_connections_over_time = baseline2_uav_connections_over_time[:, selected_time_steps]
+
+    # First plot: Capacity over time
+    ax1.plot(time_steps, min_capacity_over_time, label="Our Method Min Throughput")
+    ax1.plot(time_steps, avg_capacity_over_time, label="Our Method Avg Throughput")
+    ax1.plot(time_steps, baseline1_min_capacity_over_time, label="Baseline 1 Min Throughput", linestyle="--")
+    ax1.plot(time_steps, baseline1_avg_capacity_over_time, label="Baseline 1 Avg Throughput", linestyle="--")
+    ax1.plot(time_steps, baseline2_min_capacity_over_time, label="Baseline 2 Min Throughput", linestyle=":")
+    ax1.plot(time_steps, baseline2_avg_capacity_over_time, label="Baseline 2 Avg Throughput", linestyle=":")
+    ax1.set_title("GU to BS Throughput Over Time")
+    ax1.set_xlabel("Time Steps")
+    ax1.set_ylabel("User Throughput (bps)")
+    ax1.legend(loc="upper right")
+    ax1.set_xticks(time_steps)
+
+    # Second plot: Connections with patterns
+    bottom = np.zeros(len(selected_time_steps))
+    baseline1_bottom = np.zeros(len(selected_time_steps))
+    baseline2_bottom = np.zeros(len(selected_time_steps))
+
+    # Colors for UAVs
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'][:num_uavs]
+
+    # Assign hatching styles to baselines
+    # baseline1_hatch = '/'  # Baseline 1 uses slashes
+    # baseline2_hatch = '\\'  # Baseline 2 uses crosshatch
+
+    # try other styles
+    # baseline1_hatch = '////'
+    # baseline2_hatch = r'\\\\'
+
+    baseline1_hatch = '//'
+    baseline2_hatch = r'\\'
+
+
+    bar_width = 0.2 * time_gap
+
+    for i in range(num_uavs):
+        # Plot Baseline 1
+        ax2.bar(selected_time_steps - bar_width, baseline1_uav_connections_over_time[i], width=bar_width, 
+                bottom=baseline1_bottom, alpha=0.7, color=colors[i], hatch=baseline1_hatch)
+        baseline1_bottom += baseline1_uav_connections_over_time[i]
+
+        # Plot Baseline 2
+        ax2.bar(selected_time_steps, baseline2_uav_connections_over_time[i], width=bar_width, 
+                bottom=baseline2_bottom, alpha=0.7, color=colors[i], hatch=baseline2_hatch)
+        baseline2_bottom += baseline2_uav_connections_over_time[i]
+
+        # Plot Our Method
+        ax2.bar(selected_time_steps + bar_width, uav_connections_over_time[i], width=bar_width, 
+                bottom=bottom, alpha=0.9, color=colors[i])
+        bottom += uav_connections_over_time[i]
+
+    # Set legend for ax2
+    legend_elements = [Patch(facecolor=colors[i], label=f"UAV {i}") for i in range(num_uavs)]
+    legend_elements.append(Patch(facecolor='white', edgecolor='black', hatch=baseline1_hatch, label="Baseline 1"))
+    legend_elements.append(Patch(facecolor='white', edgecolor='black', hatch=baseline2_hatch, label="Baseline 2"))
+
+    ax2.legend(handles=legend_elements, loc="upper right")
+    ax2.set_title("Number of GUs Connected to Each UAV Over Time")
+    ax2.set_xlabel("Time Steps")
+    ax2.set_ylabel("Total Number of GUs Connected")
+    ax2.set_xticks(selected_time_steps)
+
+    plt.tight_layout()
+    plt.show()
+
