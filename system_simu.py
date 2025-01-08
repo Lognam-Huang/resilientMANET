@@ -45,7 +45,9 @@ position_params = {
 reward_hyper = {
     'DRPenalty': 0.5,
     'BPHopConstraint': 4,
-    'BPDRConstraint': 100000000,
+    #change this for hard scene simulation
+    'BPDRConstraint': 10000000,
+
     'droppedRatio': 0.2,
     'ratioDR': 0.6,
     'ratioBP': 0.4,
@@ -114,19 +116,19 @@ from node_functions import add_or_remove_gu, set_baseline_backhaul, get_gu_info_
 
 best_backhaul_connection = None
 
-def append_and_save_csv(reward, rs, uav_connections, gu_capacity, gu_positions, uav_positions, state, file_path):
-    new_data = {
-        "GU Position": [gu_positions],
-        "UAV Position": [uav_positions],
-        "GU Capacity": [gu_capacity],
-        "UAV Connections": [uav_connections],
+# def append_and_save_csv(reward, rs, uav_connections, gu_capacity, gu_positions, uav_positions, state, file_path):
+#     new_data = {
+#         "GU Position": [gu_positions],
+#         "UAV Position": [uav_positions],
+#         "GU Capacity": [gu_capacity],
+#         "UAV Connections": [uav_connections],
         
-        "State": [state],
-        "Reward": [reward],
-        "RS": [rs],
+#         "State": [state],
+#         "Reward": [reward],
+#         "RS": [rs],
         
-    }
-    pd.DataFrame(new_data).to_csv(file_path, mode='a', header=False, index=False)
+#     }
+#     pd.DataFrame(new_data).to_csv(file_path, mode='a', header=False, index=False)
 
 
 import pandas as pd
@@ -225,10 +227,12 @@ recorded_data = {
 
 recorded_df = pd.DataFrame(recorded_data)
 
+# recorded_df.to_csv("experiment_result_test.csv", mode='a', header=False, index=False)
+
 # recorded_df.to_csv("experiment_result_mid_hyper3.csv", index=False)
 # recorded_df.to_csv("experiment_result_mid_dynamic.csv", index=False)
 
-recorded_df.to_csv("experiment_result_hard_stable.csv", mode='a', header=False, index=False)
+recorded_df.to_csv("experiment_result_hard_stable_2.csv", mode='a', header=False, index=False)
 
 recorded_hypers = {
     "reward_track": reward_track, 
@@ -239,7 +243,8 @@ recorded_hypers = {
 
 recorded_hyper_df = pd.DataFrame(recorded_hypers)
 
-recorded_hyper_df.to_csv("experiment_result_hard_stable_scores.csv", mode='a', header=False, index=False)
+# recorded_hyper_df.to_csv("experiment_result_scores_test.csv", mode='a', header=False, index=False)
+recorded_hyper_df.to_csv("experiment_result_hard_stable_scores_2.csv", mode='a', header=False, index=False)
 
 from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline, visualize_scores
 if sim_time > 0:

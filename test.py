@@ -2,96 +2,96 @@ from itertools import combinations
 
 # print(list(combinations(range(5), 2)))
 
-for a in range(0,10,2):
-    print(a)
-#     for b in range (5):
-#         print(b)
-#         if b == 2:
-#             break
+# for a in range(0,10,2):
+#     print(a)
+# #     for b in range (5):
+# #         print(b)
+# #         if b == 2:
+# #             break
 
-from connectivity_finding import generate_adjacent_states, generate_random_binary_string, set_connected_edges, get_backhaul_connection, get_RS, select_all_drops
-# a = generate_adjacent_states("100")
-# print(a)
-# print(len(a))
+# from connectivity_finding import generate_adjacent_states, generate_random_binary_string, set_connected_edges, get_backhaul_connection, get_RS, select_all_drops
+# # a = generate_adjacent_states("100")
+# # print(a)
+# # print(len(a))
 
-# b = generate_random_binary_string("00000000")
-# print(b)
+# # b = generate_random_binary_string("00000000")
+# # print(b)
 
-from node_functions import generate_nodes, print_node, move_gu_and_update_connections
-UAV_nodes = generate_nodes(3, 1, default_height=100)
-BS_nodes = generate_nodes(1, 2, default_height=200)
+# from node_functions import generate_nodes, print_node, move_gu_and_update_connections
+# UAV_nodes = generate_nodes(3, 1, default_height=100)
+# BS_nodes = generate_nodes(1, 2, default_height=200)
 
-UAV_nodes[0].set_position((10,10,15))
-UAV_nodes[1].set_position((20,5,15))
-UAV_nodes[2].set_position((15,20,15))
+# UAV_nodes[0].set_position((10,10,15))
+# UAV_nodes[1].set_position((20,5,15))
+# UAV_nodes[2].set_position((15,20,15))
 
-BS_nodes[0].set_position((20,20,0))
+# BS_nodes[0].set_position((20,20,0))
 
-# set_connected_edges("000000", UAV_nodes, BS_nodes)
-# print_node(UAV_nodes, onlyPosition=True)
-# print_node(UAV_nodes)
-# print("ss")
-# print_node(BS_nodes, onlyPosition=True)
+# # set_connected_edges("000000", UAV_nodes, BS_nodes)
+# # print_node(UAV_nodes, onlyPosition=True)
+# # print_node(UAV_nodes)
+# # print("ss")
+# # print_node(BS_nodes, onlyPosition=True)
 
-import json
-with open('scene_data_simple.json', 'r') as file:
-    scene_data = json.load(file)
+# import json
+# with open('scene_data_simple.json', 'r') as file:
+#     scene_data = json.load(file)
 
-# from BackhaulPaths import 
-# print(get_backhaul_connection("111111", UAV_nodes, BS_nodes, scene_data))
-# bc = get_backhaul_connection("000000", UAV_nodes, BS_nodes, scene_data)
-# bc = get_backhaul_connection("000101", UAV_nodes, BS_nodes, scene_data)
-# bc = get_backhaul_connection("000010", UAV_nodes, BS_nodes, scene_data)
-import math
-def get_edges_from_state(state):
-    """
-    检查state的长度是否符合无向图的边数公式，并返回对应的边列表
+# # from BackhaulPaths import 
+# # print(get_backhaul_connection("111111", UAV_nodes, BS_nodes, scene_data))
+# # bc = get_backhaul_connection("000000", UAV_nodes, BS_nodes, scene_data)
+# # bc = get_backhaul_connection("000101", UAV_nodes, BS_nodes, scene_data)
+# # bc = get_backhaul_connection("000010", UAV_nodes, BS_nodes, scene_data)
+# import math
+# def get_edges_from_state(state):
+#     """
+#     检查state的长度是否符合无向图的边数公式，并返回对应的边列表
     
-    :param state: 表示边的01字符串
-    :return: 如果state长度合法，返回对应的边列表；否则返回错误提示
-    """
-    L = len(state)  # 获取state的长度
+#     :param state: 表示边的01字符串
+#     :return: 如果state长度合法，返回对应的边列表；否则返回错误提示
+#     """
+#     L = len(state)  # 获取state的长度
     
-    # 使用公式 n = (1 + sqrt(1 + 8 * L)) / 2
-    n = (1 + math.sqrt(1 + 8 * L)) / 2
+#     # 使用公式 n = (1 + sqrt(1 + 8 * L)) / 2
+#     n = (1 + math.sqrt(1 + 8 * L)) / 2
     
-    # 检查n是否是整数
-    if not n.is_integer():
-        return "State 长度不合法，不能表示一个完整的无向图"
+#     # 检查n是否是整数
+#     if not n.is_integer():
+#         return "State 长度不合法，不能表示一个完整的无向图"
     
-    n = int(n)  # 将n转换为整数节点数
-    edges = []  # 存储边的列表
-    node_pairs = [(i, j) for i in range(n) for j in range(i+1, n)]  # 生成所有节点对
+#     n = int(n)  # 将n转换为整数节点数
+#     edges = []  # 存储边的列表
+#     node_pairs = [(i, j) for i in range(n) for j in range(i+1, n)]  # 生成所有节点对
 
-    for index, pair in enumerate(node_pairs):
-        if state[index] == '1':  # 如果对应位置为1，表示有边
-            edges.append(pair)
+#     for index, pair in enumerate(node_pairs):
+#         if state[index] == '1':  # 如果对应位置为1，表示有边
+#             edges.append(pair)
     
-    return edges
+#     return edges
 
-gs = get_edges_from_state("000101")
-# for start_node, end_node in gs:
-    # print(start_node)
-    # print(end_node)
+# gs = get_edges_from_state("000101")
+# # for start_node, end_node in gs:
+#     # print(start_node)
+#     # print(end_node)
 
-from connectivity_finding import set_connected_edges
-# print_node(UAV_nodes)
-# print_node(BS_nodes)
+# from connectivity_finding import set_connected_edges
+# # print_node(UAV_nodes)
+# # print_node(BS_nodes)
 
-set_connected_edges("101101", UAV_nodes, BS_nodes)
-# UAV_nodes[0].add_connection(2)
+# set_connected_edges("101101", UAV_nodes, BS_nodes)
+# # UAV_nodes[0].add_connection(2)
 
-# print_node(UAV_nodes)
-# print_node(BS_nodes)
+# # print_node(UAV_nodes)
+# # print_node(BS_nodes)
 
-gu = generate_nodes(2, 0)
-# print_node(gu)
+# gu = generate_nodes(2, 0)
+# # print_node(gu)
 
-blocks = scene_data['blocks']
-scene = scene_data['scenario']
-UAVInfo = scene_data['UAV']
-baseStation = scene_data['baseStation']
-nodeNumber = scene_data['nodeNumber']
+# blocks = scene_data['blocks']
+# scene = scene_data['scenario']
+# UAVInfo = scene_data['UAV']
+# baseStation = scene_data['baseStation']
+# nodeNumber = scene_data['nodeNumber']
 
 
 # print(move_gu_and_update_connections(gu, blocks, scene['xLength'], scene['yLength'], 5, UAV_nodes, UAVInfo))
@@ -190,26 +190,26 @@ num_BS = len(scene_data['baseStation'])
 from node_functions import generate_nodes, print_node, move_ground_users, get_nodes_position
 # 0-GU, 1-UAV, 2-BS
 ground_users = generate_nodes(num_GU, 0)
-
+UAV_nodes = generate_nodes(num_UAV, 1)
 BS_nodes = generate_nodes(num_BS, 2)
 
 for i in range(num_BS):
     BS_nodes[i].set_position((baseStation[i]['bottomCorner'][0], baseStation[i]['bottomCorner'][1], baseStation[i]['height'][0]))
 
-# print_node(ground_users)
-from node_functions import add_or_remove_gu
-# add_or_remove_gu(ground_users)
+# # print_node(ground_users)
+# from node_functions import add_or_remove_gu
+# # add_or_remove_gu(ground_users)
 
-GU_position_TD = []
-# max_movement_distance = 5
-max_movement_distance = 30
+# GU_position_TD = []
+# # max_movement_distance = 5
+# max_movement_distance = 30
 
-# print(scene_data)
-# print("--")
-# print(scene_data["blocks"])
+# # print(scene_data)
+# # print("--")
+# # print(scene_data["blocks"])
 
 
-scene_visualization(ground_users=None, UAV_nodes=None, air_base_station=None, scene_info=scene_data, show_axes_labels=False)
+# scene_visualization(ground_users=None, UAV_nodes=None, air_base_station=None, scene_info=scene_data, show_axes_labels=False)
 
 # for i in range(10):
 #     move_ground_users(ground_users, blocks, scene['xLength'], scene['yLength'], 2000)
@@ -224,8 +224,8 @@ scene_visualization(ground_users=None, UAV_nodes=None, air_base_station=None, sc
     # scene_visualization(ground_users, UAV_nodes=None, air_base_station=None, scene_info=scene_data)
 
 # print(GU_position_TD)
-import pandas as pd
-df = pd.DataFrame(GU_position_TD)
+# import pandas as pd
+# df = pd.DataFrame(GU_position_TD)
 # # df.to_csv("ground_user_positions_for_simple_scene_50_stable.csv", index=False)
 # df.to_csv("ground_user_positions_for_mid_scene_50_stable.csv", index=False)
 
@@ -258,34 +258,72 @@ df = pd.DataFrame(GU_position_TD)
 # gu_test = get_ground_user_positions_for_a_time(ground_users_positions_simple, 0)
 # print_node(gu_test, -1, True)
 
-import ast
-# read_result_test= pd.read_csv("experiment_result_mid.csv")
-# read_result_test= pd.read_csv("experiment_result_mid_dynamic.csv")
-# read_result_test= pd.read_csv("experiment_result_mid_stable_hyper2.csv")
-read_result_test= pd.read_csv("experiment_result_mid_stable_hyper3.csv")
+# import ast
+# # read_result_test= pd.read_csv("experiment_result_mid.csv")
+# # read_result_test= pd.read_csv("experiment_result_mid_dynamic.csv")
+# # read_result_test= pd.read_csv("experiment_result_mid_stable_hyper2.csv")
+# read_result_test= pd.read_csv("experiment_result_mid_stable_hyper3.csv")
 
-read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
-read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
+# read_uav_connections_TD = read_result_test["UAV Connections"].apply(ast.literal_eval).tolist()
+# read_uav_gu_capacity_TD = read_result_test["GU Capacity"].apply(ast.literal_eval).tolist()
 
 
-read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_stable.csv")
-# read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_dynamic.csv")
+# read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_stable.csv")
+# # read_baseline_1_result= pd.read_csv("experiment_result_mid_baseline_1_dynamic.csv")
 
-read_baseline_1_uav_connections_TD = read_baseline_1_result["UAV Connections"].apply(ast.literal_eval).tolist()
-read_baseline_1_uav_gu_capacity_TD = read_baseline_1_result["GU Capacity"].apply(ast.literal_eval).tolist()
+# read_baseline_1_uav_connections_TD = read_baseline_1_result["UAV Connections"].apply(ast.literal_eval).tolist()
+# read_baseline_1_uav_gu_capacity_TD = read_baseline_1_result["GU Capacity"].apply(ast.literal_eval).tolist()
 
-read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_stable.csv")
-# read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_dynamic.csv")
+# read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_stable.csv")
+# # read_baseline_2_result= pd.read_csv("experiment_result_mid_baseline_2_dynamic.csv")
 
-read_baseline_2_uav_connections_TD = read_baseline_2_result["UAV Connections"].apply(ast.literal_eval).tolist()
-read_baseline_2_uav_gu_capacity_TD = read_baseline_2_result["GU Capacity"].apply(ast.literal_eval).tolist()
+# read_baseline_2_uav_connections_TD = read_baseline_2_result["UAV Connections"].apply(ast.literal_eval).tolist()
+# read_baseline_2_uav_gu_capacity_TD = read_baseline_2_result["GU Capacity"].apply(ast.literal_eval).tolist()
 
-# visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, 5)
-# visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
-from visualization_functions import visualize_simulation_with_multiple_baselines, visualize_simulation_with_multiple_baselines_styled
+# # visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, 5)
+# # visualize_simulation_with_baseline(read_uav_connections_TD, read_uav_gu_capacity_TD,read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
+# from visualization_functions import visualize_simulation_with_multiple_baselines, visualize_simulation_with_multiple_baselines_styled
 
 # visualize_simulation_with_multiple_baselines(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5)
 # visualize_simulation_with_multiple_baselines_styled(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 1)
 # visualize_simulation_with_multiple_baselines_styled(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 3)
 # visualize_simulation_with_multiple_baselines_styled(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 5)
-visualize_simulation_with_multiple_baselines_styled2(read_uav_connections_TD, read_uav_gu_capacity_TD, read_baseline_1_uav_connections_TD, read_baseline_1_uav_gu_capacity_TD, read_baseline_2_uav_connections_TD, read_baseline_2_uav_gu_capacity_TD, 5, 3)
+
+# try to find an optimal state as initial state for hard scene as beginning
+
+gu_fixed_position = [(1186.4067835765754, 104.35084331924621, 0.0), (483.09308812559914, 221.75392051534007, 0.0), (954.1199330391726, 524.8480457553961, 0.0), 
+                      (494.0769371825016, 1481.676747845018, 0.0), (307.6822750302194, 131.33235632708423, 0.0), (1191.4554402009637, 825.2802779482554, 0.0), 
+                      (689.1696591154594, 1019.2880873246127, 0.0), (168.88337145902145, 468.24102718191835, 0.0), (865.0815893571208, 378.3937243255257, 0.0), 
+                      (1351.0366418520587, 44.64401885226765, 0.0), (1208.8329948742978, 306.2786808150745, 0.0), (1042.9173065814557, 409.01680159630155, 0.0), 
+                      (425.031279535376, 1187.8805005984486, 0.0), (300.10375764050207, 377.81369530125403, 0.0), (361.16575001281757, 261.3693691383062, 0.0), 
+                      (709.9766940007835, 1356.5631021254765, 0.0), (1261.0521229577112, 1228.6133735733385, 0.0), (865.5268741305692, 318.4633555984104, 0.0), 
+                      (1365.171021501369, 1455.3851275745951, 0.0), (978.1338813178706, 1435.785831513133, 0.0)
+                     ]
+
+
+for i in range(len(gu_fixed_position)):
+    ground_users[i].set_position(gu_fixed_position[i])
+
+
+uav_fixed_position = [(500, 1250, 190), (900, 450, 190), (1100, 400, 190), (300, 550, 190), 
+                      (450, 500, 190), (1400, 1400, 190), (1000, 650, 190)
+                     ]
+
+
+for i in range(len(uav_fixed_position)):
+    UAV_nodes[i].set_position(uav_fixed_position[i])
+
+# state that is with backhaul connection
+state_for_hard_scene = "111111100111111111111111101111111111111110111"
+# state_for_hard_scene = "000000000000000000000000000000000000000000111"
+# state that is without backhaul connection
+# state_for_mid_scene = "000000000000000000000"
+
+
+from connectivity_finding import get_backhaul_connection
+backhaul_connection = get_backhaul_connection(state_for_hard_scene, UAV_nodes, BS_nodes, scene_data)
+
+from node_functions import get_gu_to_uav_connections
+get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
+
+scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.2)
