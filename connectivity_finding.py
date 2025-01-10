@@ -56,19 +56,19 @@ def take_action(state_scores, epsilon):
 
 # Get reward of a state, including resilience score and optimization score
 def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
-    # print("Current target state: "+str(state))
+    print("Current target state: "+str(state))
 
     time_counter = time.time()
 
     backhaul_connection = get_backhaul_connection(state=state, UAV_nodes= UAV_nodes, BS_nodes=BS_nodes, scene_info=scene_info)
 
-    # print(f"It takes {time.time()-time_counter} seconds to calculate backhaul connection.")
+    print(f"It takes {time.time()-time_counter} seconds to calculate backhaul connection.")
     time_counter = time.time()
 
     resilience_score = get_RS(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper, scene_info)
     print("Original RS is: "+str(resilience_score))
 
-    # print(f"It takes {time.time()-time_counter} seconds to calculate RS.")
+    print(f"It takes {time.time()-time_counter} seconds to calculate RS.")
     time_counter = time.time()
 
     reward_score = resilience_score
@@ -78,7 +78,7 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
         if not paths:
             reward_score *= 0.5
 
-    # print(f"It takes {time.time()-time_counter} seconds to calculate constraint 1.")
+    print(f"It takes {time.time()-time_counter} seconds to calculate constraint 1.")
     time_counter = time.time()
 
     min_reward_score_with_one_bs_removed = reward_score
@@ -97,7 +97,7 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
         robustness_factor = (min_reward_score_with_one_bs_removed / resilience_score if resilience_score > 0 else 0)
         reward_score *= robustness_factor  # Adjust the original RS
 
-    # print(f"It takes {time.time()-time_counter} seconds to calculate constraint 2.")
+    print(f"It takes {time.time()-time_counter} seconds to calculate constraint 2.")
     time_counter = time.time()
 
     return reward_score, resilience_score, backhaul_connection
