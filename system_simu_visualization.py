@@ -151,57 +151,58 @@ from visualization_functions import scene_visualization, visualize_all_gu_capaci
 # visualize_scores(reward_track, RS_track, best_reward_track, best_RS_track)
 # visualize_best_scores(best_reward_track, best_RS_track)
 
-# redraw figure 4 for ACM paper
-# gu_fixed_position = [(20,8,0), (61,5,0), (80,1,0),
-#                      (70,30,0), (70,115,0), (52, 120,0),
-#                      (155,35,0), (195,50,0), 
-#                      (180,128,0), (183,132,0),(190,115,0),
-#                      (185,160,0)
-#                      ]
+# # redraw figure 4 for ACM paper
+gu_fixed_position = [(20,8,0), (61,5,0), (80,1,0),
+                     (70,30,0), (70,115,0), (52, 120,0),
+                     (155,35,0), (195,50,0), 
+                     (180,128,0), (183,132,0),(190,115,0),
+                     (185,160,0)
+                     ]
 
 
-# for i in range(len(gu_fixed_position)):
-#     ground_users[i].set_position(gu_fixed_position[i])
+for i in range(len(gu_fixed_position)):
+    ground_users[i].set_position(gu_fixed_position[i])
 
 
-# uav_fixed_position = [(35,15,50),
-#                       (90,50,50),
-#                       (175,50,50),
-#                       (190,135,50),
-#                       (190,155,50)
-#                      ]
+uav_fixed_position = [(35,15,50),
+                      (90,50,50),
+                      (175,50,50),
+                      (190,135,50),
+                      (190,155,50)
+                     ]
 
 
-# for i in range(len(uav_fixed_position)):
-#     UAV_nodes[i].set_position(uav_fixed_position[i])
+for i in range(len(uav_fixed_position)):
+    UAV_nodes[i].set_position(uav_fixed_position[i])
 
 # # state that is with backhaul connection
-# state_for_mid_scene = "000010111111110111110"
+state_for_mid_scene = "000010111111110111110"
 # # state that is without backhaul connection
 # state_for_mid_scene = "000000000000000000000"
 
 
-# from connectivity_finding import get_backhaul_connection
-# backhaul_connection = get_backhaul_connection(state_for_mid_scene, UAV_nodes, BS_nodes, scene_data)
-# get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
+from connectivity_finding import get_backhaul_connection
+backhaul_connection = get_backhaul_connection(state_for_mid_scene, UAV_nodes, BS_nodes, scene_data)
+get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
 
 # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.2)
 
-# from visualization_functions import visualize_hierarchical_clustering_result_in_scene
-# visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, 0.2)
+from visualization_functions import visualize_hierarchical_clustering_result_in_scene
+visualize_gu_by_connection(ground_users, blocks, scene)
+visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, 0.2)
 
 # redraw figure 5
 
-gu_capacities_records = [
-    {0: 0, 1: 0, 2: 0}, 
-    {0: 180000000, 1: 950000000, 2: 9017824902}, 
-    {0: 300000000, 1: 1050000000, 2: 10195053574.893757},
-    {0: 6000000000, 1: 10500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
-    {0: 6800000000, 1: 11500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
-    {0: 6800000000, 1: 11500000000, 2: 11500000000, 3: 10500000000, 4:10500000000}
-    ]
-uav_load_records = [{0: 12}, {0: 8, 1: 4}, {0: 7, 1: 3, 2: 2},{0: 7, 1: 3, 2: 1, 3: 1},{0: 5, 1: 3, 2: 1, 3:3 },{0: 3, 1: 3, 2: 2, 3: 3, 4: 1}]
-visualize_capacity_and_load(gu_capacities_records, uav_load_records, False)
+# gu_capacities_records = [
+#     {0: 0, 1: 0, 2: 0}, 
+#     {0: 180000000, 1: 950000000, 2: 9017824902}, 
+#     {0: 300000000, 1: 1050000000, 2: 10195053574.893757},
+#     {0: 6000000000, 1: 10500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
+#     {0: 6800000000, 1: 11500000000, 2: 10500000000, 3: 10500000000, 4:10500000000},
+#     {0: 6800000000, 1: 11500000000, 2: 11500000000, 3: 10500000000, 4:10500000000}
+#     ]
+# uav_load_records = [{0: 12}, {0: 8, 1: 4}, {0: 7, 1: 3, 2: 2},{0: 7, 1: 3, 2: 1, 3: 1},{0: 5, 1: 3, 2: 1, 3:3 },{0: 3, 1: 3, 2: 2, 3: 3, 4: 1}]
+# visualize_capacity_and_load(gu_capacities_records, uav_load_records, False)
 
 # redraw figure 7
 from visualization_functions import visualize_simulation_with_multiple_baselines, visualize_simulation_with_multiple_baselines_styled_2

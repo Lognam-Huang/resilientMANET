@@ -517,54 +517,11 @@ def visualize_hierarchical_clustering(ground_users, clusters_records, blocks, sc
     plt.grid(True)
     plt.show()
 
-def visualize_gu_by_connection(ground_users, blocks, scene):
-    """
-    可视化GU，每个GU的颜色根据其 .connected_nodes 的值确定，图例显示为“UAV 0, UAV 1...”格式。
-    
-    参数：
-    - ground_users: GU节点列表，每个节点包含 position 属性 (x, y) 和 connected_nodes 列表。
-    - blocks: 障碍物位置列表，每个元素是一个包含 "bottomCorner" 和 "size" 的字典。
-    - scene: 场景信息，包含边界信息，用于设置绘图范围。
-    """
-    # 定义一组颜色用于表示不同连接类型
-    connection_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-                         '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-    color_cycle = cycle(connection_colors)
-    
-    # 获取每种连接类型的颜色映射，按照连接类型从小到大排序
-    unique_connections = sorted({gu.connected_nodes[0] for gu in ground_users})
-    connection_types = {connection: next(color_cycle) for connection in unique_connections}
-    
-    fig, ax = plt.subplots(figsize=(10, 10))
-    
-    # 绘制障碍物
-    for block in blocks:
-        x, y, _ = block["bottomCorner"]
-        width, height = block["size"]
-        block_patch = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='black', facecolor='gray', alpha=0.5)
-        ax.add_patch(block_patch)
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from itertools import cycle
 
-    # 绘制每个GU，根据其.connected_nodes的值设置颜色
-    for gu in ground_users:
-        gu_position = gu.position[:2]  # 只获取 (x, y) 坐标
-        connection_type = gu.connected_nodes[0]  # 获取连接类型
-        color = connection_types[connection_type]  # 根据连接类型分配颜色
-        ax.scatter(*gu_position, color=color, label=f"UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
 
-    # 设置图形边界和标题
-    ax.set_xlim(0, scene["xLength"])
-    ax.set_ylim(0, scene["yLength"])
-    ax.set_xlabel("X Axis")
-    ax.set_ylabel("Y Axis")
-    ax.set_title("GU Visualization by Connection Type")
-    
-    # 仅绘制一次图例条目，且按连接类型从小到大排序
-    handles, labels = ax.get_legend_handles_labels()
-    unique_labels = dict(sorted(zip(labels, handles), key=lambda x: int(x[0].split()[-1])))
-    ax.legend(unique_labels.values(), unique_labels.keys())
-    
-    plt.grid(True)
-    plt.show()
 
 def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normalize=False): 
     # Calculate time points
@@ -596,11 +553,25 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normali
     ax1.plot(time_points, max_capacities, label='Max Throughput', marker='o', color='red')
     ax1.plot(time_points, mean_capacities, label='Mean Throughput', marker='o', color='green')
     ax1.set_xlabel('Time (New UAV Found)')
-    ax1.set_ylabel(' User Throughput (bps)' + (' (Normalized)' if normalize else ''))
+    ax1.set_ylabel('User Throughput (bps)' + (' (Normalized)' if normalize else ''))
     # ax1.set_title('GU Capacity Over Time')
-    ax1.legend()
     ax1.grid(True)
     ax1.set_xticks(time_points)  # Set x-axis to display only integer time points
+
+    # Customize legend for ax1
+    legend1 = ax1.legend(
+        loc="upper center", 
+        bbox_to_anchor=(0.5, 1.15), 
+        ncol=3, 
+        fontsize=14, 
+        labelspacing=0.5, 
+        handlelength=1, 
+        handletextpad=0.5, 
+        borderaxespad=0.3, 
+        borderpad=0.5
+    )
+    legend1.get_frame().set_facecolor('white')
+    legend1.get_frame().set_alpha(0.9)
 
     # Plot UAV Load Distribution
     bar_width = 0.35
@@ -613,12 +584,29 @@ def visualize_capacity_and_load(gu_capacities_records, uav_load_records, normali
     ax2.set_xlabel('Time (New UAV Found)')
     ax2.set_ylabel('Number of GUs')
     # ax2.set_title('UAV Load Distribution Over Time')
-    ax2.legend(title="UAV ID")
     ax2.grid(True, axis='y')
     ax2.set_xticks(time_points)  # Set x-axis to display only integer time points
 
+    # Customize legend for ax2
+    legend2 = ax2.legend(
+        loc="upper center", 
+        bbox_to_anchor=(0.5, 1.15), 
+        ncol=5, 
+        fontsize=14, 
+        labelspacing=0.5, 
+        handlelength=1, 
+        handletextpad=0.5, 
+        borderaxespad=0.3, 
+        borderpad=0.5,
+        # title="UAV ID",
+        title_fontsize=14
+    )
+    legend2.get_frame().set_facecolor('white')
+    legend2.get_frame().set_alpha(0.9)
+
     plt.tight_layout()
     plt.show()
+
 
 
 
@@ -1160,6 +1148,61 @@ def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, 
     # Display the final visualization
     plt.show()
 
+def visualize_gu_by_connection(ground_users, blocks, scene):
+    connection_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                         '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+    color_cycle = cycle(connection_colors)
+    
+    unique_connections = sorted({gu.connected_nodes[0] for gu in ground_users})
+    connection_types = {connection: next(color_cycle) for connection in unique_connections}
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # Plot blocks
+    for block in blocks:
+        x, y, _ = block["bottomCorner"]
+        width, height = block["size"]
+        block_patch = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='black', facecolor='gray', alpha=0.5)
+        ax.add_patch(block_patch)
+
+    # Plot GUs
+    for gu in ground_users:
+        gu_position = gu.position[:2] 
+        connection_type = gu.connected_nodes[0]  
+        color = connection_types[connection_type]  
+        ax.scatter(*gu_position, color=color, label=f"GU → UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
+
+    # Set axes
+    ax.set_xlim(0, scene["xLength"])
+    ax.set_ylim(0, scene["yLength"])
+    ax.set_xlabel("X Axis")
+    ax.set_ylabel("Y Axis")
+    
+    # Customize legend
+    handles, labels = ax.get_legend_handles_labels()
+    unique_labels = dict(sorted(zip(labels, handles), key=lambda x: int(x[0].split()[-1])))
+
+    legend = ax.legend(
+        unique_labels.values(),
+        unique_labels.keys(),
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.16),  # Center legend above the plot
+        ncol=3,  # Display legend in 3 columns
+        fontsize=25,  # Adjust font size
+        labelspacing=0.3,  # Adjust spacing between labels
+        handlelength=0.5,  # Adjust legend marker length
+        handletextpad=0.3,  # Adjust spacing between marker and text
+        borderaxespad=0.2,  # Adjust padding between legend and axes
+        borderpad=0.3,  # Adjust padding inside the legend box
+    )
+
+    # Set legend background and transparency
+    legend.get_frame().set_facecolor('white')
+    legend.get_frame().set_alpha(0.9)
+
+    # Show grid and plot
+    plt.grid(True)
+    plt.show()
 
 def visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, line_alpha=0.5):
     """
@@ -1194,7 +1237,9 @@ def visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, b
         gu_position = gu.position[:2]  # Get (x, y) position
         connection_type = gu.connected_nodes[0]  # Get connected UAV index
         color = connection_types[connection_type]  # Get color for the connected UAV
-        ax.scatter(*gu_position, color=color, label=f"GU covered by UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
+        # ax.scatter(*gu_position, color=color, label=f"GU covered by UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
+        # ax.scatter(*gu_position, color=color, label=f"GU → UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
+        ax.scatter(*gu_position, color=color, s=120, alpha=0.8, edgecolors='w')
 
     # Plot UAV nodes with corresponding colors
     for uav_index, uav in enumerate(UAV_nodes):
@@ -1217,21 +1262,32 @@ def visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, b
                 )
 
     # Set plot limits and labels
-    ax.set_xlim(0, scene["xLength"]*1.2)
-    ax.set_ylim(0, scene["yLength"]*1.2)
+    ax.set_xlim(0, scene["xLength"])
+    ax.set_ylim(0, scene["yLength"])
     ax.set_xlabel("X Axis")
     ax.set_ylabel("Y Axis")
-    ax.set_title("Hierarchical Clustering Result Visualization")
 
     # Customize legend
     handles, labels = ax.get_legend_handles_labels()
     unique_labels = dict(zip(labels, handles))
     sorted_labels = sorted(unique_labels.keys(), key=lambda x: (int(x.split()[-1]) if "UAV" in x else 1000))
-    ax.legend(
+    
+    legend = ax.legend(
         [unique_labels[label] for label in sorted_labels],
         sorted_labels,
-        loc="upper right"
+        loc="upper center", 
+        bbox_to_anchor=(0.5, 1.15), 
+        ncol=5,  
+        fontsize=25,  
+        labelspacing=0.3,  # Adjust spacing between labels
+        handlelength=0.5,  # Adjust legend marker length
+        handletextpad=0.3,  # Adjust spacing between marker and text
+        borderaxespad=0.2,  # Adjust padding between legend and axes
+        borderpad=0.3,  # Adjust padding inside the legend box
     )
+
+    legend.get_frame().set_facecolor('white')
+    legend.get_frame().set_alpha(0.9)
 
     plt.grid(True)
     plt.show()
