@@ -66,6 +66,7 @@ def reward(state, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper):
     time_counter = time.time()
 
     resilience_score = get_RS(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper, scene_info)
+    print("Original RS is: "+str(resilience_score))
 
     print(f"It takes {time.time()-time_counter} seconds to calculate RS.")
     time_counter = time.time()
@@ -164,9 +165,9 @@ def get_RS(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper, scene_info):
     BPScore = quantify_backup_path(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper['BPHopConstraint'], reward_hyper['BPDRConstraint'], scene_info)
     NPScore = quantify_network_partitioning(GU_nodes, UAV_nodes, backhaul_connection, reward_hyper['droppedRatio'], reward_hyper['DRPenalty'], reward_hyper['BPHopConstraint'], reward_hyper['BPDRConstraint'], UAVInfo, DRScore, BPScore, reward_hyper['ratioDR'], reward_hyper['ratioBP'], scene_info)
 
-    # print(DRScore)
-    # print(BPScore)
-    # print(NPScore)
+    print(DRScore)
+    print(BPScore)
+    print(NPScore)
 
     ResilienceScore = integrate_quantification(DRScore, BPScore, NPScore, reward_hyper['weightDR'], reward_hyper['weightBP'], reward_hyper['weightNP'])
     return ResilienceScore
@@ -205,11 +206,14 @@ def quantify_backup_path(ground_users, UAV_nodes, backhaul_connection, hop_const
             best_paths[gu.node_number] = (0, float('inf'))
     total_score = 0
 
+    # print(best_paths)
+    # print("QBK is called once")
+
     for gu in ground_users:
         for uav in UAV_nodes:
-            bs_and_uav_is_blocked = path_is_blocked(blocks, uav, gu)
-            if not bs_and_uav_is_blocked:
-                dr_from_gu_to_uav = calculate_data_rate(UAVInfo, uav.position, gu.position,  bs_and_uav_is_blocked)
+            gu_and_uav_is_blocked = path_is_blocked(blocks, uav, gu)
+            if not gu_and_uav_is_blocked:
+                dr_from_gu_to_uav = calculate_data_rate(UAVInfo, uav.position, gu.position,  gu_and_uav_is_blocked)
             else:
                 continue
             best_path_DR, best_path_hop = best_paths[gu.node_number]
@@ -217,7 +221,8 @@ def quantify_backup_path(ground_users, UAV_nodes, backhaul_connection, hop_const
             for path in paths:
                 gu_to_bs_bottleneck = min(dr_from_gu_to_uav, path['DR'])
                 if len(path['path']) <= hop_constraint and gu_to_bs_bottleneck >= DR_constraint:
-                    if gu_to_bs_bottleneck >= best_path_DR or best_path == 0:
+                    # if gu_to_bs_bottleneck >= best_path_DR or best_path == 0:
+                    if gu_to_bs_bottleneck >= best_path_DR:
                         total_score += 1
                     else:
                         hop_difference = len(path['path']) - best_path_hop
@@ -226,7 +231,12 @@ def quantify_backup_path(ground_users, UAV_nodes, backhaul_connection, hop_const
                         else:
                             total_score += (gu_to_bs_bottleneck / best_path_DR) / hop_difference
                 else:
-                    total_score -= 1
+                    # print("Should be called frequently")
+                    # total_score -= 1
+                    # following part is changed because of hard scene: there are maybe too many paths, whose DR is acceptable meanwile hop too much
+                    if gu_to_bs_bottleneck < DR_constraint:
+                        # print("Hope not to be called frequently")
+                        total_score -= 1
                 
 
         # for p in backhaul_connection.allPaths[gu.connected_nodes[0]]:
@@ -355,12 +365,16 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
         state = '1' * int((num_nodes * (num_nodes - 1) / 2))
 
     # print("state is: "+str(state))
+        
+    # set an initial state for hard scene
+    state = "111111100111111111111111101111111111111110111"
     
     start_time = time.time()
 
     # best_state_backhaul_connection = None
 
     epsilon = eps
+    # epsilon = 1
 
     for episode in range(episodes):
         # print("Episode: "+str(episode))

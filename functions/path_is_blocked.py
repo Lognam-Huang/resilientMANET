@@ -30,6 +30,10 @@ def path_is_blocked(blocks, nodeA, nodeB):
     return False  # 如果没有找到阻塞，返回 False
 
 def intersect_plane(p0, p1, plane_point, plane_normal):
+    if not (p0 and p1):
+        print("p0 is: "+str(p0))
+        print("p1 is: "+str(p1))
+        
     line_vector = tuple(p1[i] - p0[i] for i in range(3))
     dot_product = sum(plane_normal[i] * line_vector[i] for i in range(3))
     

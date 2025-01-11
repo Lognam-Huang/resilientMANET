@@ -38,6 +38,7 @@ class BackhaulPaths:
                     print(len(UAVs))
                     # print_node(UAVs)
                     print_node(ABSs)
+                # print("1111")
                 UAVs[curConnectedUAV].add_connection(numUAV+k)
         
         for i in range(numUAV):
