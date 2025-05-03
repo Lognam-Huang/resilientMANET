@@ -345,7 +345,11 @@ def edge_index_in_state(node1, node2, num_nodes):
     return int(node1 * (2 * num_nodes - node1 - 1) / 2 + (node2 - node1 - 1))
 
 import time
-def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper, episodes, scene_info = None, print_prog = False, initialize_as_all_0 = False):
+import os
+import json
+from datetime import datetime  # Import datetime for timestamp
+
+def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper, episodes, scene_info=None, print_prog=False, initialize_as_all_0=False, save_q_table=False):
     best_state = ""
     q_table = {}
     reward_track = []
@@ -364,24 +368,13 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
     else:
         state = '1' * int((num_nodes * (num_nodes - 1) / 2))
 
-    # print("state is: "+str(state))
-        
-    # set an initial state for hard scene
     state = "111111100111111111111111101111111111111110111"
     
     start_time = time.time()
-
-    # best_state_backhaul_connection = None
-
     epsilon = eps
-    # epsilon = 1
 
     for episode in range(episodes):
-        # print("Episode: "+str(episode))
         print("At episode "+str(episode)+", Q tables has explore: "+str(len(q_table))+" states.") if print_prog else None
-
-        # if episode > 0:
-        #     state = generate_random_binary_string(state)
 
         next_possible_states = generate_adjacent_states(state)
         states_scores, end_flag = process_states(next_possible_states, q_table, scene_info, GU_nodes, UAV_nodes, BS_nodes, reward_hyper)
@@ -395,7 +388,6 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
             best_state = next_state
             max_reward = next_state_score[0]
             best_resilience_score = next_state_score[1]
-
             best_backhaul_connection = next_state_score[2]
 
             print("New topology with highest reward is found, new reward is: "+str(max_reward)+", at state: "+str(best_state)) if print_prog else None
@@ -418,6 +410,26 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
         print(f"Best state: {best_state}")
         print(f"Max reward: {max_reward}")
 
-    # set connections for UAVs and BSs
+    if save_q_table:
+        folder_path = "q_tables"
+        os.makedirs(folder_path, exist_ok=True)
+        
+        # Add timestamp to the file name
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"q_table_GU{len(GU_nodes)}_UAV{len(UAV_nodes)}_BS{len(BS_nodes)}_{timestamp}.json"
+        file_path = os.path.join(folder_path, file_name)
+
+        serializable_q_table = {
+            key: (value[0], value[1])
+            for key, value in q_table.items()
+            if isinstance(value, tuple) and len(value) >= 2
+        }
+
+        with open(file_path, "w") as file:
+            json.dump(serializable_q_table, file)
+
+        print(f"Q-table saved to {file_path}")
+
+    # Set connections for UAVs and BSs
     set_connected_edges(best_state, UAV_nodes, BS_nodes)
     return best_state, max_reward, best_resilience_score, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection

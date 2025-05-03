@@ -291,47 +291,47 @@ for i in range(num_BS):
 
 # try to find an optimal state as initial state for hard scene as beginning
 
-gu_fixed_position = [(1186.4067835765754, 104.35084331924621, 0.0), (483.09308812559914, 221.75392051534007, 0.0), (954.1199330391726, 524.8480457553961, 0.0), 
-                      (494.0769371825016, 1481.676747845018, 0.0), (307.6822750302194, 131.33235632708423, 0.0), (1191.4554402009637, 825.2802779482554, 0.0), 
-                      (689.1696591154594, 1019.2880873246127, 0.0), (168.88337145902145, 468.24102718191835, 0.0), (865.0815893571208, 378.3937243255257, 0.0), 
-                      (1351.0366418520587, 44.64401885226765, 0.0), (1208.8329948742978, 306.2786808150745, 0.0), (1042.9173065814557, 409.01680159630155, 0.0), 
-                      (425.031279535376, 1187.8805005984486, 0.0), (300.10375764050207, 377.81369530125403, 0.0), (361.16575001281757, 261.3693691383062, 0.0), 
-                      (709.9766940007835, 1356.5631021254765, 0.0), (1261.0521229577112, 1228.6133735733385, 0.0), (865.5268741305692, 318.4633555984104, 0.0), 
-                      (1365.171021501369, 1455.3851275745951, 0.0), (978.1338813178706, 1435.785831513133, 0.0)
-                     ]
+# gu_fixed_position = [(1186.4067835765754, 104.35084331924621, 0.0), (483.09308812559914, 221.75392051534007, 0.0), (954.1199330391726, 524.8480457553961, 0.0), 
+#                       (494.0769371825016, 1481.676747845018, 0.0), (307.6822750302194, 131.33235632708423, 0.0), (1191.4554402009637, 825.2802779482554, 0.0), 
+#                       (689.1696591154594, 1019.2880873246127, 0.0), (168.88337145902145, 468.24102718191835, 0.0), (865.0815893571208, 378.3937243255257, 0.0), 
+#                       (1351.0366418520587, 44.64401885226765, 0.0), (1208.8329948742978, 306.2786808150745, 0.0), (1042.9173065814557, 409.01680159630155, 0.0), 
+#                       (425.031279535376, 1187.8805005984486, 0.0), (300.10375764050207, 377.81369530125403, 0.0), (361.16575001281757, 261.3693691383062, 0.0), 
+#                       (709.9766940007835, 1356.5631021254765, 0.0), (1261.0521229577112, 1228.6133735733385, 0.0), (865.5268741305692, 318.4633555984104, 0.0), 
+#                       (1365.171021501369, 1455.3851275745951, 0.0), (978.1338813178706, 1435.785831513133, 0.0)
+#                      ]
 
 
-for i in range(len(gu_fixed_position)):
-    ground_users[i].set_position(gu_fixed_position[i])
+# for i in range(len(gu_fixed_position)):
+#     ground_users[i].set_position(gu_fixed_position[i])
 
 
-uav_fixed_position = [(500, 1250, 190), (900, 450, 190), (1100, 400, 190), (300, 550, 190), 
-                      (450, 500, 190), (1400, 1400, 190), (1000, 650, 190)
-                     ]
+# uav_fixed_position = [(500, 1250, 190), (900, 450, 190), (1100, 400, 190), (300, 550, 190), 
+#                       (450, 500, 190), (1400, 1400, 190), (1000, 650, 190)
+#                      ]
 
 
-for i in range(len(uav_fixed_position)):
-    UAV_nodes[i].set_position(uav_fixed_position[i])
+# for i in range(len(uav_fixed_position)):
+#     UAV_nodes[i].set_position(uav_fixed_position[i])
 
-# state that is with backhaul connection
-state_for_hard_scene = "111111100111111111111111101111111111111110111"
-# state_for_hard_scene = "000000000000000000000000000000000000000000111"
-# state that is without backhaul connection
-# state_for_mid_scene = "000000000000000000000"
+# # state that is with backhaul connection
+# state_for_hard_scene = "111111100111111111111111101111111111111110111"
+# # state_for_hard_scene = "000000000000000000000000000000000000000000111"
+# # state that is without backhaul connection
+# # state_for_mid_scene = "000000000000000000000"
 
-from connectivity_finding import get_backhaul_connection
-backhaul_connection = get_backhaul_connection(state_for_hard_scene, UAV_nodes, BS_nodes, scene_data)
+# from connectivity_finding import get_backhaul_connection
+# backhaul_connection = get_backhaul_connection(state_for_hard_scene, UAV_nodes, BS_nodes, scene_data)
 
-from node_functions import get_gu_to_uav_connections
-get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
+# from node_functions import get_gu_to_uav_connections
+# get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
 
 
-next_state_score = reward(state_for_hard_scene, scene_data, ground_users, UAV_nodes, BS_nodes, reward_hyper)
-print(next_state_score)
-
-scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.2)
-
-# from connectivity_finding import set_connected_edges
-# set_connected_edges(''.join(str(int(i)) for i in state_for_hard_scene), UAV_nodes, BS_nodes)
+# next_state_score = reward(state_for_hard_scene, scene_data, ground_users, UAV_nodes, BS_nodes, reward_hyper)
+# print(next_state_score)
 
 # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.2)
+
+# # from connectivity_finding import set_connected_edges
+# # set_connected_edges(''.join(str(int(i)) for i in state_for_hard_scene), UAV_nodes, BS_nodes)
+
+# # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.2)
