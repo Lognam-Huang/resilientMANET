@@ -2,9 +2,10 @@ import json
 
 # Load scene data from JSON file
 # with open('scene_data_hard.json', 'r') as file:
-with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
 # with open('scene_data_mid.json', 'r') as file:
+with open('scene_data_mid_dense.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -33,11 +34,11 @@ position_params = {
         'UAV': 2,  # Weight for UAV-to-UAV connections
         'BS': 1   # Weight for base station connections
     },
-    'sparsity_parameter': 1  # Controls the density of the heatmap
+    # 'sparsity_parameter': 1  # Controls the density of the heatmap
 
     # just for simple test, and now for quicker calculation for hard scene
     # 'sparsity_parameter': 50  # for hard scene simulation
-    # 'sparsity_parameter': 10  # just for test
+    'sparsity_parameter': 10  # just for test
 }
 
 
@@ -52,9 +53,9 @@ reward_hyper = {
     'ratioDR': 0.6,
     'ratioBP': 0.4,
     
-    # 'weightDR': 0.3,
-    # 'weightBP': 0.4,
-    # 'weightNP': 0.3,
+    'weightDR': 0.3,
+    'weightBP': 0.4,
+    'weightNP': 0.3,
 
     # # hyperset 2
     # 'weightDR': 0.7,
@@ -75,9 +76,9 @@ reward_hyper = {
     # 'weightBP': 0.8,
     # 'weightNP': 0.1,
 
-    'weightDR': 0.1,
-    'weightBP': 0.1,
-    'weightNP': 0.8,
+    # 'weightDR': 0.1,
+    # 'weightBP': 0.1,
+    # 'weightNP': 0.8,
 
     'overloadConstraint': 10000
 }
@@ -146,23 +147,23 @@ best_backhaul_connection = None
 
 
 import pandas as pd
-#
-ground_users_positions_simple_stable = pd.read_csv("ground_user_positions_for_simple_scene_50_stable.csv")
-# ground_users_positions_mid_stable = pd.read_csv("ground_user_positions_for_mid_scene_50_stable.csv")
-# ground_users_positions_mid_dynamic = pd.read_csv("ground_user_positions_for_mid_scene_50_dynamic.csv")
-# ground_users_positions_hard_stable = pd.read_csv("ground_user_positions_for_hard_scene_50_stable.csv")
 
+# csv_file = "ground_user_positions_for_simple_scene_50_stable.csv"
+# csv_file = "ground_user_positions_for_mid_scene_50_stable.csv"
+# csv_file = "ground_user_positions_for_mid_scene_50_dynamic.csv"
+# csv_file = "ground_user_positions_for_hard_scene_50_stable.csv"
 
-# for cur_time_frame in range(sim_time): 
-# for hard scene simulation optimization
-for cur_time_frame in range(0, sim_time, 6): 
+csv_file = "ground_user_positions_for_mid_scene_50_stable_dense.csv"
+
+ground_users_positions = pd.read_csv(csv_file)
+
+for cur_time_frame in range(sim_time): 
+
+# # for hard scene simulation optimization
+# for cur_time_frame in range(0, sim_time, 6): 
 
     # this functino is used after we make user of pre-defined GU data
-    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_simple_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
-    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
-    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_mid_dynamic, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
-    
-    # ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions_hard_stable, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
+    ground_users, gu_to_uav_connections, gu_to_bs_capacity = get_gu_info_and_update_connections(ground_users_positions, cur_time_frame, blocks, UAV_nodes, UAVInfo, best_backhaul_connection)
 
     # print_node(ground_users, -1, True)
     max_uav_load_number = max_count = max([item for sublist in gu_to_uav_connections.values() for item in sublist].count(x) for x in set([item for sublist in gu_to_uav_connections.values() for item in sublist]))
@@ -226,7 +227,7 @@ for cur_time_frame in range(0, sim_time, 6):
     
     gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
-    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
     
     # this is just for invisible-connection visualization
     # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
@@ -263,15 +264,8 @@ recorded_data = {
 
 recorded_df = pd.DataFrame(recorded_data)
 
-# recorded_df.to_csv("experiment_result_test.csv", mode='a', header=False, index=False)
-
-# recorded_df.to_csv("experiment_result_mid_hyper3.csv", index=False)
-# recorded_df.to_csv("experiment_result_mid_dynamic.csv", index=False)
-
-# recorded_df.to_csv("experiment_result_hard_stable_2.csv", mode='a', header=False, index=False)
-# recorded_df.to_csv("experiment_result_hard_stable_3.csv", mode='a', header=False, index=False)
-
-recorded_df.to_csv("only_for_test_experiment_result_simple_stable_los.csv", mode='a', header=False, index=False)
+experiment_name = "experiment_result_mid_stable_dense.csv"
+recorded_df.to_csv(experiment_name, mode='a', header=False, index=False)
 
 recorded_hypers = {
     "reward_track": reward_track, 
@@ -282,9 +276,8 @@ recorded_hypers = {
 
 recorded_hyper_df = pd.DataFrame(recorded_hypers)
 
-# recorded_hyper_df.to_csv("experiment_result_scores_test.csv", mode='a', header=False, index=False)
-# recorded_hyper_df.to_csv("experiment_result_hard_stable_scores_2.csv", mode='a', header=False, index=False)
-# recorded_hyper_df.to_csv("experiment_result_hard_stable_scores_3.csv", mode='a', header=False, index=False)
+experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense.csv"
+recorded_hyper_df.to_csv(experiment_hyper_name, mode='a', header=False, index=False)
 
 from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline, visualize_scores
 if sim_time > 0:
