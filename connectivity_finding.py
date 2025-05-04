@@ -368,7 +368,7 @@ def find_best_backhaul_topology(GU_nodes, UAV_nodes, BS_nodes, eps, reward_hyper
     else:
         state = '1' * int((num_nodes * (num_nodes - 1) / 2))
 
-    state = "111111100111111111111111101111111111111110111"
+    # state = "111111100111111111111111101111111111111110111"
     
     start_time = time.time()
     epsilon = eps

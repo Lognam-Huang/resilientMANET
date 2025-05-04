@@ -45,6 +45,10 @@ position_params = {
 # Lognam: find UAV connection
 reward_hyper = {
     'DRPenalty': 0.5,
+
+    # try to use 0.9 for mid dense scene simulation
+    # 'DRPenalty': 0.9,
+
     'BPHopConstraint': 4,
     #change this for hard scene simulation
     'BPDRConstraint': 10000000,
@@ -98,8 +102,8 @@ q_hyper = {
 # training_episodes= 20
 
 # Lognam: set simulation time
-sim_time = 30
-# sim_time = 1
+# sim_time = 30
+sim_time = 1
 
 constraint_hyper = {
     'rewardConstraint': 0.8,
@@ -198,28 +202,30 @@ for cur_time_frame in range(sim_time):
 
 
         
-        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
-        #     ground_users, 
-        #     UAV_nodes, 
-        #     BS_nodes, 
-        #     q_hyper['epsilon'], 
-        #     episodes=q_hyper['training_episodes'], 
-        #     scene_info = scene_data, 
-        #     reward_hyper=reward_hyper,
-        #     # print_prog=False
-        #     print_prog=True,
-        #     initialize_as_all_0=False,
-        #     # save_q_table=True
-        # )        
-        from los_based_topology import find_los_backhaul_topology
+        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
+            ground_users, 
+            UAV_nodes, 
+            BS_nodes, 
+            q_hyper['epsilon'], 
+            episodes=q_hyper['training_episodes'], 
+            scene_info = scene_data, 
+            reward_hyper=reward_hyper,
+            # print_prog=False
+            print_prog=True,
+            initialize_as_all_0=False,
+            save_q_table=True
+        )        
 
-        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
-            ground_users,  # List of ground user nodes
-            UAV_nodes,     # List of UAV nodes
-            BS_nodes,      # List of base station nodes
-            scene_data,    # Scene information (e.g., obstacles, UAV properties)
-            reward_hyper   # Reward hyperparameters
-        )
+        # from los_based_topology import find_los_backhaul_topology
+
+        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
+        #     ground_users,  # List of ground user nodes
+        #     UAV_nodes,     # List of UAV nodes
+        #     BS_nodes,      # List of base station nodes
+        #     scene_data,    # Scene information (e.g., obstacles, UAV properties)
+        #     reward_hyper   # Reward hyperparameters
+        # )
+
         print("Connections details are found, evaluating topo")
     else:
         print("Current topology is good enough, no topology refreshed is needed")
@@ -264,7 +270,11 @@ recorded_data = {
 
 recorded_df = pd.DataFrame(recorded_data)
 
-experiment_name = "experiment_result_mid_stable_dense.csv"
+# experiment_name = "experiment_result_mid_stable_dense.csv"
+# experiment_name = "experiment_result_mid_stable_dense_DR_modified.csv"
+
+experiment_name = "experiment_result_mid_stable_dense_2.csv"
+# experiment_name = "experiment_result_mid_stable_dense_DR_modified_2.csv"
 recorded_df.to_csv(experiment_name, mode='a', header=False, index=False)
 
 recorded_hypers = {
@@ -276,7 +286,12 @@ recorded_hypers = {
 
 recorded_hyper_df = pd.DataFrame(recorded_hypers)
 
-experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense.csv"
+# experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense.csv"
+# experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_DR_modified.csv"
+
+experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_2.csv"
+# experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_DR_modified_2.csv"
+
 recorded_hyper_df.to_csv(experiment_hyper_name, mode='a', header=False, index=False)
 
 from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline, visualize_scores
