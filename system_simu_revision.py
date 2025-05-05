@@ -280,7 +280,7 @@ recorded_df = pd.DataFrame(recorded_data)
 # experiment_name = "experiment_result_mid_stable_DR_og.csv"
 # experiment_name = "experiment_result_mid_stable_dense_DR_modified.csv"
 
-experiment_name = "experiment_result_mid_stable_dense_height_comparison_3D.csv"
+# experiment_name = "experiment_result_mid_stable_dense_height_comparison_3D.csv"
 # "UAV": {        
 #         ...
 #         "min_height": 50,
@@ -291,7 +291,7 @@ experiment_name = "experiment_result_mid_stable_dense_height_comparison_3D.csv"
 #         "UAV": 8
 #     }
 
-# experiment_name = "experiment_result_mid_stable_dense_height_comparison_2D.csv"
+experiment_name = "experiment_result_mid_stable_dense_height_comparison_2D.csv"
 # allow 2D scene by letting UAV height same only be 50
 
 recorded_df.to_csv(experiment_name, mode='a', header=False, index=False)
@@ -311,8 +311,8 @@ recorded_hyper_df = pd.DataFrame(recorded_hypers)
 # experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_R_og.csv"
 # experiment_hyper_name = "experiment_result_hyperparameters_mid_stable__DR_modified_2.csv"
 
-experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_height_comparison_3D.csv"
-# experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_height_comparison_2D.csv"
+# experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_height_comparison_3D.csv"
+experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_height_comparison_2D.csv"
 
 recorded_hyper_df.to_csv(experiment_hyper_name, mode='a', header=False, index=False)
 

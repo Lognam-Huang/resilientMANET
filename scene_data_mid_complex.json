@@ -200,7 +200,7 @@
         "CarrierFrequency": 28000000000,
         "UAVSpeed": 15,
         "min_height": 50,
-        "max_height": 120       
+        "max_height": 50       
     },
     "nodeNumber": {
         "GU": 100,
