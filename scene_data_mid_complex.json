@@ -1,0 +1,209 @@
+{
+    "scenario": {
+        "xLength": 200,
+        "yLength": 200
+    },
+    "baseStation": [
+        {
+            "bottomCorner": [180, 10, 0],
+            "size": [10, 10],
+            "height": [35]
+        },
+        {
+            "bottomCorner": [60, 150, 0],
+            "size": [10, 10],
+            "height": [35]
+        }
+    ],
+    "blocks": [
+        {
+            "bottomCorner": [10, 170, 0],
+            "size": [40, 40],
+            "height": 150
+        },
+        {
+            "bottomCorner": [40, 40, 0],
+            "size": [30, 40],
+            "height": 80
+        },
+        {
+            "bottomCorner": [60, 150, 0],
+            "size": [40, 30],
+            "height": 25
+        },
+        {
+            "bottomCorner": [90, 100, 0],
+            "size": [20, 20],
+            "height": 100
+        },
+        {
+            "bottomCorner": [120, 40, 0],
+            "size": [20, 60],
+            "height": 65
+        },
+        {
+            "bottomCorner": [140, 160, 0],
+            "size": [30, 30],
+            "height": 80
+        },
+        {
+            "bottomCorner": [160, 70, 0],
+            "size": [20, 20],
+            "height": 70
+        },
+        {
+            "bottomCorner": [180, 10, 0],
+            "size": [10, 20],
+            "height": 75
+        },
+        {
+            "bottomCorner": [20, 20, 0],
+            "size": [15, 15],
+            "height": 68
+        },
+        {
+            "bottomCorner": [50, 50, 0],
+            "size": [25, 25],
+            "height": 72
+        },
+        {
+            "bottomCorner": [70, 120, 0],
+            "size": [30, 20],
+            "height": 74
+        },
+        {
+            "bottomCorner": [100, 140, 0],
+            "size": [20, 30],
+            "height": 73
+        },
+        {
+            "bottomCorner": [130, 90, 0],
+            "size": [15, 15],
+            "height": 66
+        },
+        {
+            "bottomCorner": [150, 50, 0],
+            "size": [20, 20],
+            "height": 75
+        },
+        {
+            "bottomCorner": [170, 30, 0],
+            "size": [10, 10],
+            "height": 71
+        },
+        {
+            "bottomCorner": [30, 180, 0],
+            "size": [25, 25],
+            "height": 74
+        },
+        {
+            "bottomCorner": [80, 80, 0],
+            "size": [20, 20],
+            "height": 73
+        },
+        {
+            "bottomCorner": [110, 110, 0],
+            "size": [15, 15],
+            "height": 72
+        },
+        {
+            "bottomCorner": [140, 140, 0],
+            "size": [30, 30],
+            "height": 70
+        },
+        {
+            "bottomCorner": [10, 50, 0],
+            "size": [20, 20],
+            "height": 67
+        },
+        {
+            "bottomCorner": [60, 30, 0],
+            "size": [15, 15],
+            "height": 69
+        },
+        {
+            "bottomCorner": [90, 10, 0],
+            "size": [25, 25],
+            "height": 71
+        },
+        {
+            "bottomCorner": [120, 150, 0],
+            "size": [30, 30],
+            "height": 74
+        },
+        {
+            "bottomCorner": [150, 120, 0],
+            "size": [20, 20],
+            "height": 76
+        },
+        {
+            "bottomCorner": [40, 100, 0],
+            "size": [20, 20],
+            "height": 65
+        },
+        {
+            "bottomCorner": [70, 30, 0],
+            "size": [25, 25],
+            "height": 72
+        },
+        {
+            "bottomCorner": [100, 50, 0],
+            "size": [30, 30],
+            "height": 74
+        },
+        {
+            "bottomCorner": [130, 20, 0],
+            "size": [15, 15],
+            "height": 68
+        },
+        {
+            "bottomCorner": [160, 10, 0],
+            "size": [20, 20],
+            "height": 75
+        },
+        {
+            "bottomCorner": [180, 50, 0],
+            "size": [10, 10],
+            "height": 70
+        },
+        {
+            "bottomCorner": [20, 150, 0],
+            "size": [25, 25],
+            "height": 73
+        },
+        {
+            "bottomCorner": [50, 120, 0],
+            "size": [20, 20],
+            "height": 74
+        },
+        {
+            "bottomCorner": [80, 10, 0],
+            "size": [15, 15],
+            "height": 72
+        },
+        {
+            "bottomCorner": [110, 80, 0],
+            "size": [30, 30],
+            "height": 71
+        },
+        {
+            "bottomCorner": [140, 50, 0],
+            "size": [20, 20],
+            "height": 76
+        }
+    ],
+    "UAV": {        
+        "bandwidth": 1000000000,
+        "Power": 10,
+        "TransmittingAntennaGain": 10,
+        "ReceievingAntennaGain": 10,
+        "CarrierFrequency": 28000000000,
+        "UAVSpeed": 15,
+        "min_height": 50,
+        "max_height": 120       
+    },
+    "nodeNumber": {
+        "GU": 100,
+        "UAV": 8
+    }
+}

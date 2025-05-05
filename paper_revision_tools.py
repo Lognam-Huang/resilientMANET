@@ -5,7 +5,9 @@ import json
 # with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
 # with open('scene_data_mid.json', 'r') as file:
-with open('scene_data_mid_dense.json', 'r') as file:
+
+# with open('scene_data_mid_dense.json', 'r') as file:
+with open('scene_data_mid_complex.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -56,7 +58,8 @@ for i in range(50):
 import pandas as pd
 df = pd.DataFrame(GU_position_TD)
 
-csv_file = "ground_user_positions_for_mid_scene_50_stable_dense.csv"
+# csv_file = "ground_user_positions_for_mid_scene_50_stable_dense.csv"
+csv_file = "ground_user_positions_for_mid_scene_50_stable_complex.csv"
 df.to_csv(csv_file, index=False)
 
 ground_users_positions = pd.read_csv(csv_file)

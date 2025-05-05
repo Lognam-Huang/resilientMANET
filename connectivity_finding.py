@@ -186,6 +186,10 @@ def quantify_data_rate(ground_users, backhaul_connection, r, UAVInfo):
         normScore = min(score / UAVInfo['bandwidth'], 1)
         return normScore
 
+    # check
+    # print(norm(min_DR, UAVInfo))
+    # print(norm(avg_DR, UAVInfo))
+
     score = r * norm(min_DR, UAVInfo) + (1 - r) * norm(avg_DR, UAVInfo)
     return score
 
