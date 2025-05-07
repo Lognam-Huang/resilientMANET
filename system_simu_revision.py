@@ -212,29 +212,29 @@ for cur_time_frame in range(sim_time):
 
 
         
-        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
-        #     ground_users, 
-        #     UAV_nodes, 
-        #     BS_nodes, 
-        #     q_hyper['epsilon'], 
-        #     episodes=q_hyper['training_episodes'], 
-        #     scene_info = scene_data, 
-        #     reward_hyper=reward_hyper,
-        #     # print_prog=False
-        #     print_prog=True,
-        #     initialize_as_all_0=False,
-        #     save_q_table=True
-        # )        
+        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
+            ground_users, 
+            UAV_nodes, 
+            BS_nodes, 
+            q_hyper['epsilon'], 
+            episodes=q_hyper['training_episodes'], 
+            scene_info = scene_data, 
+            reward_hyper=reward_hyper,
+            # print_prog=False
+            print_prog=True,
+            initialize_as_all_0=False,
+            save_q_table=True
+        )        
 
-        from los_based_topology import find_los_backhaul_topology
+        # from los_based_topology import find_los_backhaul_topology
 
-        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
-            ground_users,  # List of ground user nodes
-            UAV_nodes,     # List of UAV nodes
-            BS_nodes,      # List of base station nodes
-            scene_data,    # Scene information (e.g., obstacles, UAV properties)
-            reward_hyper   # Reward hyperparameters
-        )
+        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
+        #     ground_users,  # List of ground user nodes
+        #     UAV_nodes,     # List of UAV nodes
+        #     BS_nodes,      # List of base station nodes
+        #     scene_data,    # Scene information (e.g., obstacles, UAV properties)
+        #     reward_hyper   # Reward hyperparameters
+        # )
 
         print("Connections details are found, evaluating topo")
     else:
