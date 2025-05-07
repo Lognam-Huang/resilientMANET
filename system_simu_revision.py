@@ -6,7 +6,8 @@ import json
 # with open('scene_data.json', 'r') as file:
 # with open('scene_data_mid.json', 'r') as file:
 # with open('scene_data_mid_dense.json', 'r') as file:
-with open('scene_data_mid_complex.json', 'r') as file:
+# with open('scene_data_mid_complex.json', 'r') as file:
+with open('scene_data_mid_complex_sparse.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -52,7 +53,10 @@ reward_hyper = {
     # try to use 0.9 for mid dense scene simulation
     # 'DRPenalty': 0.9,
 
-    'BPHopConstraint': 4,
+    # 'BPHopConstraint': 4,
+
+    # change this for hop/latency simulation
+    'BPHopConstraint': 2,
     #change this for hard scene simulation
     'BPDRConstraint': 10000000,
 
@@ -94,10 +98,10 @@ reward_hyper = {
 q_hyper = {
     # just for simple test, now also for hard scene simulation
     'epsilon': 0.3,
-    # 'training_episodes': 15
+    'training_episodes': 15
 
     # 'epsilon': 0.4,
-    'training_episodes': 200
+    # 'training_episodes': 200
     # 'training_episodes': 400
 }
 
@@ -206,29 +210,29 @@ for cur_time_frame in range(sim_time):
 
 
         
-        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
-        #     ground_users, 
-        #     UAV_nodes, 
-        #     BS_nodes, 
-        #     q_hyper['epsilon'], 
-        #     episodes=q_hyper['training_episodes'], 
-        #     scene_info = scene_data, 
-        #     reward_hyper=reward_hyper,
-        #     # print_prog=False
-        #     print_prog=True,
-        #     initialize_as_all_0=False,
-        #     save_q_table=True
-        # )        
+        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
+            ground_users, 
+            UAV_nodes, 
+            BS_nodes, 
+            q_hyper['epsilon'], 
+            episodes=q_hyper['training_episodes'], 
+            scene_info = scene_data, 
+            reward_hyper=reward_hyper,
+            # print_prog=False
+            print_prog=True,
+            initialize_as_all_0=False,
+            save_q_table=True
+        )        
 
-        from los_based_topology import find_los_backhaul_topology
+        # from los_based_topology import find_los_backhaul_topology
 
-        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
-            ground_users,  # List of ground user nodes
-            UAV_nodes,     # List of UAV nodes
-            BS_nodes,      # List of base station nodes
-            scene_data,    # Scene information (e.g., obstacles, UAV properties)
-            reward_hyper   # Reward hyperparameters
-        )
+        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
+        #     ground_users,  # List of ground user nodes
+        #     UAV_nodes,     # List of UAV nodes
+        #     BS_nodes,      # List of base station nodes
+        #     scene_data,    # Scene information (e.g., obstacles, UAV properties)
+        #     reward_hyper   # Reward hyperparameters
+        # )
 
         print("Connections details are found, evaluating topo")
     else:
@@ -237,7 +241,7 @@ for cur_time_frame in range(sim_time):
     
     gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
-    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
     
     # this is just for invisible-connection visualization
     # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
@@ -291,10 +295,10 @@ recorded_df = pd.DataFrame(recorded_data)
 #         "UAV": 8
 #     }
 
-experiment_name = "experiment_result_mid_stable_dense_height_comparison_2D.csv"
+# experiment_name = "experiment_result_mid_stable_dense_height_comparison_2D.csv"
 # allow 2D scene by letting UAV height same only be 50
 
-recorded_df.to_csv(experiment_name, mode='a', header=False, index=False)
+# recorded_df.to_csv(experiment_name, mode='a', header=False, index=False)
 
 recorded_hypers = {
     "reward_track": reward_track, 
@@ -312,9 +316,9 @@ recorded_hyper_df = pd.DataFrame(recorded_hypers)
 # experiment_hyper_name = "experiment_result_hyperparameters_mid_stable__DR_modified_2.csv"
 
 # experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_height_comparison_3D.csv"
-experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_height_comparison_2D.csv"
+# experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_dense_height_comparison_2D.csv"
 
-recorded_hyper_df.to_csv(experiment_hyper_name, mode='a', header=False, index=False)
+# recorded_hyper_df.to_csv(experiment_hyper_name, mode='a', header=False, index=False)
 
 from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline, visualize_scores
 if sim_time > 0:
