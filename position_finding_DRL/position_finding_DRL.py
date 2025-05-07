@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 from stable_baselines3 import PPO
-from stable_baselines3.common.envs import DummyVecEnv
-from custom_uav_env import UAVEnvironment  # Custom environment for UAV positioning
+from stable_baselines3.common.vec_env import DummyVecEnv  # Correct import
+from DRL_uav_env import UAVEnvironment  # Custom environment for UAV positioning
 import json
 
 # Create output folder

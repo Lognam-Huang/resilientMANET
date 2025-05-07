@@ -2,12 +2,12 @@ import json
 
 # Load scene data from JSON file
 # with open('scene_data_hard.json', 'r') as file:
-# with open('scene_data_simple.json', 'r') as file:
+with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
 # with open('scene_data_mid.json', 'r') as file:
 # with open('scene_data_mid_dense.json', 'r') as file:
 # with open('scene_data_mid_complex.json', 'r') as file:
-with open('scene_data_mid_complex_sparse.json', 'r') as file:
+# with open('scene_data_mid_complex_sparse.json', 'r') as file:
     scene_data = json.load(file)
 
 blocks = scene_data['blocks']
@@ -159,7 +159,7 @@ best_backhaul_connection = None
 
 import pandas as pd
 
-# csv_file = "ground_user_positions_for_simple_scene_50_stable.csv"
+csv_file = "ground_user_positions_for_simple_scene_50_stable.csv"
 # csv_file = "ground_user_positions_for_mid_scene_50_stable.csv"
 # csv_file = "ground_user_positions_for_mid_scene_50_dynamic.csv"
 # csv_file = "ground_user_positions_for_hard_scene_50_stable.csv"
@@ -167,7 +167,7 @@ import pandas as pd
 # csv_file = "ground_user_positions_for_mid_scene_50_stable_dense.csv"
 # csv_file = "ground_user_positions_for_mid_scene_50_stable_complex.csv"
 
-csv_file = "ground_user_positions_for_mid_scene_50_stable_complex_sparse.csv"
+# csv_file = "ground_user_positions_for_mid_scene_50_stable_complex_sparse.csv"
 
 ground_users_positions = pd.read_csv(csv_file)
 
@@ -243,7 +243,7 @@ for cur_time_frame in range(sim_time):
     
     gu_to_uav_connections, gu_to_bs_capacity = get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, best_backhaul_connection)
 
-    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
+    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
     
     # this is just for invisible-connection visualization
     # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
@@ -302,9 +302,9 @@ recorded_df = pd.DataFrame(recorded_data)
 
 # do hop-comparison experiment
 # experiment_name = "experiment_result_mid_stable_hop_unlimit.csv"
-experiment_name = "experiment_result_mid_stable_hop_2.csv"
+# experiment_name = "experiment_result_mid_stable_hop_2.csv"
 
-recorded_df.to_csv(experiment_name, mode='a', header=False, index=False)
+# recorded_df.to_csv(experiment_name, mode='a', header=False, index=False)
 
 recorded_hypers = {
     "reward_track": reward_track, 
@@ -326,9 +326,9 @@ recorded_hyper_df = pd.DataFrame(recorded_hypers)
 
 
 # experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_hop_unlimit.csv"
-experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_hop_2.csv"
+# experiment_hyper_name = "experiment_result_hyperparameters_mid_stable_hop_2.csv"
 
-recorded_hyper_df.to_csv(experiment_hyper_name, mode='a', header=False, index=False)
+# recorded_hyper_df.to_csv(experiment_hyper_name, mode='a', header=False, index=False)
 
 from visualization_functions import visualize_simulation, visualize_simulation_together, visualize_simulation_with_baseline, visualize_scores
 if sim_time > 0:
