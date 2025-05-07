@@ -76,7 +76,11 @@ class UAVEnvironment(gym.Env):
                 los_count += 1
         
         # Reward: Maximize LOS and balance GU assignments
-        reward = los_count - self._calculate_imbalance_penalty()
+        # reward = los_count - self._calculate_imbalance_penalty()
+
+        # model performance is low, try to improve it by modifying the reward function
+        # considerting los_count only, discard the imbalance penalty
+        reward = los_count  # Example: Reward is the number of GUs covered
         
         # Check if the episode is done
         done = los_count == len(self.ground_users)  # Example: All GUs covered

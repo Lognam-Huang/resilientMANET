@@ -6,7 +6,8 @@ from DRL_uav_env import UAVEnvironment
 
 # Load the trained model
 output_folder = os.path.dirname(__file__)
-model_name = "DRL_model_2025-05-07"  # Replace with the actual model name if different
+# model_name = "DRL_model_2025-05-07"  # Replace with the actual model name if different
+model_name = "DRL_model_2025-05-07_12-55-15"  
 model_path = os.path.join(output_folder, model_name)
 model = PPO.load(model_path)
 

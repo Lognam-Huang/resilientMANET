@@ -10,7 +10,9 @@ import json
 
 # Create output folder
 output_folder = os.path.dirname(__file__)
-date_str = datetime.now().strftime("%Y-%m-%d")
+# date_str = datetime.now().strftime("%Y-%m-%d")
+date_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # Include date and time
+
 model_name = f"DRL_model_{date_str}"
 model_path = os.path.join(output_folder, model_name)
 data_path = os.path.join(output_folder, "training_data")
