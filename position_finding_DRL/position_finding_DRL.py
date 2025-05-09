@@ -19,7 +19,10 @@ data_path = os.path.join(output_folder, "training_data")
 os.makedirs(data_path, exist_ok=True)
 
 # Load scene data
-scene_data_file = os.path.join(output_folder, "../scene_data_mid.json")
+# scene_data_file = os.path.join(output_folder, "../scene_data_mid.json")
+
+# try simple scene data
+scene_data_file = os.path.join(output_folder, "../scene_data_simple.json")
 with open(scene_data_file, 'r') as f:
     scene_data = json.load(f)
 

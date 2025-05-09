@@ -2,11 +2,11 @@ import json
 
 # Load scene data from JSON file
 # with open('scene_data_hard.json', 'r') as file:
-with open('scene_data_simple.json', 'r') as file:
+# with open('scene_data_simple.json', 'r') as file:
 # with open('scene_data.json', 'r') as file:
 # with open('scene_data_mid.json', 'r') as file:
 # with open('scene_data_mid_dense.json', 'r') as file:
-# with open('scene_data_mid_complex.json', 'r') as file:
+with open('scene_data_mid_complex.json', 'r') as file:
 # with open('scene_data_mid_complex_sparse.json', 'r') as file:
     scene_data = json.load(file)
 
@@ -159,13 +159,13 @@ best_backhaul_connection = None
 
 import pandas as pd
 
-csv_file = "ground_user_positions_for_simple_scene_50_stable.csv"
+# csv_file = "ground_user_positions_for_simple_scene_50_stable.csv"
 # csv_file = "ground_user_positions_for_mid_scene_50_stable.csv"
 # csv_file = "ground_user_positions_for_mid_scene_50_dynamic.csv"
 # csv_file = "ground_user_positions_for_hard_scene_50_stable.csv"
 
 # csv_file = "ground_user_positions_for_mid_scene_50_stable_dense.csv"
-# csv_file = "ground_user_positions_for_mid_scene_50_stable_complex.csv"
+csv_file = "ground_user_positions_for_mid_scene_50_stable_complex.csv"
 
 # csv_file = "ground_user_positions_for_mid_scene_50_stable_complex_sparse.csv"
 
@@ -212,29 +212,29 @@ for cur_time_frame in range(sim_time):
 
 
         
-        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
-            ground_users, 
-            UAV_nodes, 
-            BS_nodes, 
-            q_hyper['epsilon'], 
-            episodes=q_hyper['training_episodes'], 
-            scene_info = scene_data, 
-            reward_hyper=reward_hyper,
-            # print_prog=False
-            print_prog=True,
-            initialize_as_all_0=False,
-            save_q_table=True
-        )        
+        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection= find_best_backhaul_topology(
+        #     ground_users, 
+        #     UAV_nodes, 
+        #     BS_nodes, 
+        #     q_hyper['epsilon'], 
+        #     episodes=q_hyper['training_episodes'], 
+        #     scene_info = scene_data, 
+        #     reward_hyper=reward_hyper,
+        #     # print_prog=False
+        #     print_prog=True,
+        #     initialize_as_all_0=False,
+        #     save_q_table=True
+        # )        
 
-        # from los_based_topology import find_los_backhaul_topology
+        from los_based_topology import find_los_backhaul_topology
 
-        # best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
-        #     ground_users,  # List of ground user nodes
-        #     UAV_nodes,     # List of UAV nodes
-        #     BS_nodes,      # List of base station nodes
-        #     scene_data,    # Scene information (e.g., obstacles, UAV properties)
-        #     reward_hyper   # Reward hyperparameters
-        # )
+        best_state, max_reward, best_RS, reward_track, RS_track, best_reward_track, best_RS_track, best_backhaul_connection = find_los_backhaul_topology(
+            ground_users,  # List of ground user nodes
+            UAV_nodes,     # List of UAV nodes
+            BS_nodes,      # List of base station nodes
+            scene_data,    # Scene information (e.g., obstacles, UAV properties)
+            reward_hyper   # Reward hyperparameters
+        )
 
         print("Connections details are found, evaluating topo")
     else:
@@ -246,7 +246,7 @@ for cur_time_frame in range(sim_time):
     scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.3)
     
     # this is just for invisible-connection visualization
-    # scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
+    scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0)
 
     
     reward_TD.append(max_reward)

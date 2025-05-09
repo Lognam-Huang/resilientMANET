@@ -37,16 +37,37 @@ class UAVEnvironment(gym.Env):
 
     def _generate_ground_users(self, gu_count, scenario):
         """
-        Generate random positions for ground users within the scenario bounds.
+        Generate random positions for ground users within the scenario bounds,
+        ensuring no collisions with blocks.
         """
         x_length = scenario['xLength']
         y_length = scenario['yLength']
+        blocks = self.scene_data['blocks']
+        soft_margin = 1.0  # Margin to avoid placing GUs too close to block edges
         ground_users = []
+
         for _ in range(gu_count):
-            x = np.random.uniform(0, x_length)
-            y = np.random.uniform(0, y_length)
-            z = 0  # Ground users are at height 0
-            ground_users.append({'position': np.array([x, y, z])})
+            while True:
+                # Generate random x and y positions
+                x = np.random.uniform(0, x_length)
+                y = np.random.uniform(0, y_length)
+                z = 0  # Ground users are at height 0
+
+                # Check for collisions with blocks
+                collision = False
+                for block in blocks:
+                    bx, by, _ = block['bottomCorner']
+                    bw, bh = block['size']
+                    if (bx - soft_margin <= x <= bx + bw + soft_margin and
+                        by - soft_margin <= y <= by + bh + soft_margin):
+                        collision = True
+                        break
+
+                # If no collision, add the GU position and break the loop
+                if not collision:
+                    ground_users.append({'position': np.array([x, y, z])})
+                    break
+
         return ground_users
 
     def reset(self):
@@ -66,40 +87,61 @@ class UAVEnvironment(gym.Env):
 
         uav_objects = [Node(pos) for pos in self.uav_positions]
         
-        # Calculate LOS and rewards
+        # Calculate LOS and assign GUs to UAVs
         los_count = 0
+        gu_assignments = [0] * self.uav_count  # Track the number of GUs assigned to each UAV
         for i, gu in enumerate(self.ground_users):
             gu_object = Node(gu['position'])  # Wrap GU position in an object
-            los = any(not self.check_path_is_blocked(self.scene_data['blocks'], uav.position, gu_object.position) for uav in uav_objects)
-            self.state[i] = 1 if los else 0
-            if los:
+            best_uav = None
+            best_distance = float('inf')
+            for uav_index, uav in enumerate(uav_objects):
+                if not self.check_path_is_blocked(self.scene_data['blocks'], uav.position, gu_object.position):
+                    distance = np.linalg.norm(uav.position - gu_object.position)
+                    if distance < best_distance:
+                        best_distance = distance
+                        best_uav = uav_index
+            if best_uav is not None:
                 los_count += 1
-        
-        # Reward: Maximize LOS and balance GU assignments
-        # reward = los_count - self._calculate_imbalance_penalty()
+                gu_assignments[best_uav] += 1
 
-        # model performance is low, try to improve it by modifying the reward function
-        # considerting los_count only, discard the imbalance penalty
-        reward = los_count  # Example: Reward is the number of GUs covered
-        
+        # Calculate imbalance penalty
+        max_assignments = max(gu_assignments)
+        min_assignments = min(gu_assignments)
+        imbalance_penalty = max_assignments - min_assignments
+
+        # Reward: Maximize LOS and minimize imbalance
+        # try to encourage UAVs to be evenly distributed
+        reward = los_count*10 - imbalance_penalty + 0.1 * np.mean(np.linalg.norm(self.uav_positions, axis=1))
+
+        # Print reward and relevant positions
+        # self.print_reward_info(reward, los_count, imbalance_penalty, gu_assignments, self.uav_positions, self.ground_users)
+
         # Check if the episode is done
         done = los_count == len(self.ground_users)  # Example: All GUs covered
         
         return self.state, reward, done, {}
 
+    def print_reward_info(self, reward, los_count, imbalance_penalty, gu_assignments, uav_positions, ground_users):
+        """
+        Print the reward and relevant positions (GU and UAV) for calculating the reward.
+        """
+        print("\n" + "-" * 50)
+        print(f"Reward: {reward}")
+        print(f"LOS Count: {los_count}")
+        print(f"Imbalance Penalty: {imbalance_penalty}")
+        print(f"GU Assignments per UAV: {gu_assignments}")
+        print("UAV Positions:")
+        for i, pos in enumerate(uav_positions):
+            print(f"  UAV {i + 1}: x={pos[0]:.2f}, y={pos[1]:.2f}, z={pos[2]:.2f}")
+        print("Ground User Positions:")
+        for i, gu in enumerate(ground_users):
+            pos = gu['position']
+            print(f"  GU {i + 1}: x={pos[0]:.2f}, y={pos[1]:.2f}, z={pos[2]:.2f}")
+        print("-" * 50 + "\n")
+
     def render(self, mode='human'):
         # Optional: Visualize UAV positions and GU coverage
         pass
-
-    def _calculate_imbalance_penalty(self):
-        # Example: Penalize imbalance in GU assignments
-        gu_assignments = [0] * self.uav_count
-        for i, gu in enumerate(self.ground_users):
-            if self.state[i] == 1:  # GU is covered
-                closest_uav = np.argmin(np.linalg.norm(self.uav_positions - gu['position'], axis=1))
-                gu_assignments[closest_uav] += 1
-        imbalance = np.std(gu_assignments)  # Standard deviation as imbalance metric
-        return imbalance
 
     def check_path_is_blocked(self, blocks, position_a, position_b):
         """
