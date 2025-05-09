@@ -185,11 +185,11 @@ from connectivity_finding import get_backhaul_connection
 backhaul_connection = get_backhaul_connection(state_for_mid_scene, UAV_nodes, BS_nodes, scene_data)
 get_gu_to_uav_connections(ground_users, UAV_nodes, UAVInfo, blocks, backhaul_connection)
 
-# scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.2)
+scene_visualization(ground_users, UAV_nodes, BS_nodes, scene_data, 0.2)
 
 from visualization_functions import visualize_hierarchical_clustering_result_in_scene
-visualize_gu_by_connection(ground_users, blocks, scene)
-visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, 0.2)
+visualize_gu_by_connection(ground_users, blocks, scene, BS_nodes)
+visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, BS_nodes, 0.2)
 
 # redraw figure 5
 

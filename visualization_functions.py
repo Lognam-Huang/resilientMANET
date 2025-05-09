@@ -1148,7 +1148,16 @@ def simulate_and_visualize_movements(n, ground_users, blocks, xLength, yLength, 
     # Display the final visualization
     plt.show()
 
-def visualize_gu_by_connection(ground_users, blocks, scene):
+def visualize_gu_by_connection(ground_users, blocks, scene, base_station=None):
+    """
+    Visualize ground users (GUs) by their connections to UAVs, with an optional base station.
+    
+    Parameters:
+    - ground_users: List of ground user nodes, each with a `position` attribute (x, y).
+    - blocks: List of obstacles, each containing "bottomCorner" and "size" keys.
+    - scene: Scene information, including boundary information to set plot limits.
+    - base_station: Optional base station node with a `position` attribute (x, y, z).
+    """
     connection_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
     color_cycle = cycle(connection_colors)
@@ -1172,6 +1181,12 @@ def visualize_gu_by_connection(ground_users, blocks, scene):
         color = connection_types[connection_type]  
         ax.scatter(*gu_position, color=color, label=f"GU → UAV {connection_type}", s=120, alpha=0.8, edgecolors='w')
 
+    # Plot base station as a red cube
+    for bs in base_station:
+        bs_x, bs_y= bs.position[:2] 
+        # bs_z = base_station["height"]
+        ax.scatter(bs_x, bs_y, color='red', label="Base Station", s=200, alpha=0.9, edgecolors='black', marker='s')
+
     # Set axes
     ax.set_xlim(0, scene["xLength"])
     ax.set_ylim(0, scene["yLength"])
@@ -1180,7 +1195,7 @@ def visualize_gu_by_connection(ground_users, blocks, scene):
     
     # Customize legend
     handles, labels = ax.get_legend_handles_labels()
-    unique_labels = dict(sorted(zip(labels, handles), key=lambda x: int(x[0].split()[-1])))
+    unique_labels = dict(sorted(zip(labels, handles), key=lambda x: int(x[0].split()[-1]) if "UAV" in x[0] else 1000))
 
     legend = ax.legend(
         unique_labels.values(),
@@ -1204,7 +1219,7 @@ def visualize_gu_by_connection(ground_users, blocks, scene):
     plt.grid(True)
     plt.show()
 
-def visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, line_alpha=0.5):
+def visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, blocks, scene, base_station, line_alpha=0.5):
     """
     Visualize the distribution of GUs and UAVs, and draw connections between GUs and UAVs.
 
@@ -1261,6 +1276,13 @@ def visualize_hierarchical_clustering_result_in_scene(ground_users, UAV_nodes, b
                     alpha=line_alpha
                 )
 
+    
+    # Plot base station as a red cube
+    for bs in base_station:
+        bs_x, bs_y= bs.position[:2] 
+        # bs_z = base_station["height"]
+        ax.scatter(bs_x, bs_y, color='red', label="Base Station", s=200, alpha=0.9, edgecolors='black', marker='s')
+        
     # Set plot limits and labels
     ax.set_xlim(0, scene["xLength"])
     ax.set_ylim(0, scene["yLength"])
