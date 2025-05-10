@@ -164,11 +164,19 @@ for i in range(len(gu_fixed_position)):
     ground_users[i].set_position(gu_fixed_position[i])
 
 
-uav_fixed_position = [(35,15,50),
-                      (90,50,50),
-                      (175,50,50),
-                      (190,135,50),
-                      (190,155,50)
+# uav_fixed_position = [(35,15,50),
+#                       (90,50,50),
+#                       (175,50,50),
+#                       (190,135,50),
+#                       (190,155,50)
+#                      ]
+
+# try to visualize DRL
+uav_fixed_position = [(0,5,50),
+                      (3,1,50),
+                      (3,13,50),
+                      (5,8,50),
+                      (6,2,50)
                      ]
 
 
